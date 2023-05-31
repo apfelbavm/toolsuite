@@ -302,6 +302,10 @@ public class TranslationMgr
 	{
 		if (sheet == null) return null;
 		String brand = findBrand(sheet);
+		if (!brand.isBlank() && !brand.isEmpty())
+		{
+			brand += "_";
+		}
 		boolean bAddBrand = getFlag(TranslationMgrFlags.Import.APPEND_BRAND_TO_LOCALE);
 		ArrayList<Pair<String, Integer>> locales = new ArrayList<Pair<String, Integer>>(32);
 		int lastRow = Math.min(MAX_SEARCH_ROW, sheet.getLastRowNum()); // 0 based

@@ -42,6 +42,8 @@ public class Excelibur extends JPanel
 	JList<String> fileList = new JList<String>();
 
 	JButton importButton, exportButton, returnButton, reloadButton;
+	String lastImportFolder = "";
+	String lastExportFolder = "";
 
 	JSplitPane horSplit = new JSplitPane();
 
@@ -163,8 +165,13 @@ public class Excelibur extends JPanel
 	{
 		owner.setStatus("Choosing files to import...", App.NORMAL_MESSAGE);
 		FileFilter filter = new FileNameExtensionFilter("Microsoft Excel Documents (*.xlsx)", "xlsx");
-		String userDir = System.getProperty("user.home");
-		JFileChooser fileChooser = new JFileChooser(userDir + "/Desktop");
+		
+		if(lastImportFolder.isBlank() || lastImportFolder.isEmpty())
+		{
+			String userDir = System.getProperty("user.home");
+			lastImportFolder = userDir + "/Desktop";
+		}
+		JFileChooser fileChooser = new JFileChooser(lastImportFolder);
 		fileChooser.setMultiSelectionEnabled(true);
 		fileChooser.setFileFilter(filter);
 		fileChooser.setPreferredSize(new Dimension(800, 600));
@@ -179,6 +186,7 @@ public class Excelibur extends JPanel
 			if (fileChooser.getSelectedFiles().length > 0)
 			{
 				translationMgr.files = fileChooser.getSelectedFiles();
+				lastImportFolder = translationMgr.files[0].getParent();
 				updateListView();
 				updateTableView();
 			}
@@ -197,8 +205,13 @@ public class Excelibur extends JPanel
 			return;
 		}
 		owner.setStatus("Selecting output folder...", App.NORMAL_MESSAGE);
-		String userDir = System.getProperty("user.home");
-		JFileChooser chooser = new JFileChooser(userDir + "/Desktop");
+		
+		if(lastExportFolder.isBlank() || lastExportFolder.isEmpty())
+		{
+			String userDir = System.getProperty("user.home");
+			lastExportFolder = userDir + "/Desktop";
+		}
+		JFileChooser chooser = new JFileChooser(lastExportFolder);
 		chooser.setSelectedFile(new File("translation"));
 		chooser.setPreferredSize(new Dimension(800, 600));
 		// This sets the default folder view to 'details'
@@ -211,6 +224,7 @@ public class Excelibur extends JPanel
 		{
 			new Thread(() -> {
 				String outputFolder = chooser.getSelectedFile().toString();
+				lastExportFolder = chooser.getSelectedFile().getParent();
 				int i = outputFolder.lastIndexOf(System.getProperty("file.separator"));
 				String fileName = outputFolder.substring(i + 1, outputFolder.length());
 				outputFolder = outputFolder.substring(0, i);
