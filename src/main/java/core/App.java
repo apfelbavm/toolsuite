@@ -85,7 +85,7 @@ public class App extends JFrame
 		throbber = new Throbber(ico.getImage(), 20, 20, 2, 2);
 
 		colorLabel.add(throbber, BorderLayout.CENTER);
-		addScreen(new MainMenu(this), "Toolsuite");
+		addScreen(new MainMenu(this), "Toolsuite 1.0.1");
 		getContentPane().add(panel, BorderLayout.SOUTH);
 
 		setVisible(true);
