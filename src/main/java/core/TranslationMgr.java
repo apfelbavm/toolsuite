@@ -337,6 +337,10 @@ public class TranslationMgr {
 		if (sheet == null)
 			return null;
 		String brand = findBrand(sheet);
+		if(brand == null || brand.isBlank() || brand.isEmpty())
+		{
+			brand = "NO_BRAND";
+		}
 		ArrayList<Pair<LanguageIdentifier, Integer>> locales = new ArrayList<Pair<LanguageIdentifier, Integer>>(32);
 		int lastRow = Math.min(MAX_SEARCH_ROW, sheet.getLastRowNum()); // 0 based
 		for (int r = 0; r <= lastRow; ++r) {
