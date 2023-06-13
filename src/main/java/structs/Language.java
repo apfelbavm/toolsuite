@@ -4,6 +4,7 @@ import java.util.HashMap;
 
 public class Language {
 	public LanguageIdentifier identifier;
+	public HashMap<String, HashMap<String, String>> tree = new HashMap<String, HashMap<String, String>>(64);
 
 	public Language(LanguageIdentifier inIdentifier) {
 		identifier = inIdentifier;
@@ -14,7 +15,6 @@ public class Language {
 				&& identifier.locale.equalsIgnoreCase(otherLanguage.identifier.locale);
 	}
 
-	public HashMap<String, HashMap<String, String>> tree = new HashMap<String, HashMap<String, String>>(64);
 
 	public void addUnique(String component, String key, String value) {
 		HashMap<String, String> keyMap = tree.get(component);
