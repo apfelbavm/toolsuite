@@ -125,11 +125,11 @@ public class TranslationMgr {
 	}
 
 	private String fixString(String str) {
-		String value = str.replaceAll("\n", " ").replaceAll("\r", " ").replaceAll(System.getProperty("line.separator"),
+		String value = str.replace("\n", " ").replace("\r", " ").replace(System.getProperty("line.separator"),
 				" ");
 		// Replace double spacebar
-		value = value.replaceAll("\"", "\\\"");
-		value = value.replaceAll(" +", " ");
+		value = value.replace("\"", "\\\"");
+		value = value.replaceAll("( )+", " ");
 		return value.trim();
 	}
 

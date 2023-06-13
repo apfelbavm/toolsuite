@@ -38,6 +38,7 @@ import widgets.Throbber;
 
 public class App extends JFrame
 {
+	public static final String TOOL_NAME = "Toolsuite 1.0.2";
 	private static App INSTANCE;
 	public static final int NORMAL_MESSAGE = 0;
 	public static final int WARNING_MESSAGE = 1;
@@ -85,7 +86,7 @@ public class App extends JFrame
 		throbber = new Throbber(ico.getImage(), 20, 20, 2, 2);
 
 		colorLabel.add(throbber, BorderLayout.CENTER);
-		addScreen(new MainMenu(this), "Toolsuite 1.0.1");
+		addScreen(new MainMenu(this), TOOL_NAME);
 		getContentPane().add(panel, BorderLayout.SOUTH);
 
 		setVisible(true);

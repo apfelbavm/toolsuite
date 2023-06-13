@@ -51,17 +51,16 @@ public class Excelibur extends JPanel {
 	JCheckBox checkBoxAutoResize = new JCheckBox("Auto Resize Table");
 	JCheckBox checkBoxMergeCompAndKey = new JCheckBox("Concat. 'Component' and 'Key'");
 	JCheckBox checkBoxUseHyperlinkIfAvailable = new JCheckBox("Use Hyperlink instead of cell content");
-	JCheckBox checkAppendBrandToLocale = new JCheckBox("Append 'Brand' to 'Locale'");
 	JCheckBox checkDoNotExportEmptyCells = new JCheckBox("Do NOT export empty values.");
 
-	JComboBox comboFolderNaming;
+	JComboBox<String> comboFolderNaming;
 
 	public Excelibur(App owner) {
 		this.owner = owner;
 		owner.setStatus("Welcome to Excelibur..", App.NORMAL_MESSAGE);
 		setLayout(new BorderLayout());
 		returnButton = App.createButtonWithTextAndIcon("Back", "icon_return.png");
-		returnButton.addActionListener(e -> owner.addScreen(new MainMenu(owner), "Toolsuite"));
+		returnButton.addActionListener(e -> owner.addScreen(new MainMenu(owner), App.TOOL_NAME));
 
 		// TABLE
 		DefaultTableModel model = new DefaultTableModel(new String[] { "Component", "Key", "Locale" }, 0);
@@ -69,7 +68,7 @@ public class Excelibur extends JPanel {
 		table.setFillsViewportHeight(true);
 
 		JPanel infoPanel = new JPanel();
-		GridLayout grid = new GridLayout(12, 1, 8, 8);
+		GridLayout grid = new GridLayout(11, 1, 8, 8);
 		infoPanel.setLayout(grid);
 		CompoundBorder b = new CompoundBorder(infoPanel.getBorder(), new EmptyBorder(4, 4, 4, 4));
 		infoPanel.setBorder(b);
@@ -87,9 +86,6 @@ public class Excelibur extends JPanel {
 		checkDoNotExportEmptyCells.setSelected(true);
 		checkDoNotExportEmptyCells.setToolTipText(
 				"Don't export key value pairs with empty values. This is for each language individually");
-		checkAppendBrandToLocale.setSelected(true);
-		checkAppendBrandToLocale.setToolTipText(
-				"Appends the brand in cell A1 to the locale. If cell is empty it is like this option is disabled.");
 
 		createOutputFolderComboBox();
 		
@@ -97,7 +93,6 @@ public class Excelibur extends JPanel {
 		infoPanel.add(checkBoxAutoResize);
 		infoPanel.add(new JLabel(""));
 		infoPanel.add(new JLabel("Import settings:"));
-		infoPanel.add(checkAppendBrandToLocale);
 		infoPanel.add(checkBoxUseHyperlinkIfAvailable);
 		infoPanel.add(new JLabel(""));
 		infoPanel.add(new JLabel("Export settings:"));
@@ -186,18 +181,18 @@ public class Excelibur extends JPanel {
 		for (TranslationMgrFlags.FolderNaming rule : TranslationMgrFlags.FolderNaming.values()) {
 			switch (rule) {
 			case LOCALE_BRAND:
-				list[i] = "en_US_Germany";
+				list[i] = "en_US_Germany (folder)";
 				break;
 			case BRAND_LOCALE:
-				list[i] = "Germany_en_US";
+				list[i] = "Germany_en_US (folder)";
 				break;
 			case BRAND_AND_LOCALE_AS_SUBFOLDER:
-				list[i] = "Germany/en_US";
+				list[i] = "Germany (folder) -> en_US (folder)";
 				break;
 			}
 			++i;
 		}
-		comboFolderNaming = new JComboBox(list);
+		comboFolderNaming = new JComboBox<String>(list);
 	}
 
 	void openInputDialog() {
@@ -304,8 +299,6 @@ public class Excelibur extends JPanel {
 	}
 
 	private void importData() {
-		translationMgr.setFlag(TranslationMgrFlags.Import.APPEND_BRAND_TO_LOCALE,
-				checkAppendBrandToLocale.isSelected());
 		translationMgr.setFlag(TranslationMgrFlags.Import.USE_HYPERLINK_IF_AVAILABLE,
 				checkBoxUseHyperlinkIfAvailable.isSelected());
 		LanguageTable languageTable = translationMgr.importExcelFiles();

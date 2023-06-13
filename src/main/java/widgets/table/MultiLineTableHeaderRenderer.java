@@ -9,7 +9,9 @@ import javax.swing.table.TableCellRenderer;
 
 public class MultiLineTableHeaderRenderer extends JTextArea implements TableCellRenderer
 {
-  public MultiLineTableHeaderRenderer() {
+	private static final long serialVersionUID = 1L;
+
+public MultiLineTableHeaderRenderer() {
     setEditable(false);
     setLineWrap(true);
     setOpaque(false);
