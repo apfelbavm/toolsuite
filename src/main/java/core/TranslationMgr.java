@@ -35,7 +35,7 @@ public class TranslationMgr
 	private LanguageTable languageTable;
 	// Grid size in which this tool searches for all necessary data to extract the
 	// rest of a single sheet.
-	private static final int MAX_SEARCH_COLUMN = 40;
+	private static final int MAX_SEARCH_COLUMN = 60;
 	private static final int MAX_SEARCH_ROW = 20;
 	// These are variables for stat tracking.
 	public int statNumEmptyCells = 0;
@@ -477,6 +477,8 @@ public class TranslationMgr
 		ArrayList<Pair<LanguageIdentifier, Integer>> locales = findLocales(sheet);
 		int componentCol = findColumnWithString(sheet, "component");
 		int keyCol = findColumnWithString(sheet, "key");
+		if (componentCol == -1 || keyCol == -1) return null;
+		
 		ArrayList<Language> languages = new ArrayList<Language>(32);
 
 		for (Pair<LanguageIdentifier, Integer> pair : locales)
@@ -543,6 +545,7 @@ public class TranslationMgr
 		for (Sheet sheet : sheets)
 		{
 			ArrayList<Language> languages = extractSheet(sheet);
+			if (languages == null) continue;
 			for (Language language : languages)
 			{
 				if (containsLanguage(sumLanguages, language))
@@ -575,7 +578,7 @@ public class TranslationMgr
 		}
 
 		sortColumns(header, sumLanguages);
-		
+
 		for (int c = 0; c < numLangs; ++c)
 		{
 			Language lang = sumLanguages.get(c);
