@@ -352,12 +352,33 @@ public class TranslationMgr
 
 		long statRead = System.currentTimeMillis();
 
-		for (File file : files)
+		Thread[] threads = new Thread[files.length];
+		int w = 0;
+		for (int v = 0; v < files.length; ++v)
 		{
-			if (file == null) continue;
-			getSheetsFromExcel(sheets, file);
+			final int v2 = v;
+			threads[w] = new Thread(() -> {
+				getSheetsFromExcel(sheets, files[v2]);
+			});
+			++w;
 		}
 
+		for (Thread thread : threads)
+		{
+			thread.start();
+		}
+		for (Thread thread : threads)
+		{
+			try
+			{
+				thread.join();
+			}
+			catch (InterruptedException e)
+			{
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+		}
 		statRead = System.currentTimeMillis() - statRead;
 		System.out.println("Loading excel files took:" + statRead + "ms");
 
@@ -434,5 +455,5 @@ public class TranslationMgr
 	public void stopTimeTrace()
 	{
 		statCalculationTime = System.currentTimeMillis() - statCalculationTime;
-	}	
+	}
 }
