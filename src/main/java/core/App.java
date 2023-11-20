@@ -38,12 +38,15 @@ import widgets.Throbber;
 
 public class App extends JFrame
 {
-	public static final String TOOL_NAME = "Toolsuite 1.0.4";
+	public static final String TOOL_NAME = "Toolsuite 1.0.5";
 	private static App INSTANCE;
 	public static final int NORMAL_MESSAGE = 0;
 	public static final int WARNING_MESSAGE = 1;
 	public static final int ERROR_MESSAGE = 2;
 
+	public static String LAST_IMPORT_FOLDER = "";
+	public static String LAST_EXPORT_FOLDER = "";
+	
 	private BorderLayout layout = new BorderLayout();
 
 	private static final long serialVersionUID = 1L;
@@ -104,6 +107,9 @@ public class App extends JFrame
 				prefs.putInt("H", size.height);
 				prefs.putInt("EXTENDED_STATE", getExtendedState());
 				prefs.putBoolean("USE_DARK_MODE", useDarkMode);
+				useDarkMode = prefs.getBoolean("USE_DARK_MODE", true);
+				prefs.put("LAST_IMPORT_FOLDER", LAST_IMPORT_FOLDER);
+				prefs.put("LAST_EXPORT_FOLDER", LAST_EXPORT_FOLDER);
 			}
 		});
 	}
@@ -299,6 +305,8 @@ public class App extends JFrame
 		int h = Math.max(prefs.getInt("H", defaultH), 500);
 		int extendedState = prefs.getInt("EXTENDED_STATE", defaultExtendedState);
 		useDarkMode = prefs.getBoolean("USE_DARK_MODE", true);
+		LAST_IMPORT_FOLDER = prefs.get("LAST_IMPORT_FOLDER", "");
+		LAST_EXPORT_FOLDER = prefs.get("LAST_EXPORT_FOLDER", "");
 
 		if (useDarkMode)
 		{

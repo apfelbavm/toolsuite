@@ -51,8 +51,7 @@ public class Excelibur extends JPanel
 	JList<String> fileList = new JList<String>();
 
 	JButton importButton, exportButton, returnButton, reloadButton;
-	String lastImportFolder = "";
-	String lastExportFolder = "";
+
 
 	JSplitPane horSplit = new JSplitPane();
 
@@ -268,12 +267,12 @@ public class Excelibur extends JPanel
 		owner.setStatus("Choosing files to import...", App.NORMAL_MESSAGE);
 		FileFilter filter = new FileNameExtensionFilter("Microsoft Excel Documents (*.xlsx)", "xlsx");
 
-		if (lastImportFolder.isBlank() || lastImportFolder.isEmpty())
+		if (App.LAST_IMPORT_FOLDER.isBlank() || App.LAST_IMPORT_FOLDER.isEmpty())
 		{
 			String userDir = System.getProperty("user.home");
-			lastImportFolder = userDir + "/Desktop";
+			App.LAST_IMPORT_FOLDER = userDir + "/Desktop";
 		}
-		JFileChooser fileChooser = new JFileChooser(lastImportFolder);
+		JFileChooser fileChooser = new JFileChooser(App.LAST_IMPORT_FOLDER);
 		fileChooser.setMultiSelectionEnabled(true);
 		fileChooser.setFileFilter(filter);
 		fileChooser.setPreferredSize(new Dimension(800, 600));
@@ -288,7 +287,7 @@ public class Excelibur extends JPanel
 			if (fileChooser.getSelectedFiles().length > 0)
 			{
 				translationMgr.files = fileChooser.getSelectedFiles();
-				lastImportFolder = translationMgr.files[0].getParent();
+				App.LAST_IMPORT_FOLDER = translationMgr.files[0].getParent();
 				updateListView();
 				updateTableView();
 			}
@@ -308,12 +307,12 @@ public class Excelibur extends JPanel
 		}
 		owner.setStatus("Selecting output folder...", App.NORMAL_MESSAGE);
 
-		if (lastExportFolder.isBlank() || lastExportFolder.isEmpty())
+		if (App.LAST_EXPORT_FOLDER.isBlank() || App.LAST_EXPORT_FOLDER.isEmpty())
 		{
 			String userDir = System.getProperty("user.home");
-			lastExportFolder = userDir + "/Desktop";
+			App.LAST_EXPORT_FOLDER = userDir + "/Desktop";
 		}
-		JFileChooser chooser = new JFileChooser(lastExportFolder);
+		JFileChooser chooser = new JFileChooser(App.LAST_EXPORT_FOLDER);
 		chooser.setSelectedFile(new File("translations"));
 		chooser.setPreferredSize(new Dimension(800, 600));
 		// This sets the default folder view to 'details'
@@ -326,7 +325,7 @@ public class Excelibur extends JPanel
 		{
 			new Thread(() -> {
 				String outputFolder = chooser.getSelectedFile().toString();
-				lastExportFolder = chooser.getSelectedFile().getParent();
+				App.LAST_EXPORT_FOLDER = chooser.getSelectedFile().getParent();
 				int i = outputFolder.lastIndexOf(System.getProperty("file.separator"));
 				String fileName = outputFolder.substring(i + 1, outputFolder.length());
 				outputFolder = outputFolder.substring(0, i);
