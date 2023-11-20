@@ -1,7 +1,9 @@
 package structs;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Map;
 import java.util.Set;
 
 public class LanguageRowMap
@@ -9,7 +11,23 @@ public class LanguageRowMap
 	public String[][] rowMap;
 	private HashMap<String, HashSet<String>> tree = new HashMap<String, HashSet<String>>(64);
 
-	public void buildRowMap()
+	public LanguageRowMap(ArrayList<Language> languages)
+	{
+		if (languages == null) return;
+		for (Language lang : languages)
+		{
+			for (Map.Entry<String, HashMap<String, String>> component : lang.tree.entrySet())
+			{
+				for (String key : component.getValue().keySet())
+				{
+					addUnique(component.getKey(), key);
+				}
+			}
+		}
+		buildRowMap();
+	}
+	
+	private void buildRowMap()
 	{
 		int size = 0;
 		for (Set<String> components : tree.values())

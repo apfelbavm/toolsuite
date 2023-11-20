@@ -4,9 +4,7 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.HashMap;
 import java.util.HashSet;
-import java.util.Map;
 
 import org.apache.commons.math3.util.Pair;
 import org.apache.poi.ss.usermodel.Cell;
@@ -346,24 +344,6 @@ public class TranslationMgr
 		}
 	}
 
-	private LanguageRowMap buildRowMap(ArrayList<Language> languages)
-	{
-		if (languages == null) return null;
-		LanguageRowMap rowMap = new LanguageRowMap();
-		for (Language lang : languages)
-		{
-			for (Map.Entry<String, HashMap<String, String>> component : lang.tree.entrySet())
-			{
-				for (String key : component.getValue().keySet())
-				{
-					rowMap.addUnique(component.getKey(), key);
-				}
-			}
-		}
-		rowMap.buildRowMap();
-		return rowMap;
-	}
-
 	public LanguageTable importExcelFiles()
 	{
 		if (files == null) return null;
@@ -408,7 +388,7 @@ public class TranslationMgr
 
 		long statSort = System.currentTimeMillis();
 
-		LanguageRowMap rowMap = buildRowMap(sumLanguages);
+		LanguageRowMap rowMap = new LanguageRowMap(sumLanguages);
 		int numLangs = sumLanguages.size();
 		String[][] data = new String[rowMap.rowMap.length][numLangs + 2];
 		for (int i = 0; i < data.length; ++i)
