@@ -94,7 +94,7 @@ public class TranslationMgr
 		try
 		{
 			// don't know why but FIS proved to be 2-3 times faster than directly using file or OPC package.
-			fis = new FileInputStream(file); 
+			fis = new FileInputStream(file);
 			Workbook workbook = new XSSFWorkbook(fis);
 			int numSheets = workbook.getNumberOfSheets();
 			for (int i = 0; i < numSheets; ++i)
@@ -547,11 +547,20 @@ public class TranslationMgr
 		if (files == null) return null;
 		statNumEmptyCells = 0;
 		HashSet<Sheet> sheets = new HashSet<Sheet>();
+
+		long statRead = System.currentTimeMillis();
+
 		for (File file : files)
 		{
 			if (file == null) continue;
 			getSheetsFromExcel(sheets, file);
 		}
+
+		statRead = System.currentTimeMillis() - statRead;
+		System.out.println("Loading excel files took:" + statRead + "ms");
+
+		long statExtract = System.currentTimeMillis();
+		
 		ArrayList<Language> sumLanguages = new ArrayList<Language>(32);
 		for (Sheet sheet : sheets)
 		{
@@ -570,8 +579,13 @@ public class TranslationMgr
 			}
 		}
 
+		statExtract = System.currentTimeMillis() - statExtract;
+		System.out.println("Extracting excel files took:" + statExtract + "ms");
+		
 		if (sumLanguages.size() == 0) return null;
 
+		long statSort = System.currentTimeMillis();
+		
 		LanguageRowMap rowMap = buildRowMap(sumLanguages);
 		int numLangs = sumLanguages.size();
 		String[][] data = new String[rowMap.rowMap.length][numLangs + 2];
@@ -604,6 +618,9 @@ public class TranslationMgr
 		}
 		languageTable = new LanguageTable(header, data);
 
+		statSort = System.currentTimeMillis() - statSort;
+		System.out.println("Sorting data took:" + statSort + "ms");
+		
 		return languageTable;
 	}
 
