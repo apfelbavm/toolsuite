@@ -18,6 +18,7 @@ import java.io.OutputStreamWriter;
 
 import org.apache.commons.math3.util.Pair;
 import org.apache.poi.ss.usermodel.Cell;
+import org.apache.poi.ss.usermodel.CellType;
 import org.apache.poi.ss.usermodel.Hyperlink;
 import org.apache.poi.ss.usermodel.Row;
 import org.apache.poi.ss.usermodel.Sheet;
@@ -92,7 +93,8 @@ public class TranslationMgr
 		FileInputStream fis;
 		try
 		{
-			fis = new FileInputStream(file);
+			// don't know why but FIS proved to be 2-3 times faster than directly using file or OPC package.
+			fis = new FileInputStream(file); 
 			Workbook workbook = new XSSFWorkbook(fis);
 			int numSheets = workbook.getNumberOfSheets();
 			for (int i = 0; i < numSheets; ++i)
@@ -114,6 +116,7 @@ public class TranslationMgr
 		if (row == null) return null;
 		Cell cell = row.getCell(col, MissingCellPolicy.CREATE_NULL_AS_BLANK);
 		if (cell == null) return null;
+
 		if (getFlag(TranslationMgrFlags.Import.USE_HYPERLINK_IF_AVAILABLE))
 		{
 			Hyperlink link = cell.getHyperlink();
@@ -122,7 +125,15 @@ public class TranslationMgr
 				return link.getAddress();
 			}
 		}
-		switch (cell.getCellType())
+
+		// if a cell contains a formula we first have to check to what type it evaluates
+		CellType type = cell.getCellType();
+		if (type == CellType.FORMULA)
+		{
+			type = cell.getCachedFormulaResultType();
+		}
+
+		switch (type)
 		{
 		default:
 		case BLANK:
@@ -478,7 +489,7 @@ public class TranslationMgr
 		int componentCol = findColumnWithString(sheet, "component");
 		int keyCol = findColumnWithString(sheet, "key");
 		if (componentCol == -1 || keyCol == -1) return null;
-		
+
 		ArrayList<Language> languages = new ArrayList<Language>(32);
 
 		for (Pair<LanguageIdentifier, Integer> pair : locales)
