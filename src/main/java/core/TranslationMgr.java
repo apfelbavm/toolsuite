@@ -2,19 +2,11 @@ package core;
 
 import java.io.File;
 import java.io.FileInputStream;
-import java.io.Writer;
-import java.nio.charset.StandardCharsets;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.io.OutputStreamWriter;
 
 import org.apache.commons.math3.util.Pair;
 import org.apache.poi.ss.usermodel.Cell;
@@ -175,180 +167,10 @@ public class TranslationMgr
 
 	public boolean export2Json(String outputFolder, String fileName)
 	{
-		// we have only one line off error message, thus we just have to return wether
-		// there was an error, the error is already printed and shouldnt be overriden by
-		// the success message if succeeding exports were successfull.
+		JsonCreator json = new JsonCreator();
 		boolean bMergeComponentAndKey = getFlag(TranslationMgrFlags.Export.CONCAT_COMPONENT_AND_KEY);
 		boolean bSkipEmptyCells = getFlag(TranslationMgrFlags.Export.DONT_EXPORT_EMPTY_VALUES);
-		for (LanguageIdentifier identifier : languageTable.getIdentifiers())
-		{
-			if (bMergeComponentAndKey)
-			{
-				if (!exportSimple(outputFolder, fileName, identifier, bSkipEmptyCells))
-				{
-					return false;
-				}
-			}
-
-			else
-			{
-				if (!exportAdvanced(outputFolder, fileName, identifier, bSkipEmptyCells))
-				{
-					return false;
-				}
-			}
-		}
-		return true;
-	}
-
-	private boolean exportAdvanced(String outputFolder, String fileName, LanguageIdentifier identifier, boolean skipEmptyCells)
-	{
-		String[][] data = languageTable.getJTableData();
-		int langIndex = languageTable.getIdentifierIndex(identifier);
-		if (langIndex == -1) return false;
-		// skip component and key columns;
-		langIndex += 2;
-		try
-		{
-			String pathToCreate = createOutputFolder(outputFolder, identifier);
-			if (pathToCreate == null)
-			{
-				return false;
-			}
-			// We need this filewriter to allow Umlauts
-			Writer writer = new OutputStreamWriter(new FileOutputStream(pathToCreate + fileName + ".json"), StandardCharsets.UTF_8);
-			String lastComponent = "";
-			boolean isFirstComp = true;
-			writer.write("{\n");
-			for (String[] row : data)
-			{
-				String value = row[langIndex];
-				if (skipEmptyCells && (value.isBlank() || value.isEmpty())) continue;
-				boolean isFirstKeyValue = false;
-				if (row[0] != lastComponent)
-				{
-					// New component
-					if (isFirstComp)
-					{
-						writer.write("\t\"" + row[0] + "\": {\n");
-						isFirstKeyValue = true;
-						isFirstComp = false;
-					}
-					else
-					{
-						writer.write("\n\t},\n\t\"" + row[0] + "\": {\n");
-					}
-					writer.write("\t\t\"" + row[1] + "\": " + "\"" + value + "\"");
-					lastComponent = row[0];
-				}
-				else
-				{
-					if (isFirstKeyValue)
-					{
-						writer.write("\t\t\"" + row[1] + "\": " + "\"" + value + "\"");
-					}
-					else
-					{
-						writer.write(",\n\t\t\"" + row[1] + "\": " + "\"" + value + "\"");
-					}
-				}
-			}
-			writer.write("\n\t}\n}");
-			writer.close();
-		}
-		catch (Exception e)
-		{
-			App.get().setStatus(e.getLocalizedMessage(), App.ERROR_MESSAGE);
-			return false;
-		}
-		return true;
-	}
-
-	private boolean exportSimple(String outputFolder, String fileName, LanguageIdentifier identifier, boolean skipEmptyCells)
-	{
-		String[][] data = languageTable.getJTableData();
-		int langIndex = languageTable.getIdentifierIndex(identifier);
-		if (langIndex == -1) return false;
-		// skip component and key columns;
-		langIndex += 2;
-		try
-		{
-			String pathToCreate = createOutputFolder(outputFolder, identifier);
-			if (pathToCreate == null)
-			{
-				return false;
-			}
-			// We need this filewriter to allow Umlauts
-			Writer writer = new OutputStreamWriter(new FileOutputStream(pathToCreate + fileName + ".json"), StandardCharsets.UTF_8);
-			writer.write("{");
-			boolean isFirstItem = false;
-			for (String[] row : data)
-			{
-				String value = row[langIndex];
-				if (value.isBlank() || value.isEmpty()) continue;
-				if (!isFirstItem)
-				{
-					writer.write("\n\t\"" + row[0] + "_" + row[1] + "\": " + "\"" + value + "\"");
-					isFirstItem = true;
-				}
-				else
-				{
-					writer.write(",\n\t\"" + row[0] + "_" + row[1] + "\": " + "\"" + value + "\"");
-				}
-			}
-			writer.write("\n}");
-			writer.close();
-		}
-		catch (Exception e)
-		{
-			App.get().setStatus(e.getLocalizedMessage(), App.ERROR_MESSAGE);
-			return false;
-		}
-		return true;
-	}
-
-	private String createOutputFolder(String outputFolder, LanguageIdentifier identifier)
-	{
-		String fileSep = System.getProperty("file.separator");
-		String path = outputFolder + fileSep;
-		switch (folderNamingType)
-		{
-		case BRAND_AND_LOCALE_AS_SUBFOLDER:
-			path += identifier.brand + fileSep + identifier.locale + fileSep;
-			break;
-		case BRAND_LOCALE:
-			path += identifier.brand + "_" + identifier.locale + fileSep;
-			break;
-		case LOCALE_BRAND:
-			path += identifier.locale + "_" + identifier.brand + fileSep;
-			break;
-		}
-		if (!createFolder(path)) return null;
-
-		return path;
-	}
-
-	private boolean createFolder(String path)
-	{
-		Path pathObj = Paths.get(path);
-		return createFolder(pathObj);
-	}
-
-	private boolean createFolder(Path path)
-	{
-		if (Files.exists(path)) return true;
-		try
-		{
-			// Create directory doesnt with with sub directories when the parent older is
-			// not created yet
-			Files.createDirectories(path);
-			return true;
-		}
-		catch (IOException e)
-		{
-			App.get().setStatus(e.getLocalizedMessage(), App.ERROR_MESSAGE);
-			return false;
-		}
+		return json.export2Json(languageTable, outputFolder, fileName, bMergeComponentAndKey, bSkipEmptyCells, folderNamingType);
 	}
 
 	private HashSet<String> ISO_CODES = new HashSet<String>(Arrays.asList(new String[] { "af_za", "am_et", "ar_ae", "ar_bh", "ar_dz", "ar_eg", "ar_iq", "ar_jo", "ar_kw", "ar_lb", "ar_ly", "ar_ma",
@@ -560,7 +382,7 @@ public class TranslationMgr
 		System.out.println("Loading excel files took:" + statRead + "ms");
 
 		long statExtract = System.currentTimeMillis();
-		
+
 		ArrayList<Language> sumLanguages = new ArrayList<Language>(32);
 		for (Sheet sheet : sheets)
 		{
@@ -581,11 +403,11 @@ public class TranslationMgr
 
 		statExtract = System.currentTimeMillis() - statExtract;
 		System.out.println("Extracting excel files took:" + statExtract + "ms");
-		
+
 		if (sumLanguages.size() == 0) return null;
 
 		long statSort = System.currentTimeMillis();
-		
+
 		LanguageRowMap rowMap = buildRowMap(sumLanguages);
 		int numLangs = sumLanguages.size();
 		String[][] data = new String[rowMap.rowMap.length][numLangs + 2];
@@ -620,7 +442,7 @@ public class TranslationMgr
 
 		statSort = System.currentTimeMillis() - statSort;
 		System.out.println("Sorting data took:" + statSort + "ms");
-		
+
 		return languageTable;
 	}
 
