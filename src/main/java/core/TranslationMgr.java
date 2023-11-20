@@ -283,7 +283,7 @@ public class TranslationMgr
 	}
 
 	/**
-	 * Searches in a clamped area of r= 20 to c = 40 and returns the index of the first occurence of the specified string.
+	 * Searches in a clamped area of r= MAX_SEARCH_ROW to c = MAX_SEARCH_COLUMN and returns the index of the first occurence of the specified string.
 	 */
 	private int findColumnWithString(Sheet sheet, String string)
 	{
@@ -434,7 +434,5 @@ public class TranslationMgr
 	public void stopTimeTrace()
 	{
 		statCalculationTime = System.currentTimeMillis() - statCalculationTime;
-	}
-
-	
+	}	
 }
