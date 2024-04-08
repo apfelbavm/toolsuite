@@ -30,7 +30,7 @@ public class TranslationMgr
 	private static final int MAX_SEARCH_ROW = 20;
 	// These are variables for stat tracking.
 	public int statNumEmptyCells = 0;
-	public long statCalculationTime = 0;
+	private long statCalculationTime = 0;
 	public File[] files;
 	public boolean appendBrandToLocale = false;
 	private int importFlags = 0;
@@ -244,6 +244,10 @@ public class TranslationMgr
 			String key = getCellValue(row, keyCol);
 			if (key == null || key.isBlank() || key.isEmpty()) continue;
 			String value = getCellValue(row, valueCol);
+//			if(component.equals("content"))
+//			{
+//				System.out.println("Sheet: " + sheet.getSheetName() + ", Component: " + component + ", Key:" + key + "-> at Row " + r + ", Value: " + value);
+//			}
 			language.addUnique(component, key, value);
 		}
 		return language;
@@ -449,11 +453,16 @@ public class TranslationMgr
 
 	public void startTimeTrace()
 	{
-		statCalculationTime = System.currentTimeMillis();
+		statCalculationTime = System.nanoTime();
 	}
 
 	public void stopTimeTrace()
 	{
-		statCalculationTime = System.currentTimeMillis() - statCalculationTime;
+		statCalculationTime = System.nanoTime() - statCalculationTime;
+	}
+	
+	public double getCalculationTime()
+	{
+		return statCalculationTime  / 1000.0 / 1000000.0;
 	}
 }

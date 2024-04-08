@@ -52,7 +52,6 @@ public class Excelibur extends JPanel
 
 	JButton importButton, exportButton, returnButton, reloadButton;
 
-
 	JSplitPane horSplit = new JSplitPane();
 
 	JCheckBox checkBoxAutoResize = new JCheckBox("Auto Resize Table");
@@ -333,7 +332,7 @@ public class Excelibur extends JPanel
 				if (success)
 				{
 					translationMgr.stopTimeTrace();
-					double seconds = (double) translationMgr.statCalculationTime / 1000.0;
+					double seconds = (double) translationMgr.getCalculationTime();
 					String secondsString = String.format("%.2f", seconds);
 					owner.setStatus("Sucessfully exported Excel sheet(s) within " + secondsString + "s...", App.NORMAL_MESSAGE);
 				}
@@ -399,7 +398,7 @@ public class Excelibur extends JPanel
 		createDualHeaderTable(languageTable);
 
 		translationMgr.stopTimeTrace();
-		double seconds = (double) translationMgr.statCalculationTime / 1000.0;
+		double seconds = (double) translationMgr.getCalculationTime();
 		String secondsString = String.format("%.2f", seconds);
 		switch (translationMgr.statNumEmptyCells)
 		{
