@@ -244,10 +244,7 @@ public class TranslationMgr
 			String key = getCellValue(row, keyCol);
 			if (key == null || key.isBlank() || key.isEmpty()) continue;
 			String value = getCellValue(row, valueCol);
-//			if(component.equals("content"))
-//			{
-//				System.out.println("Sheet: " + sheet.getSheetName() + ", Component: " + component + ", Key:" + key + "-> at Row " + r + ", Value: " + value);
-//			}
+
 			language.addUnique(component, key, value);
 		}
 		return language;
@@ -320,6 +317,8 @@ public class TranslationMgr
 		{
 			int valueCol = pair.getValue();
 			int firstRow = findFirstValueRow(sheet, componentCol, keyCol, valueCol);
+			if(firstRow < 0) continue; // If no value was found we must escape this sheet.
+
 			Language lang = extractLanguage(sheet, pair.getKey(), firstRow, componentCol, keyCol, valueCol);
 			languages.add(lang);
 		}
@@ -389,8 +388,19 @@ public class TranslationMgr
 		long statExtract = System.currentTimeMillis();
 
 		ArrayList<Language> sumLanguages = new ArrayList<Language>(32);
+		boolean bIncludeHiddenSheets = getFlag(TranslationMgrFlags.Import.INCLUDE_HIDDEN_SHEETS);
 		for (Sheet sheet : sheets)
 		{
+			int sheetIndex = sheet.getWorkbook().getSheetIndex(sheet);
+			
+			boolean bIsHidden = sheet.getWorkbook().isSheetHidden(sheetIndex);
+			boolean bIsVeryHidden = sheet.getWorkbook().isSheetVeryHidden(sheetIndex);
+
+			if(bIsHidden || bIsVeryHidden)
+			{
+				if(!bIncludeHiddenSheets) continue;
+			}
+			
 			ArrayList<Language> languages = extractSheet(sheet);
 			if (languages == null) continue;
 			for (Language language : languages)
@@ -407,6 +417,7 @@ public class TranslationMgr
 		}
 
 		statExtract = System.currentTimeMillis() - statExtract;
+		System.out.println("Extracting excel files took:" + statExtract + "ms");
 		System.out.println("Extracting excel files took:" + statExtract + "ms");
 
 		if (sumLanguages.size() == 0) return null;

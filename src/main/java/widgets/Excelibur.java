@@ -58,6 +58,7 @@ public class Excelibur extends JPanel
 	JCheckBox checkBoxMergeCompAndKey = new JCheckBox("Concat. 'Component' and 'Key'");
 	JCheckBox checkBoxUseHyperlinkIfAvailable = new JCheckBox("Get hyperlink");
 	JCheckBox checkDoNotExportEmptyCells = new JCheckBox("Skip empty values");
+	JCheckBox checkIncludeHiddenSheets = new JCheckBox("Include hidden sheets");
 
 	JComboBox<String> comboFolderNaming;
 
@@ -75,7 +76,7 @@ public class Excelibur extends JPanel
 		table.setFillsViewportHeight(true);
 
 		JPanel infoPanel = new JPanel();
-		GridLayout grid = new GridLayout(12, 1, 8, 0);
+		GridLayout grid = new GridLayout(13, 1, 8, 0);
 		infoPanel.setLayout(grid);
 		CompoundBorder b = new CompoundBorder(infoPanel.getBorder(), new EmptyBorder(4, 4, 4, 4));
 		infoPanel.setBorder(b);
@@ -90,6 +91,8 @@ public class Excelibur extends JPanel
 		checkBoxUseHyperlinkIfAvailable.setToolTipText("Replaces cell content with hyperlink if any");
 		checkDoNotExportEmptyCells.setSelected(true);
 		checkDoNotExportEmptyCells.setToolTipText("Don't export key value pairs with empty values. This is for each language individually");
+		checkIncludeHiddenSheets.setSelected(false);
+		checkIncludeHiddenSheets.setToolTipText("Consider hidden and very hidden sheets in excel during import. Usually this can be toggled off.");
 
 		createOutputFolderComboBox();
 
@@ -102,6 +105,7 @@ public class Excelibur extends JPanel
 		infoPanel.add(new JLabel("Export settings:"));
 		infoPanel.add(checkBoxMergeCompAndKey);
 		infoPanel.add(checkDoNotExportEmptyCells);
+		infoPanel.add(checkIncludeHiddenSheets);
 		JLabel outputFolderRuleLabel = new JLabel("Output folder (struct):");
 		outputFolderRuleLabel.setForeground(new Color(128, 128, 128));
 		infoPanel.add(outputFolderRuleLabel);
@@ -380,6 +384,7 @@ public class Excelibur extends JPanel
 	private void importData()
 	{
 		translationMgr.setFlag(TranslationMgrFlags.Import.USE_HYPERLINK_IF_AVAILABLE, checkBoxUseHyperlinkIfAvailable.isSelected());
+		translationMgr.setFlag(TranslationMgrFlags.Import.INCLUDE_HIDDEN_SHEETS, checkIncludeHiddenSheets.isSelected());
 		LanguageTable languageTable = translationMgr.importExcelFiles();
 		Component comp = horSplit.getRightComponent();
 
@@ -429,6 +434,7 @@ public class Excelibur extends JPanel
 		checkBoxAutoResize.setEnabled(bEnabled);
 		checkBoxMergeCompAndKey.setEnabled(bEnabled);
 		checkDoNotExportEmptyCells.setEnabled(bEnabled);
+		checkIncludeHiddenSheets.setEnabled(bEnabled);
 		checkBoxUseHyperlinkIfAvailable.setEnabled(bEnabled);
 		comboFolderNaming.setEnabled(bEnabled);
 	}

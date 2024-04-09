@@ -2,7 +2,7 @@ package core;
 
 public class TranslationMgrFlags {
 	public enum Import {
-		USE_HYPERLINK_IF_AVAILABLE
+		USE_HYPERLINK_IF_AVAILABLE, INCLUDE_HIDDEN_SHEETS
 	}
 
 	public enum Export {
