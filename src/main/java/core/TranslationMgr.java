@@ -256,7 +256,7 @@ public class TranslationMgr
 		final String COMPONENT = "component";
 		final String KEY = "key";
 		boolean foundTableHeader = false;
-		int lastRow = Math.min(MAX_SEARCH_ROW, sheet.getLastRowNum()); // 0 based
+		int lastRow = sheet.getLastRowNum(); // 0 based
 		for (int r = 0; r <= lastRow; ++r)
 		{
 			Row row = sheet.getRow(r);
