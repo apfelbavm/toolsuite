@@ -5,6 +5,7 @@ import java.io.FileInputStream;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashSet;
+import java.util.regex.Pattern;
 
 import org.apache.commons.math3.util.Pair;
 import org.apache.poi.ss.usermodel.Cell;
@@ -145,6 +146,8 @@ public class TranslationMgr
 		}
 	}
 
+	static Pattern p = Pattern.compile("");
+	
 	private String fixString(String str)
 	{
 		String value = str.replace("\n", " ").replace("\r", " ").replace(System.getProperty("line.separator"), " ");
