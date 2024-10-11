@@ -87,7 +87,7 @@ public class JsonCreator
 					writer.write("        \"" + row[1] + "\": " + "\"" + value + "\"");
 				}
 			}
-			writer.write("\n    }\n}");
+			writer.write("\n    }\n}\n");
 			writer.close();
 		}
 		catch (Exception e)
@@ -130,7 +130,7 @@ public class JsonCreator
 					writer.write(",\n    \"" + row[0] + "_" + row[1] + "\": " + "\"" + value + "\"");
 				}
 			}
-			writer.write("\n}");
+			writer.write("\n}\n");
 			writer.close();
 		}
 		catch (Exception e)
