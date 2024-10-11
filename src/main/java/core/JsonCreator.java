@@ -122,13 +122,13 @@ public class JsonCreator
 				if (value.isBlank() || value.isEmpty()) continue;
 				if (!isFirstItem)
 				{
-					writer.write("\n    \"" + row[0] + "_" + row[1] + "\": " + "\"" + value + "\"");
 					isFirstItem = true;
 				}
 				else
 				{
-					writer.write(",\n    \"" + row[0] + "_" + row[1] + "\": " + "\"" + value + "\"");
+					writer.write(",");
 				}
+				writer.write("\n    \"" + row[0] + "_" + row[1] + "\": " + "\"" + value + "\"");
 			}
 			writer.write("\n}\n");
 			writer.close();
