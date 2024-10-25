@@ -46,7 +46,7 @@ public class App extends JFrame
 
 	public static String LAST_IMPORT_FOLDER = "";
 	public static String LAST_EXPORT_FOLDER = "";
-	
+
 	private BorderLayout layout = new BorderLayout();
 
 	private static final long serialVersionUID = 1L;
@@ -59,6 +59,7 @@ public class App extends JFrame
 
 	private JCheckBoxMenuItem itemDark;
 	private JCheckBoxMenuItem itemLight;
+	JPanel grid = new JPanel(new GridLayout(5, 5, 1, 1));
 
 	public App()
 	{
@@ -233,7 +234,7 @@ public class App extends JFrame
 		String message = "<html><body><h1>Excelibur</h1><br>You can access this window all the time via the <b bgcolor=\"#282828\">Help</b> menu in the top left corner.<br>"
 			+ "<h3>Preparation:</h3><br><ul><li>Follow the naming scheme shown in the table below to set up the excel sheet(s)</li><li>Use <b bgcolor=\"#282828\">HTML ISO locales</b>"
 			+ "<li>Rows with an empty <b bgcolor=\"#282828\">component</b> or <b bgcolor=\"#282828\">key</b> cell are skipped during the import</li>"
-			+ "<li>When importing excel sheets this tool finds all data automatically. For that the tool <br>searches up to <b bgcolor=\"#282828\">column=AS</b> and <b bgcolor=\"#282828\">row=20</b> for any locales, 'component' and 'key' in every file and sheet</li></ul>"
+			+ "<li>When importing excel sheets this tool finds all data automatically. The tool <br>searches up to <b bgcolor=\"#282828\">column=AS</b> and <b bgcolor=\"#282828\">row=20</b> for any locales, 'component' and 'key' in every file and sheet</li></ul>"
 			+ "<h3>Result:</h3><ul><li>All found components and keys are extracted and sorted with the values in every language</li></ul>";
 
 		JPanel mainPanel = new JPanel(new BorderLayout());
@@ -243,38 +244,82 @@ public class App extends JFrame
 		infoText.setBorder(b);
 		mainPanel.add(infoText, BorderLayout.NORTH);
 
-		JPanel grid = new JPanel(new GridLayout(3, 4, 1, 1));
 		grid.setOpaque(true);
 		grid.setBackground(new Color(255, 0, 0));
 
-		Color colorHeader = new Color(230, 230, 230);
-		Color colorHeaderText = new Color(0, 0, 0);
+//		Color colorHeader = new Color(230, 230, 230);
+//		Color colorHeaderText = new Color(0, 0, 0);
 
-		String[] headers = new String[] { "component", "key", "de_DE", "en_US" };
-		for (String cell : headers)
-		{
-			JLabel label = new JLabel(cell);
-			label.setOpaque(true);
-			label.setBackground(colorHeader);
-			label.setForeground(colorHeaderText);
-			grid.add(label);
-		}
+		Color white = new Color(255, 255, 255);
+		Color black = new Color(0, 0, 0);
+		Color lightgrey = new Color(230, 230, 230);
+		Color red = new Color(230, 0, 0);
 
-		Color colorCell = new Color(255, 255, 255);
+		addCell(0, 0, lightgrey, black, "");
+		addCell(0, 1, lightgrey, black, "A");
+		addCell(0, 2, lightgrey, black, "B");
+		addCell(0, 3, lightgrey, black, "C");
+		addCell(0, 4, lightgrey, black, "D");
 
-		String[] cells = new String[] { "job_dialog", "loading_heading", "Beispieltext 1", "Exampletext 2", "job_dialog", "loading_title", "Beispieltext 1", "Exampletext 2" };
-		for (String cell : cells)
-		{
-			JLabel label = new JLabel(cell);
-			label.setOpaque(true);
-			label.setBackground(colorCell);
-			label.setForeground(colorHeaderText);
-			grid.add(label);
-		}
+		addCell(1, 0, lightgrey, black, "1");
+		addCell(1, 1, white, red, "BRAND_NAME");
+		addCell(1, 2, white, black, "");
+		addCell(1, 3, white, black, "");
+		addCell(1, 4, white, black, "");
+
+		addCell(2, 0, lightgrey, black, "2");
+		addCell(2, 1, white, red, "component");
+		addCell(2, 2, white, red, "key");
+		addCell(2, 3, white, red, "de_DE");
+		addCell(2, 4, white, red, "en_US");
+
+		addCell(3, 0, lightgrey, black, "3");
+		addCell(3, 1, white, red, "job_dialog");
+		addCell(3, 2, white, red, "loading_heading");
+		addCell(3, 3, white, black, "Beispieltext 1");
+		addCell(3, 4, white, black, "Exampletext 2");
+
+		addCell(4, 0, lightgrey, black, "4");
+		addCell(4, 1, white, red, "job_dialog");
+		addCell(4, 2, white, red, "loading_title");
+		addCell(4, 3, white, black, "Beispieltext 1");
+		addCell(4, 4, white, black, "Exampletext 2");
+
+//		String[] headers = new String[] { "component", "key", "de_DE", "en_US" };
+//		for (String cell : headers)
+//		{
+//			JLabel label = new JLabel(cell);
+//			label.setOpaque(true);
+//			label.setBackground(colorHeader);
+//			label.setForeground(colorHeaderText);
+//			grid.add(label);
+//		}
+
+//		Color colorCell = new Color(255, 255, 255);
+
+//		String[] cells = new String[] { "job_dialog", "loading_heading", "Beispieltext 1", "Exampletext 2", "job_dialog", "loading_title", "Beispieltext 1", "Exampletext 2" };
+//		for (String cell : cells)
+//		{
+//			JLabel label = new JLabel(cell);
+//			label.setOpaque(true);
+//			label.setBackground(colorCell);
+//			label.setForeground(colorHeaderText);
+//			grid.add(label);
+//		}
 
 		mainPanel.add(grid, BorderLayout.CENTER);
 
 		JOptionPane.showMessageDialog(getContentPane(), mainPanel, "Documentation", JOptionPane.INFORMATION_MESSAGE);
+	}
+
+	private void addCell(int row, int col, Color background, Color foreground, String str)
+	{
+
+		JLabel label = new JLabel(str);
+		label.setOpaque(true);
+		label.setBackground(background);
+		label.setForeground(foreground);
+		grid.add(label);
 	}
 
 	public static App get()
