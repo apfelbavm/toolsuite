@@ -15,8 +15,9 @@ import structs.LanguageTable;
 public class JsonCreator
 {
 	private TranslationMgrFlags.FolderNaming folderNamingType;
-	
-	public boolean export2Json(LanguageTable languageTable, String outputFolder, String fileName, boolean bMergeComponentAndKey, boolean bSkipEmptyCells, TranslationMgrFlags.FolderNaming inFolderNamingType)
+
+	public boolean export2Json(LanguageTable languageTable, String outputFolder, String fileName, boolean bMergeComponentAndKey, boolean bSkipEmptyCells,
+		TranslationMgrFlags.FolderNaming inFolderNamingType)
 	{
 		folderNamingType = inFolderNamingType;
 		// we have only one line off error message, thus we just have to return wether
@@ -36,7 +37,7 @@ public class JsonCreator
 		}
 		return true;
 	}
-	
+
 	private boolean exportAdvanced(LanguageTable languageTable, String outputFolder, String fileName, LanguageIdentifier identifier, boolean skipEmptyCells)
 	{
 		String[][] data = languageTable.getJTableData();
@@ -66,30 +67,27 @@ public class JsonCreator
 					// New component
 					if (isFirstComp)
 					{
-						writer.write("\t\"" + row[0] + "\": {\n");
 						isFirstKeyValue = true;
 						isFirstComp = false;
 					}
 					else
 					{
-						writer.write("\n\t},\n\t\"" + row[0] + "\": {\n");
+						writer.write("\n    },\n");
 					}
-					writer.write("\t\t\"" + row[1] + "\": " + "\"" + value + "\"");
+					writer.write("    \"" + row[0] + "\": {\n        \"" + row[1] + "\": " + "\"" + value + "\"");
 					lastComponent = row[0];
 				}
 				else
 				{
-					if (isFirstKeyValue)
+					if (!isFirstKeyValue)
 					{
-						writer.write("\t\t\"" + row[1] + "\": " + "\"" + value + "\"");
+						writer.write(",\n");
 					}
-					else
-					{
-						writer.write(",\n\t\t\"" + row[1] + "\": " + "\"" + value + "\"");
-					}
+
+					writer.write("        \"" + row[1] + "\": " + "\"" + value + "\"");
 				}
 			}
-			writer.write("\n\t}\n}");
+			writer.write("\n    }\n}\n");
 			writer.close();
 		}
 		catch (Exception e)
@@ -99,7 +97,7 @@ public class JsonCreator
 		}
 		return true;
 	}
-	
+
 	private boolean exportSimple(LanguageTable languageTable, String outputFolder, String fileName, LanguageIdentifier identifier, boolean skipEmptyCells)
 	{
 		String[][] data = languageTable.getJTableData();
@@ -124,15 +122,15 @@ public class JsonCreator
 				if (value.isBlank() || value.isEmpty()) continue;
 				if (!isFirstItem)
 				{
-					writer.write("\n\t\"" + row[0] + "_" + row[1] + "\": " + "\"" + value + "\"");
 					isFirstItem = true;
 				}
 				else
 				{
-					writer.write(",\n\t\"" + row[0] + "_" + row[1] + "\": " + "\"" + value + "\"");
+					writer.write(",");
 				}
+				writer.write("\n    \"" + row[0] + "_" + row[1] + "\": " + "\"" + value + "\"");
 			}
-			writer.write("\n}");
+			writer.write("\n}\n");
 			writer.close();
 		}
 		catch (Exception e)
@@ -163,7 +161,7 @@ public class JsonCreator
 
 		return path;
 	}
-	
+
 	private boolean createFolder(String path)
 	{
 		Path pathObj = Paths.get(path);
