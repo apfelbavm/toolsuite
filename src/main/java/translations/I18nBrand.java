@@ -2,35 +2,43 @@ package translations;
 
 import java.util.ArrayList;
 
-public class I18nDictionary {
+public class I18nBrand {
     String brand;
-    ArrayList<I18nCollection> collections = new ArrayList<I18nCollection>();
+    ArrayList<I18nLanguage> languages = new ArrayList<I18nLanguage>();
 
-    public I18nDictionary() {
-
+    public I18nBrand(String brand) {
+        this.brand = brand;
     }
 
     public boolean add(String locale, I18n i18n) {
-        for (I18nCollection col : collections) {
+        for (I18nLanguage col : languages) {
             if (col.locale.equals(locale)) {
-                return col.add(i18n);
+                return col.add(i18n, false);
             }
         }
-        I18nCollection col = new I18nCollection(locale);
-        collections.add(col);
-        return col.add(i18n);
+        I18nLanguage col = new I18nLanguage(locale);
+        languages.add(col);
+        return col.add(i18n, false);
+    }
+
+    public boolean append(I18nLanguage language) {
+        for (I18nLanguage lang : languages) {
+            if (lang.locale.equals(language.locale)) {
+                return lang.append(language);
+            }
+        }
+        languages.add(language);
+        return true;
     }
 
     public void sort() {
-        for (I18nCollection col : collections) {
+        for (I18nLanguage col : languages) {
             col.sort();
         }
     }
 
-    public void print()
-    {
-        for(I18nCollection col : collections)
-        {
+    public void print() {
+        for (I18nLanguage col : languages) {
             col.print();
         }
     }

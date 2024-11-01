@@ -1,4 +1,4 @@
-package JSON;
+package reader;
 
 import org.json.JSONObject;
 import org.json.JSONTokener;
@@ -8,32 +8,49 @@ import java.io.FileInputStream;
 import java.io.InputStream;
 
 import translations.I18n;
-import translations.I18nBrand;
+import translations.I18nLanguage;
 
 public class JSONReader {
 
-    public void startReading(String locale, File file) {
+    public I18nLanguage read(String locale, File file) {
+
+        I18nLanguage language = new I18nLanguage(locale);
         try {
             InputStream fis = new FileInputStream(file);
             JSONTokener tokener = new JSONTokener(fis);
             JSONObject parent = new JSONObject(tokener);
 
-            I18nBrand dict = new I18nBrand();
             for (Object componentName : parent.names()) {
-                JSONObject component = (JSONObject) parent.get(componentName.toString());
+                String componentNameString = componentName.toString();
+                JSONObject component = (JSONObject) parent.get(componentNameString);
 
-                for (Object keyName : component.names()) {
-                    I18n i18n = new I18n();
-                    i18n.component = componentName.toString();
-                    i18n.key = keyName.toString();
-                    i18n.value = component.get(i18n.key).toString();
-                    boolean bAdded = dict.add(locale, i18n);
+                if (componentNameString.equals(I18nLanguage.META_STRING)) {
+                    for (Object keyName : component.names()) {
+                        String keyNameString = keyName.toString();
+                        switch (keyNameString) {
+                            case I18nLanguage.META_LOCALE_STRING: {
+                                language.addMetaLocale(component.get(keyNameString).toString());
+                                break;
+                            }
+                            case I18nLanguage.META_BRAND_STRING: {
+                                language.addMetaBrand(component.get(keyNameString).toString());
+                                break;
+                            }
+                        }
+                    }
+                } else {
+                    for (Object keyName : component.names()) {
+                        I18n i18n = new I18n();
+                        i18n.component = componentName.toString();
+                        i18n.key = keyName.toString();
+                        i18n.value = component.get(i18n.key).toString();
+                        boolean bAdded = language.add(i18n, false);
+                    }
                 }
             }
-            dict.sort();
-            //dict.print();
         } catch (Exception e) {
             System.out.print(e);
         }
+        return language;
     }
 }

@@ -2,6 +2,6 @@ package reader;
 
 import java.io.File;
 
-public interface OnLocaleMissing {
-    String broadcast(File file);
+public interface OnBrandMissing {
+    String onBrandMissing(File file);
 }

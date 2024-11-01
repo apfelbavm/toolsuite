@@ -5,29 +5,33 @@ import com.formdev.flatlaf.FlatLightLaf;
 
 import javax.swing.*;
 
-public class UIManager {
-    private final SaveManager saveManager;
+public class UserInterfaceManager {
+    private static final UserInterfaceManager instance = new UserInterfaceManager();
+    private final SaveManager saveManager = SaveManager.get();
 
-    public UIManager(SaveManager saveManager) {
-        this.saveManager = saveManager;
+    private UserInterfaceManager() {
     }
 
-    UnsupportedLookAndFeelException setThemeDark(App app) {
+    public static UserInterfaceManager get() {
+        return instance;
+    }
+
+    UnsupportedLookAndFeelException setThemeDark(JFrame frame) {
         saveManager.userSettings.bUseDarkMode = true;
         try {
             javax.swing.UIManager.setLookAndFeel(new FlatDarkLaf());
-            SwingUtilities.updateComponentTreeUI(app);
+            SwingUtilities.updateComponentTreeUI(frame);
         } catch (UnsupportedLookAndFeelException e) {
             return e;
         }
         return null;
     }
 
-    UnsupportedLookAndFeelException setThemeLight(App app) {
+    UnsupportedLookAndFeelException setThemeLight(JFrame frame) {
         saveManager.userSettings.bUseDarkMode = false;
         try {
             javax.swing.UIManager.setLookAndFeel(new FlatLightLaf());
-            SwingUtilities.updateComponentTreeUI(app);
+            SwingUtilities.updateComponentTreeUI(frame);
         } catch (UnsupportedLookAndFeelException e) {
             return e;
         }
