@@ -1,2 +1,8 @@
-package translations;public enum I18nResult {
+package translations;
+
+public enum I18nResult {
+    NotFound,
+    Added,
+    Overridden,
+    AlreadyExists
 }

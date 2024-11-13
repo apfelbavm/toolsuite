@@ -15,15 +15,10 @@ public class I18nLanguage implements Comparable<I18nLanguage> {
         addMetaLocale(locale);
     }
 
-    public boolean add(I18n i18n, boolean bAllowOverride) {
+    public boolean add(I18n i18n, boolean bOverride) {
         for (I18n translation : translations) {
-            if (translation.component.equals(i18n.component) && translation.key.equals(i18n.key)) {
-                if (bAllowOverride) {
-                    translation.as(i18n);
-                    return true;
-                }
-                return false;
-            }
+            I18nResult Result = translation.compareAndMaybeAdd(i18n, bOverride);
+            if (Result != I18nResult.NotFound) return true;
         }
         translations.add(i18n);
         return true;
@@ -37,8 +32,7 @@ public class I18nLanguage implements Comparable<I18nLanguage> {
         return true;
     }
 
-    public boolean hasLocale()
-    {
+    public boolean hasLocale() {
         return locale != null && !locale.isBlank() && locale.isEmpty();
     }
 
@@ -59,20 +53,14 @@ public class I18nLanguage implements Comparable<I18nLanguage> {
 
     public void addMetaBrand(String brandName) {
         if (brandName != null && !brandName.isBlank() && !brandName.isEmpty()) {
-            I18n brand = new I18n();
-            brand.component = META_STRING;
-            brand.key = META_BRAND_STRING;
-            brand.value = brandName;
+            I18n brand = new I18n("", "", META_STRING, META_BRAND_STRING, brandName);
             add(brand, true);
         }
     }
 
     public void addMetaLocale(String localeName) {
         if (localeName != null && !localeName.isBlank() && !localeName.isEmpty()) {
-            I18n metaLocale = new I18n();
-            metaLocale.component = META_STRING;
-            metaLocale.key = META_LOCALE_STRING;
-            metaLocale.value = localeName;
+            I18n metaLocale = new I18n("", "", META_STRING, META_LOCALE_STRING, localeName);
             add(metaLocale, true);
         }
     }

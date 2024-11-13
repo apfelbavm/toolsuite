@@ -40,10 +40,7 @@ public class JSONReader {
                     }
                 } else {
                     for (Object keyName : component.names()) {
-                        I18n i18n = new I18n();
-                        i18n.component = componentName.toString();
-                        i18n.key = keyName.toString();
-                        i18n.value = component.get(i18n.key).toString();
+                        I18n i18n = new I18n("", "", componentName.toString(), keyName.toString(), component.get(keyName.toString()).toString());
                         boolean bAdded = language.add(i18n, false);
                     }
                 }
