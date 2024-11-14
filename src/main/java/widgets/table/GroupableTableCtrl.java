@@ -1,7 +1,5 @@
 package widgets.table;
 
-import structs.LanguageIdentifier;
-import structs.LanguageTable;
 import widgets.ExceliburCellRenderer;
 
 import javax.swing.*;

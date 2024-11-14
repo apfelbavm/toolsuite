@@ -11,38 +11,35 @@ import java.nio.file.Paths;
 
 import core.App;
 import core.TranslationMgrFlags;
-import structs.LanguageIdentifier;
-import structs.LanguageTable;
+import translations.I18n;
+import translations.I18nBrand;
+import translations.I18nLanguage;
+import translations.I18nCSB;
 
 public class JsonCreator {
     private TranslationMgrFlags.FolderNaming folderNamingType;
 
-    public boolean export2Json(LanguageTable languageTable, String outputFolder, String fileName, boolean bMergeComponentAndKey, boolean bSkipEmptyCells,
+    public boolean export2Json(I18nCSB csb, String outputFolder, String fileName, boolean bMergeComponentAndKey, boolean bSkipEmptyCells,
                                TranslationMgrFlags.FolderNaming inFolderNamingType) {
         folderNamingType = inFolderNamingType;
         // we have only one line off error message, thus we just have to return wether
         // there was an error, the error is already printed and shouldnt be overriden by
         // the success message if succeeding exports were successfull.
-        for (LanguageIdentifier identifier : languageTable.getIdentifiers()) {
-            System.out.println("lid" + identifier.brand + ", " + identifier.locale);
-
-            if (bMergeComponentAndKey) {
-                if (!exportSimple(languageTable, outputFolder, fileName, identifier, bSkipEmptyCells)) return false;
-            } else {
-                if (!exportAdvanced(languageTable, outputFolder, fileName, identifier, bSkipEmptyCells)) return false;
+        for (I18nBrand brand : csb.brands) {
+            for (I18nLanguage lang : brand.languages) {
+                if (bMergeComponentAndKey) {
+                    if (!exportSimple(lang, brand.name, outputFolder, fileName, bSkipEmptyCells)) return false;
+                } else {
+                    if (!exportAdvanced(lang, brand.name, outputFolder, fileName, bSkipEmptyCells)) return false;
+                }
             }
         }
         return true;
     }
 
-    private boolean exportAdvanced(LanguageTable languageTable, String outputFolder, String fileName, LanguageIdentifier identifier, boolean skipEmptyCells) {
-        String[][] data = languageTable.getJTableData();
-        int langIndex = languageTable.getIdentifierIndex(identifier);
-        if (langIndex == -1) return false;
-        // skip component and key columns;
-        langIndex += 2;
+    private boolean exportAdvanced(I18nLanguage lang, String brand, String outputFolder, String fileName, boolean skipEmptyCells) {
         try {
-            String pathToCreate = createOutputFolder(outputFolder, identifier);
+            String pathToCreate = createOutputFolder(outputFolder, brand, lang.locale);
             if (pathToCreate == null) {
                 return false;
             }
@@ -51,11 +48,10 @@ public class JsonCreator {
             String lastComponent = "";
             boolean isFirstComp = true;
             writer.write("{\n");
-            for (String[] row : data) {
-                String value = row[langIndex];
-                if (skipEmptyCells && (value.isBlank() || value.isEmpty())) continue;
+            for (I18n i18n : lang.translations) {
+                if (skipEmptyCells && (i18n.value.isBlank() || i18n.value.isEmpty())) continue;
                 boolean isFirstKeyValue = false;
-                if (row[0] != lastComponent) {
+                if (!i18n.component.equals(lastComponent)) {
                     // New component
                     if (isFirstComp) {
                         isFirstKeyValue = true;
@@ -63,14 +59,14 @@ public class JsonCreator {
                     } else {
                         writer.write("\n    },\n");
                     }
-                    writer.write("    \"" + row[0] + "\": {\n        \"" + row[1] + "\": " + "\"" + value + "\"");
-                    lastComponent = row[0];
+                    writer.write("    \"" + i18n.component + "\": {\n        \"" + i18n.key + "\": " + "\"" + i18n.value + "\"");
+                    lastComponent = i18n.component;
                 } else {
                     if (!isFirstKeyValue) {
                         writer.write(",\n");
                     }
 
-                    writer.write("        \"" + row[1] + "\": " + "\"" + value + "\"");
+                    writer.write("        \"" + i18n.key + "\": " + "\"" + i18n.value + "\"");
                 }
             }
             writer.write("\n    }\n}\n");
@@ -82,14 +78,9 @@ public class JsonCreator {
         return true;
     }
 
-    private boolean exportSimple(LanguageTable languageTable, String outputFolder, String fileName, LanguageIdentifier identifier, boolean skipEmptyCells) {
-        String[][] data = languageTable.getJTableData();
-        int langIndex = languageTable.getIdentifierIndex(identifier);
-        if (langIndex == -1) return false;
-        // skip component and key columns;
-        langIndex += 2;
+    private boolean exportSimple(I18nLanguage lang, String brand, String outputFolder, String fileName, boolean skipEmptyCells) {
         try {
-            String pathToCreate = createOutputFolder(outputFolder, identifier);
+            String pathToCreate = createOutputFolder(outputFolder, brand, lang.locale);
             if (pathToCreate == null) {
                 return false;
             }
@@ -97,15 +88,14 @@ public class JsonCreator {
             Writer writer = new OutputStreamWriter(new FileOutputStream(pathToCreate + fileName + ".json"), StandardCharsets.UTF_8);
             writer.write("{");
             boolean isFirstItem = false;
-            for (String[] row : data) {
-                String value = row[langIndex];
-                if (value.isBlank() || value.isEmpty()) continue;
+            for (I18n i18n : lang.translations) {
+                if (i18n.value.isBlank() || i18n.value.isEmpty()) continue;
                 if (!isFirstItem) {
                     isFirstItem = true;
                 } else {
                     writer.write(",");
                 }
-                writer.write("\n    \"" + row[0] + "_" + row[1] + "\": " + "\"" + value + "\"");
+                writer.write("\n    \"" + i18n.component + "_" + i18n.key + "\": " + "\"" + i18n.value + "\"");
             }
             writer.write("\n}\n");
             writer.close();
@@ -116,18 +106,18 @@ public class JsonCreator {
         return true;
     }
 
-    private String createOutputFolder(String outputFolder, LanguageIdentifier identifier) {
+    private String createOutputFolder(String outputFolder, String brand, String locale) {
         String fileSep = System.getProperty("file.separator");
         String path = outputFolder + fileSep;
         switch (folderNamingType) {
             case BRAND_AND_LOCALE_AS_SUBFOLDER:
-                path += identifier.brand + fileSep + identifier.locale + fileSep;
+                path += brand + fileSep + locale + fileSep;
                 break;
             case BRAND_LOCALE:
-                path += identifier.brand + "_" + identifier.locale + fileSep;
+                path += brand + "_" + locale + fileSep;
                 break;
             case LOCALE_BRAND:
-                path += identifier.locale + "_" + identifier.brand + fileSep;
+                path += locale + "_" + brand + fileSep;
                 break;
         }
         if (!createFolder(path)) return null;
