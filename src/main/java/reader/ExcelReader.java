@@ -5,7 +5,7 @@ import core.TranslationMgr;
 import org.apache.commons.math3.util.Pair;
 import org.apache.poi.ss.usermodel.*;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
-import structs.LanguageIdentifier;
+import widgets.table.LanguageIdentifier;
 import translations.I18n;
 import translations.I18nBrand;
 import translations.I18nCSB;
@@ -72,12 +72,14 @@ public class ExcelReader {
     private boolean isLocale(String value) {
         return TranslationMgr.ISO_CODES.contains(value.toLowerCase()) || TranslationMgr.SUCCESSFACTOR_CODES.contains(value.toLowerCase());
     }
+
     private String findBrand(Sheet sheet) {
         if (sheet == null) return "";
         Row row = sheet.getRow(0);
         if (row == null) return "";
         return getCellValue(row, 0);
     }
+
     /**
      * @return List of all locales found in the sheet including their columnID.
      **/
@@ -145,9 +147,10 @@ public class ExcelReader {
             String key = getCellValue(row, keyCol);
             if (key == null || key.isBlank() || key.isEmpty()) continue;
             String value = getCellValue(row, valueCol);
-
-            I18n i18n = new I18n("", "", component, key, value);
-            lang.add(i18n, false);
+            if (value != null && !value.isBlank() && !value.isEmpty()) {
+                I18n i18n = new I18n("", "", component, key, value);
+                lang.add(i18n, false);
+            }
         }
 
         return lang;
@@ -190,7 +193,7 @@ public class ExcelReader {
     private I18nBrand extractSheet(Sheet sheet) {
         if (sheet == null) return null;
         ArrayList<Pair<LanguageIdentifier, Integer>> locales = findLocales(sheet);
-        if(locales == null || locales.isEmpty()) return null;
+        if (locales == null || locales.isEmpty()) return null;
         int componentCol = findColumnWithString(sheet, "component");
         int keyCol = findColumnWithString(sheet, "key");
         if (componentCol == -1 || keyCol == -1) return null;

@@ -2,6 +2,10 @@ package translations;
 
 import org.json.JSONObject;
 
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.TreeMap;
+
 public class I18n implements Comparable<I18n> {
     public String workbook;
     public String sheet;
@@ -24,8 +28,14 @@ public class I18n implements Comparable<I18n> {
             bIsJSON = true;
             json = new JSONObject();
             String[] split = key_.split("\\.");
-            key = split[0];
-            json.put(split[1], value);
+            if (split[1] == null || split[1].isBlank() || split[1].isEmpty()) {
+                bIsJSON = false;
+                key = key_;
+                value = value_;
+            } else {
+                key = split[0];
+                json.put(split[1], value_);
+            }
         } else {
             bIsJSON = false;
             key = key_;
@@ -49,9 +59,10 @@ public class I18n implements Comparable<I18n> {
                 I18nResult result = I18nResult.AlreadyExists;
                 for (Object entry : other.json.names()) {
                     String entryString = entry.toString();
+
                     if (!json.has(entryString)) {
                         json.put(entryString, other.json.get(entryString).toString());
-                        if (!result.equals(I18nResult.Overridden)) {
+                        if (result != I18nResult.Overridden) {
                             result = I18nResult.Added;
                         }
                     } else if (bOverride) {
@@ -59,6 +70,7 @@ public class I18n implements Comparable<I18n> {
                         result = I18nResult.Overridden;
                     }
                 }
+                return result;
             } else if (bOverride) {
                 value = other.value;
                 return I18nResult.Overridden;
@@ -67,6 +79,20 @@ public class I18n implements Comparable<I18n> {
             }
         }
         return I18nResult.NotFound;
+    }
+
+    public TreeMap<String, String> getJSONSorted() {
+        TreeMap<String, String> tree = new TreeMap<String, String>();
+        for (Object entry : json.names()) {
+            String k = entry.toString();
+            String v = json.get(k).toString();
+            tree.put(k, v);
+        }
+        return tree;
+    }
+
+    public boolean isValid() {
+        return (bIsJSON || (value != null && !value.isBlank() && !value.isEmpty()));
     }
 
     public void print() {

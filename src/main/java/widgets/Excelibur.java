@@ -31,8 +31,8 @@ import core.App;
 import core.SaveManager;
 import core.TranslationMgr;
 import core.TranslationMgrFlags;
-import structs.LanguageTable;
-import widgets.table.DualHeaderTable;
+import widgets.table.LanguageTable;
+import widgets.table.GroupableTableCtrl;
 
 public class Excelibur extends JPanel {
 
@@ -52,7 +52,7 @@ public class Excelibur extends JPanel {
     JCheckBox checkBoxUseHyperlinkIfAvailable = new JCheckBox("Get hyperlink");
     JCheckBox checkDoNotExportEmptyCells = new JCheckBox("Skip empty values");
     JCheckBox checkIncludeHiddenSheets = new JCheckBox("Include hidden sheets");
-    DualHeaderTable dualTableHeader = new DualHeaderTable();
+    GroupableTableCtrl tableCtrl = new GroupableTableCtrl();
 
     JComboBox<String> comboFolderNaming;
 
@@ -76,7 +76,7 @@ public class Excelibur extends JPanel {
         infoPanel.setBorder(b);
 
         checkBoxAutoResize.setSelected(true);
-        checkBoxAutoResize.addItemListener(e -> dualTableHeader.updateTableAutoResizing(checkBoxAutoResize.isSelected()));
+        checkBoxAutoResize.addItemListener(e -> tableCtrl.updateTableAutoResizing(checkBoxAutoResize.isSelected()));
         checkBoxAutoResize.setToolTipText("Change how the data is displayed in the table. Either fit to the window's size (enabled) or match each column's width to it's content (disabled)");
 
         checkBoxMergeCompAndKey.setSelected(false);
@@ -351,21 +351,11 @@ public class Excelibur extends JPanel {
         translationMgr.setFlag(TranslationMgrFlags.Import.INCLUDE_HIDDEN_SHEETS, checkIncludeHiddenSheets.isSelected());
         LanguageTable languageTable = translationMgr.importFiles();
         Component comp = horSplit.getRightComponent();
-
-        if (languageTable == null) {
-            owner.setStatus("No data found inside Excel file(s). Did you set it up properly? Click 'Help' to read the documentation on how to setup an Excel file correctly.", App.ERROR_MESSAGE);
-            DefaultTableModel model = new DefaultTableModel(new String[]{"Component", "Key", "Locale"}, 0);
-            table = new JTable(model);
-            table.setFillsViewportHeight(true);
-            dualTableHeader.updateTableAutoResizing(checkBoxAutoResize.isSelected());
-            return;
-        }
-
         if (comp != null) horSplit.remove(comp);
 
-        DualHeaderTable dualTableHeader = new DualHeaderTable();
-        table = dualTableHeader.createTable(languageTable);
-        dualTableHeader.updateTableAutoResizing(checkBoxAutoResize.isSelected());
+        table = tableCtrl.createTable(languageTable);
+        tableCtrl.updateTableAutoResizing(checkBoxAutoResize.isSelected());
+
         horSplit.setRightComponent(new JScrollPane(table));
 
         translationMgr.stopTimeTrace();

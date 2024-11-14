@@ -1,4 +1,4 @@
-package structs;
+package widgets.table;
 
 public class LanguageTable
 {

@@ -5,17 +5,18 @@ import java.util.Arrays;
 import java.util.HashSet;
 
 import reader.FileReader;
-import structs.LanguageIdentifier;
-import structs.LanguageTable;
+import widgets.table.LanguageIdentifier;
+import widgets.table.LanguageTable;
 import translations.I18nCSB;
-import writer.JsonCreator;
+import writer.JsonWriter;
+
 
 public class TranslationMgr {
-    private LanguageTable languageTable;
     // Grid size in which this tool searches for all necessary data to extract the
     // rest of a single sheet.
     // These are variables for stat tracking.
     public int statNumEmptyCells = 0;
+    I18nCSB csb = null;
     private long statCalculationTime = 0;
     public File[] files;
     private int importFlags = 0;
@@ -56,10 +57,10 @@ public class TranslationMgr {
     }
 
     public boolean export2Json(String outputFolder, String fileName) {
-        JsonCreator json = new JsonCreator();
+        JsonWriter json = new JsonWriter();
         boolean bMergeComponentAndKey = getFlag(TranslationMgrFlags.Export.CONCAT_COMPONENT_AND_KEY);
         boolean bSkipEmptyCells = getFlag(TranslationMgrFlags.Export.DONT_EXPORT_EMPTY_VALUES);
-        return json.export2Json(languageTable, outputFolder, fileName, bMergeComponentAndKey, bSkipEmptyCells, folderNamingType);
+        return json.export2Json(csb, outputFolder, fileName, bMergeComponentAndKey, bSkipEmptyCells, folderNamingType);
     }
 
     public static final HashSet<String> ISO_CODES = new HashSet<String>(Arrays.asList(new String[]{"af_za", "am_et", "ar_ae", "ar_bh", "ar_dz", "ar_eg", "ar_iq", "ar_jo", "ar_kw", "ar_lb", "ar_ly", "ar_ma",
@@ -80,16 +81,16 @@ public class TranslationMgr {
 
     public LanguageTable importFiles() {
         FileReader reader = new FileReader();
-        I18nCSB csb = reader.read(files);
+        csb = reader.read(files);
 
         long statSort = System.currentTimeMillis();
         csb.sort();
-        csb.print();
+        //csb.print();
 
         String[][] data = csb.createTable();
         LanguageIdentifier[] header = csb.getHeader();
 
-        languageTable = new LanguageTable(header, data);
+        LanguageTable languageTable = new LanguageTable(header, data);
 
         statSort = System.currentTimeMillis() - statSort;
         System.out.println("Sorting data took:" + statSort + "ms");

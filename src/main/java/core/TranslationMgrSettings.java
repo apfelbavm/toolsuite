@@ -1,2 +1,4 @@
-package core;public class TranslationMgrSettings {
+package core;
+
+public class TranslationMgrSettings {
 }

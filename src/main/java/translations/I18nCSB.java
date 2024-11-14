@@ -1,6 +1,6 @@
 package translations;
 
-import structs.LanguageIdentifier;
+import widgets.table.LanguageIdentifier;
 
 import java.util.*;
 
@@ -11,7 +11,7 @@ public class I18nCSB {
 
     public boolean add(String brand, String locale, I18n i18n) {
         for (I18nBrand i18nBrand : brands) {
-            if (i18nBrand.brand.equals(brand)) {
+            if (i18nBrand.name.equals(brand)) {
                 boolean bSuccess = i18nBrand.add(locale, i18n);
                 if (bSuccess) {
                     bNeedsRegenerateRowMap = true;
@@ -27,7 +27,7 @@ public class I18nCSB {
 
     public boolean add(String brand, I18nLanguage language) {
         for (I18nBrand i18nBrand : brands) {
-            if (i18nBrand.brand.equals(brand)) {
+            if (i18nBrand.name.equals(brand)) {
                 boolean bSuccess = i18nBrand.append(language);
                 if (bSuccess) {
                     bNeedsRegenerateRowMap = true;
@@ -43,7 +43,7 @@ public class I18nCSB {
 
     public boolean add(I18nBrand newBrand) {
         for (I18nBrand brand : brands) {
-            if (brand.brand.equals(newBrand.brand)) {
+            if (brand.name.equals(newBrand.name)) {
                 boolean bSuccess = brand.append(newBrand.languages);
                 if (bSuccess) {
                     bNeedsRegenerateRowMap = true;
@@ -146,7 +146,7 @@ public class I18nCSB {
         int i = 0;
         for (I18nBrand brand : brands) {
             for (I18nLanguage lang : brand.languages) {
-                header[i] = new LanguageIdentifier(brand.brand, lang.locale);
+                header[i] = new LanguageIdentifier(brand.name, lang.locale);
                 ++i;
             }
         }

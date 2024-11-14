@@ -3,11 +3,11 @@ package translations;
 import java.util.ArrayList;
 
 public class I18nBrand implements Comparable<I18nBrand> {
-    String brand;
+    public String name;
     public ArrayList<I18nLanguage> languages = new ArrayList<I18nLanguage>();
 
     public I18nBrand(String brand) {
-        this.brand = brand;
+        this.name = brand;
     }
 
     public boolean add(String locale, I18n i18n) {
@@ -16,7 +16,7 @@ public class I18nBrand implements Comparable<I18nBrand> {
                 return col.add(i18n, false);
             }
         }
-        I18nLanguage col = new I18nLanguage(brand, locale);
+        I18nLanguage col = new I18nLanguage(name, locale);
         languages.add(col);
         return col.add(i18n, false);
     }
@@ -47,7 +47,7 @@ public class I18nBrand implements Comparable<I18nBrand> {
     }
 
     public void print() {
-        System.out.println("______________________________brand " + brand + "______________________________");
+        System.out.println("______________________________brand " + name + "______________________________");
         for (I18nLanguage lang : languages) {
             lang.print();
         }
@@ -55,6 +55,6 @@ public class I18nBrand implements Comparable<I18nBrand> {
 
     @Override
     public int compareTo(I18nBrand other) {
-        return brand.compareTo(other.brand);
+        return name.compareTo(other.name);
     }
 }

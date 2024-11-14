@@ -1,4 +1,4 @@
-package widgets;
+package widgets.table;
 
 import java.awt.Color;
 import java.awt.Component;
@@ -7,7 +7,7 @@ import javax.swing.JTable;
 import javax.swing.table.DefaultTableCellRenderer;
 import javax.swing.table.TableCellRenderer;
 
-public class ExceliburCellRenderer implements TableCellRenderer
+public class LanguageCellRenderer implements TableCellRenderer
 {
 
 	private static final TableCellRenderer RENDERER = new DefaultTableCellRenderer();

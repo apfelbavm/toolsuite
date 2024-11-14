@@ -8,6 +8,7 @@ import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.Map;
 
 import core.App;
 import core.TranslationMgrFlags;
@@ -16,7 +17,7 @@ import translations.I18nBrand;
 import translations.I18nLanguage;
 import translations.I18nCSB;
 
-public class JsonCreator {
+public class JsonWriter {
     private TranslationMgrFlags.FolderNaming folderNamingType;
 
     public boolean export2Json(I18nCSB csb, String outputFolder, String fileName, boolean bMergeComponentAndKey, boolean bSkipEmptyCells,
@@ -49,7 +50,7 @@ public class JsonCreator {
             boolean isFirstComp = true;
             writer.write("{\n");
             for (I18n i18n : lang.translations) {
-                if (skipEmptyCells && (i18n.value.isBlank() || i18n.value.isEmpty())) continue;
+                if (!i18n.isValid()) continue;
                 boolean isFirstKeyValue = false;
                 if (!i18n.component.equals(lastComponent)) {
                     // New component
@@ -59,14 +60,32 @@ public class JsonCreator {
                     } else {
                         writer.write("\n    },\n");
                     }
-                    writer.write("    \"" + i18n.component + "\": {\n        \"" + i18n.key + "\": " + "\"" + i18n.value + "\"");
+
+                    if (i18n.bIsJSON) {
+                        writer.write("    \"" + i18n.component + "\": {\n");
+                        writer.write("        \"" + i18n.key + "\": {\n");
+                        for (Map.Entry<String, String> entry : i18n.getJSONSorted().entrySet()) {
+                            writer.write("            \"" + entry.getKey() + "\": " + "\"" + entry.getValue() + "\"\n");
+                        }
+                        writer.write("        }");
+                    } else {
+                        writer.write("    \"" + i18n.component + "\": {\n        \"" + i18n.key + "\": " + "\"" + i18n.value + "\"");
+                        writer.write("    }");
+                    }
                     lastComponent = i18n.component;
                 } else {
                     if (!isFirstKeyValue) {
                         writer.write(",\n");
                     }
-
-                    writer.write("        \"" + i18n.key + "\": " + "\"" + i18n.value + "\"");
+                    if (i18n.bIsJSON) {
+                        writer.write("        \"" + i18n.key + "\": {\n");
+                        for (Map.Entry<String, String> entry : i18n.getJSONSorted().entrySet()) {
+                            writer.write("            \"" + entry.getKey() + "\": " + "\"" + entry.getValue() + "\"\n");
+                        }
+                        writer.write("        }");
+                    } else {
+                        writer.write("        \"" + i18n.key + "\": " + "\"" + i18n.value + "\"");
+                    }
                 }
             }
             writer.write("\n    }\n}\n");
