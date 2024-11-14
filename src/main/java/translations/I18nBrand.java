@@ -2,9 +2,9 @@ package translations;
 
 import java.util.ArrayList;
 
-public class I18nBrand {
+public class I18nBrand implements Comparable<I18nBrand> {
     String brand;
-    ArrayList<I18nLanguage> languages = new ArrayList<I18nLanguage>();
+    public ArrayList<I18nLanguage> languages = new ArrayList<I18nLanguage>();
 
     public I18nBrand(String brand) {
         this.brand = brand;
@@ -16,30 +16,45 @@ public class I18nBrand {
                 return col.add(i18n, false);
             }
         }
-        I18nLanguage col = new I18nLanguage(locale);
+        I18nLanguage col = new I18nLanguage(brand, locale);
         languages.add(col);
         return col.add(i18n, false);
     }
 
-    public boolean append(I18nLanguage language) {
+    public boolean append(ArrayList<I18nLanguage> newLanguages) {
+        boolean bSuccess = false;
+        for (I18nLanguage lang : newLanguages) {
+            bSuccess |= append(lang);
+        }
+        return bSuccess;
+    }
+
+    public boolean append(I18nLanguage newLanguage) {
         for (I18nLanguage lang : languages) {
-            if (lang.locale.equals(language.locale)) {
-                return lang.append(language);
+            if (lang.locale.equals(newLanguage.locale)) {
+                return lang.append(newLanguage);
             }
         }
-        languages.add(language);
+        languages.add(newLanguage);
         return true;
     }
 
     public void sort() {
-        for (I18nLanguage col : languages) {
-            col.sort();
+        SortManager.quickSort(languages);
+        for (I18nLanguage lang : languages) {
+            lang.sort();
         }
     }
 
     public void print() {
-        for (I18nLanguage col : languages) {
-            col.print();
+        System.out.println("______________________________brand " + brand + "______________________________");
+        for (I18nLanguage lang : languages) {
+            lang.print();
         }
+    }
+
+    @Override
+    public int compareTo(I18nBrand other) {
+        return brand.compareTo(other.brand);
     }
 }

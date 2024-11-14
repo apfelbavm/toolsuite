@@ -1,5 +1,8 @@
 package structs;
 
+import translations.I18nBrand;
+import translations.I18nCSB;
+
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -11,21 +14,7 @@ public class LanguageRowMap
 	public String[][] rowMap;
 	private HashMap<String, HashSet<String>> tree = new HashMap<String, HashSet<String>>(64);
 
-	public LanguageRowMap(ArrayList<Language> languages)
-	{
-		if (languages == null) return;
-		for (Language lang : languages)
-		{
-			for (Map.Entry<String, HashMap<String, String>> component : lang.tree.entrySet())
-			{
-				for (String key : component.getValue().keySet())
-				{
-					addUnique(component.getKey(), key);
-				}
-			}
-		}
-		buildRowMap();
-	}
+
 	
 	private void buildRowMap()
 	{

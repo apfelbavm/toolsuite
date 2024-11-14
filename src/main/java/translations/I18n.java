@@ -8,23 +8,24 @@ public class I18n implements Comparable<I18n> {
     public String component;
     public String key;
     public String value;
-    public JSONObject obj;
-    private boolean bIsJSON;
+    public JSONObject json;
+    public boolean bIsJSON;
 
     private I18n() {
     } // made private so you have to use the other constructor
 
     public I18n(String workbook_, String sheet_, String component_, String key_, String value_) {
-        sheet = sheet_;
+        workbook = workbook_;
         component = component_;
 
         int splitIndex = key_.indexOf(".");
 
         if (splitIndex > 0) {
-            obj = new JSONObject();
-            String[] split = key_.split("\\.");
-            obj.put(split[0], split[1]);
             bIsJSON = true;
+            json = new JSONObject();
+            String[] split = key_.split("\\.");
+            key = split[0];
+            json.put(split[1], value);
         } else {
             bIsJSON = false;
             key = key_;
@@ -38,28 +39,26 @@ public class I18n implements Comparable<I18n> {
         component = other.component;
         key = other.key;
         value = other.value;
-        obj = other.obj;
+        json = other.json;
         bIsJSON = other.bIsJSON;
     }
 
-    public I18nResult compareAndMaybeAdd(I18n other, boolean bOverride) {
-        if (component.equals(other.component)) {
+    public I18nResult addOrOverride(I18n other, boolean bOverride) {
+        if (component.equals(other.component) && key.equals(other.key)) {
             if (bIsJSON && other.bIsJSON) {
                 I18nResult result = I18nResult.AlreadyExists;
-                for (Object entry : other.obj.names()) {
+                for (Object entry : other.json.names()) {
                     String entryString = entry.toString();
-                    if (!obj.has(entryString)) {
-                        obj.put(entryString, other.obj.get(entryString).toString());
+                    if (!json.has(entryString)) {
+                        json.put(entryString, other.json.get(entryString).toString());
                         if (!result.equals(I18nResult.Overridden)) {
                             result = I18nResult.Added;
                         }
                     } else if (bOverride) {
+                        json.put(entryString, other.json.get(entryString).toString());
                         result = I18nResult.Overridden;
                     }
                 }
-            } else if (!key.equals(other.key)) {
-                value = other.value;
-                return I18nResult.Added;
             } else if (bOverride) {
                 value = other.value;
                 return I18nResult.Overridden;

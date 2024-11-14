@@ -75,6 +75,7 @@ public class App extends JFrame {
             appearance.add(itemDark);
             appearance.add(itemLight);
         }
+        saveManager.register(this);
         saveManager.load(this);
         if (saveManager.userSettings.bUseDarkMode) {
             userInterfaceManager.setThemeDark(this);

@@ -28,8 +28,8 @@ public class JSON2Excel extends JPanel implements OnLocaleMissing, OnBrandMissin
         owner.setStatus("Welcome to Excelibur..", App.NORMAL_MESSAGE);
         setLayout(new BorderLayout());
         reader = new FileReader();
-        reader.bindOnRequestLocale(this);
-        reader.bindOnRequestBrand(this);
+        reader.jsonReader.bindOnRequestLocale(this);
+        reader.jsonReader.bindOnRequestBrand(this);
 
         returnButton = App.createButtonWithTextAndIcon("Back", "icon_return.png");
         returnButton.addActionListener(e -> owner.addScreen(new MainMenu(owner), App.TOOL_NAME));

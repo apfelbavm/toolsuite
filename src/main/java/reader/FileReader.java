@@ -1,83 +1,42 @@
 package reader;
 
-import core.TranslationMgr;
 import translations.I18nCSB;
-import translations.I18nLanguage;
 
 import java.io.File;
+import java.util.ArrayList;
 
 public class FileReader {
-    private OnLocaleMissing localeListener = null;
-    private OnBrandMissing brandListener = null;
+    public JSONReader jsonReader = new JSONReader();
+    public ExcelReader excelReader = new ExcelReader();
 
-    public void bindOnRequestLocale(OnLocaleMissing listener) {
-        this.localeListener = listener;
-    }
+    public I18nCSB read(File[] files) {
+        ArrayList<File> XLFXFiles = new ArrayList<>();
+        ArrayList<File> JSONFiles = new ArrayList<>();
 
-    public void bindOnRequestBrand(OnBrandMissing listener) {
-        this.brandListener = listener;
-    }
-
-    public void removeOnRequestLocale(OnLocaleMissing listener) {
-        if (this.localeListener == listener) {
-            this.localeListener = null;
-        }
-    }
-
-    public void removeOnRequestbrand(OnBrandMissing listener) {
-        if (this.brandListener == listener) {
-            this.brandListener = null;
-        }
-    }
-
-    public String requestLocale(File file) {
-        if (localeListener != null) {
-            return localeListener.onLocaleMissing(file);
-        }
-        return null;
-    }
-
-    public String requestBrand(File file) {
-        if (brandListener != null) {
-            return brandListener.onBrandMissing(file);
-        }
-        return null;
-    }
-
-    public void read(File[] files) {
-        I18nCSB brand = new I18nCSB();
         for (File file : files) {
             if (file == null) continue;
             String extension = getFileExtension(file);
             switch (extension) {
                 case ".json":
-                    System.out.println("reading json file");
-                    JSONReader reader = new JSONReader();
-                    I18nLanguage language = reader.read("", file);
-                    if (!language.hasLocale()) {
-                        String locale = determineLocale(file);
-                        if (locale == null) {
-                            locale = requestLocale(file);
-                        }
-                    }
-                    String brandName = requestBrand(file);
-                    if (brandName == null) {
-                        brandName = "UNSET";
-                    }
-                    language.print();
-                    if (language != null) {
-                        brand.add("", language);
-                    }
-
+                    JSONFiles.add(file);
                     break;
                 case ".xlsx":
+                    XLFXFiles.add(file);
                     break;
-
                 default:
                     break;
 
             }
         }
+
+        I18nCSB csb = new I18nCSB();
+        if (!XLFXFiles.isEmpty()) {
+            csb.merge(excelReader.read(XLFXFiles));
+        }
+        if (!JSONFiles.isEmpty()) {
+            csb.merge(jsonReader.read(JSONFiles));
+        }
+        return csb;
     }
 
     public static String getFileName(File file) {
@@ -100,15 +59,5 @@ public class FileReader {
 
     }
 
-    private String determineLocale(File file) {
-        if (file != null) {
-            String pathName = file.getAbsolutePath().toLowerCase();
-            for (String code : TranslationMgr.ISO_CODES) {
-                if (pathName.contains(code)) {
-                    return code;
-                }
-            }
-        }
-        return null;
-    }
+
 }

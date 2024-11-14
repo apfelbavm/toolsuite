@@ -8,11 +8,13 @@ public class SortManager {
     private static Object rowPivot;
 
     public static <T extends Comparable<? super T>> void quickSort(ArrayList<T> list) {
-        quickSort(list, 0, list.size() - 1);
+        if (list != null && list.size() > 1) {
+            quickSort(list, 0, list.size() - 1);
+        }
     }
 
     private static <T extends Comparable<? super T>> void quickSort(ArrayList<T> list, int low, int high) {
-        if(low == high) return;
+        if (low == high) return;
         int i = low, j = high;
 
         // Get the pivot element from the middle of the list

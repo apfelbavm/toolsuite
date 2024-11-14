@@ -7,7 +7,6 @@ import java.awt.Dimension;
 import java.awt.FlowLayout;
 import java.awt.GridLayout;
 import java.io.File;
-import java.util.ArrayList;
 
 import javax.swing.Action;
 import javax.swing.JButton;
@@ -27,19 +26,13 @@ import javax.swing.border.EmptyBorder;
 import javax.swing.filechooser.FileFilter;
 import javax.swing.filechooser.FileNameExtensionFilter;
 import javax.swing.table.DefaultTableModel;
-import javax.swing.table.JTableHeader;
-import javax.swing.table.TableCellRenderer;
-import javax.swing.table.TableColumn;
-import javax.swing.table.TableColumnModel;
 
 import core.App;
 import core.SaveManager;
 import core.TranslationMgr;
 import core.TranslationMgrFlags;
-import structs.LanguageIdentifier;
 import structs.LanguageTable;
-import widgets.table.ColumnGroup;
-import widgets.table.GroupableTableHeader;
+import widgets.table.DualHeaderTable;
 
 public class Excelibur extends JPanel {
 
@@ -59,6 +52,7 @@ public class Excelibur extends JPanel {
     JCheckBox checkBoxUseHyperlinkIfAvailable = new JCheckBox("Get hyperlink");
     JCheckBox checkDoNotExportEmptyCells = new JCheckBox("Skip empty values");
     JCheckBox checkIncludeHiddenSheets = new JCheckBox("Include hidden sheets");
+    DualHeaderTable dualTableHeader = new DualHeaderTable();
 
     JComboBox<String> comboFolderNaming;
 
@@ -82,7 +76,7 @@ public class Excelibur extends JPanel {
         infoPanel.setBorder(b);
 
         checkBoxAutoResize.setSelected(true);
-        checkBoxAutoResize.addItemListener(e -> updateTableAutoResizing());
+        checkBoxAutoResize.addItemListener(e -> dualTableHeader.updateTableAutoResizing(checkBoxAutoResize.isSelected()));
         checkBoxAutoResize.setToolTipText("Change how the data is displayed in the table. Either fit to the window's size (enabled) or match each column's width to it's content (disabled)");
 
         checkBoxMergeCompAndKey.setSelected(false);
@@ -181,56 +175,56 @@ public class Excelibur extends JPanel {
         enableUserInput(true);
     }
 
-    private void createDualHeaderTable(LanguageTable langTable) {
-        ArrayList<String> localeHeader = new ArrayList<String>();
-        localeHeader.add("Component");
-        localeHeader.add("Key");
-        ArrayList<String> brandHeader = new ArrayList<String>();
-        ArrayList<Integer> localeCount = new ArrayList<Integer>();
-        String previousBrand = "";
-        for (LanguageIdentifier identifier : langTable.getIdentifiers()) {
-            if (!previousBrand.equals(identifier.brand)) {
-                brandHeader.add(identifier.brand);
-                localeCount.add(1);
-                previousBrand = identifier.brand;
-            } else {
-                int i = localeCount.size() - 1;
-                int count = localeCount.get(i);
-                localeCount.set(i, ++count);
-            }
-            localeHeader.add(identifier.locale);
-        }
-
-        DefaultTableModel dm = new DefaultTableModel();
-        dm.setDataVector(langTable.getJTableData(), localeHeader.toArray());
-
-        table = new JTable(dm) {
-            protected JTableHeader createDefaultTableHeader() {
-                return new GroupableTableHeader(columnModel);
-            }
-        };
-
-        TableColumnModel cm = table.getColumnModel();
-        GroupableTableHeader header = (GroupableTableHeader) table.getTableHeader();
-        int offset = 2;
-        for (int i = 0; i < localeCount.size(); ++i) {
-            ColumnGroup group = new ColumnGroup(brandHeader.get(i));
-            for (int j = 0; j < localeCount.get(i); ++j) {
-                group.add(cm.getColumn(offset + j));
-            }
-            offset += localeCount.get(i);
-            header.addColumnGroup(group);
-        }
-
-        ExceliburCellRenderer cellRenderer = new ExceliburCellRenderer();
-        table.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
-        table.getTableHeader().setReorderingAllowed(false);
-        table.setDefaultRenderer(Object.class, cellRenderer);
-        table.setFillsViewportHeight(true);
-        horSplit.setRightComponent(new JScrollPane(table));
-        table.setRowSelectionAllowed(true);
-        updateTableAutoResizing();
-    }
+//    private void createDualHeaderTable(LanguageTable langTable) {
+//        ArrayList<String> localeHeader = new ArrayList<String>();
+//        localeHeader.add("Component");
+//        localeHeader.add("Key");
+//        ArrayList<String> brandHeader = new ArrayList<String>();
+//        ArrayList<Integer> localeCount = new ArrayList<Integer>();
+//        String previousBrand = "";
+//        for (LanguageIdentifier identifier : langTable.getIdentifiers()) {
+//            if (!previousBrand.equals(identifier.brand)) {
+//                brandHeader.add(identifier.brand);
+//                localeCount.add(1);
+//                previousBrand = identifier.brand;
+//            } else {
+//                int i = localeCount.size() - 1;
+//                int count = localeCount.get(i);
+//                localeCount.set(i, ++count);
+//            }
+//            localeHeader.add(identifier.locale);
+//        }
+//
+//        DefaultTableModel dm = new DefaultTableModel();
+//        dm.setDataVector(langTable.getJTableData(), localeHeader.toArray());
+//
+//        table = new JTable(dm) {
+//            protected JTableHeader createDefaultTableHeader() {
+//                return new GroupableTableHeader(columnModel);
+//            }
+//        };
+//
+//        TableColumnModel cm = table.getColumnModel();
+//        GroupableTableHeader header = (GroupableTableHeader) table.getTableHeader();
+//        int offset = 2;
+//        for (int i = 0; i < localeCount.size(); ++i) {
+//            ColumnGroup group = new ColumnGroup(brandHeader.get(i));
+//            for (int j = 0; j < localeCount.get(i); ++j) {
+//                group.add(cm.getColumn(offset + j));
+//            }
+//            offset += localeCount.get(i);
+//            header.addColumnGroup(group);
+//        }
+//
+//        ExceliburCellRenderer cellRenderer = new ExceliburCellRenderer();
+//        table.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
+//        table.getTableHeader().setReorderingAllowed(false);
+//        table.setDefaultRenderer(Object.class, cellRenderer);
+//        table.setFillsViewportHeight(true);
+//        horSplit.setRightComponent(new JScrollPane(table));
+//        table.setRowSelectionAllowed(true);
+//        updateTableAutoResizing();
+//    }
 
     private void createOutputFolderComboBox() {
         String[] list = new String[3];
@@ -355,7 +349,7 @@ public class Excelibur extends JPanel {
     private void importData() {
         translationMgr.setFlag(TranslationMgrFlags.Import.USE_HYPERLINK_IF_AVAILABLE, checkBoxUseHyperlinkIfAvailable.isSelected());
         translationMgr.setFlag(TranslationMgrFlags.Import.INCLUDE_HIDDEN_SHEETS, checkIncludeHiddenSheets.isSelected());
-        LanguageTable languageTable = translationMgr.importExcelFiles();
+        LanguageTable languageTable = translationMgr.importFiles();
         Component comp = horSplit.getRightComponent();
 
         if (languageTable == null) {
@@ -363,13 +357,16 @@ public class Excelibur extends JPanel {
             DefaultTableModel model = new DefaultTableModel(new String[]{"Component", "Key", "Locale"}, 0);
             table = new JTable(model);
             table.setFillsViewportHeight(true);
-            updateTableAutoResizing();
+            dualTableHeader.updateTableAutoResizing(checkBoxAutoResize.isSelected());
             return;
         }
 
         if (comp != null) horSplit.remove(comp);
 
-        createDualHeaderTable(languageTable);
+        DualHeaderTable dualTableHeader = new DualHeaderTable();
+        table = dualTableHeader.createTable(languageTable);
+        dualTableHeader.updateTableAutoResizing(checkBoxAutoResize.isSelected());
+        horSplit.setRightComponent(new JScrollPane(table));
 
         translationMgr.stopTimeTrace();
         double seconds = (double) translationMgr.getCalculationTime();
@@ -414,38 +411,5 @@ public class Excelibur extends JPanel {
         return translationMgr.export2Json(outputFolder, fileName);
     }
 
-    void updateTableAutoResizing() {
-        if (checkBoxAutoResize.isSelected()) {
-            for (int column = 0; column < table.getColumnCount(); column++) {
-                TableColumn tableColumn = table.getColumnModel().getColumn(column);
-                int preferredWidth = tableColumn.getMinWidth();
-                preferredWidth = 3000;
-                tableColumn.setPreferredWidth(preferredWidth);
-            }
-            table.setAutoResizeMode(JTable.AUTO_RESIZE_SUBSEQUENT_COLUMNS);
-        } else {
-            table.setAutoResizeMode(JTable.AUTO_RESIZE_OFF);
-            for (int column = 0; column < table.getColumnCount(); column++) {
-                TableColumn tableColumn = table.getColumnModel().getColumn(column);
-                int preferredWidth = tableColumn.getMinWidth();
-                int maxWidth = Math.min(tableColumn.getMaxWidth(), 2000);
 
-                for (int row = 0; row < table.getRowCount(); row++) {
-                    TableCellRenderer cellRenderer = table.getCellRenderer(row, column);
-                    Component c = table.prepareRenderer(cellRenderer, row, column);
-                    int width = c.getPreferredSize().width + table.getIntercellSpacing().width;
-                    preferredWidth = Math.max(preferredWidth, width);
-
-                    // We've exceeded the maximum width, no need to check other rows
-
-                    if (preferredWidth >= maxWidth) {
-                        preferredWidth = maxWidth;
-                        break;
-                    }
-                }
-
-                tableColumn.setPreferredWidth(preferredWidth);
-            }
-        }
-    }
 }

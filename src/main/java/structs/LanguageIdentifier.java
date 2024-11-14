@@ -2,7 +2,7 @@ package structs;
 
 import java.util.ArrayList;
 
-public class LanguageIdentifier {
+public class LanguageIdentifier  {
 	public String brand;
 	public String locale;
 

@@ -4,20 +4,23 @@ import java.util.ArrayList;
 
 public class I18nLanguage implements Comparable<I18nLanguage> {
     public String locale;
-    private ArrayList<I18n> translations = new ArrayList<I18n>();
+    public ArrayList<I18n> translations = new ArrayList<I18n>();
 
     public static final String META_STRING = "_meta";
     public static final String META_LOCALE_STRING = "locale";
     public static final String META_BRAND_STRING = "brand";
 
-    public I18nLanguage(String locale) {
-        this.locale = locale;
+    public I18nLanguage(String brand_, String locale_) {
+        locale = locale_;
         addMetaLocale(locale);
+        if (brand_ != null && !brand_.isEmpty() && !brand_.isBlank()) {
+            addMetaBrand(brand_);
+        }
     }
 
     public boolean add(I18n i18n, boolean bOverride) {
         for (I18n translation : translations) {
-            I18nResult Result = translation.compareAndMaybeAdd(i18n, bOverride);
+            I18nResult Result = translation.addOrOverride(i18n, bOverride);
             if (Result != I18nResult.NotFound) return true;
         }
         translations.add(i18n);
@@ -41,6 +44,7 @@ public class I18nLanguage implements Comparable<I18nLanguage> {
     }
 
     public void print() {
+        System.out.println("_______________locale " + locale + "_______________");
         for (I18n i18n : translations) {
             i18n.print();
         }
@@ -49,6 +53,19 @@ public class I18nLanguage implements Comparable<I18nLanguage> {
     @Override
     public int compareTo(I18nLanguage other) {
         return locale.compareTo(other.locale);
+    }
+
+    public String getRow(String component, String key) {
+        for (I18n i18n : translations) {
+            if (i18n.component.equals(component) && i18n.key.equals(key)) {
+                if (i18n.bIsJSON) {
+                    return i18n.json.toString();
+                } else {
+                    return i18n.value;
+                }
+            }
+        }
+        return null;
     }
 
     public void addMetaBrand(String brandName) {
