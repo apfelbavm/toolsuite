@@ -1,6 +1,8 @@
 package widgets.table;
 
-import java.awt.Color;
+import widgets.FColor;
+import widgets.UIConstants;
+
 import java.awt.Component;
 
 import javax.swing.JTable;
@@ -19,30 +21,29 @@ public class LanguageCellRenderer implements TableCellRenderer
 		Object obj = table.getValueAt(row, column);
 		if (obj == null)
 		{
-			c.setBackground(isSelected ? new Color(255, 192, 192) : new Color(255, 110, 110));
+			c.setBackground(isSelected ? UIConstants.YourPink : UIConstants.BitterSweet);
 		}
 		else
 		{
 			String content = table.getValueAt(row, column).toString();
 			if (content.isBlank() || content.isEmpty())
 			{
-				c.setBackground(isSelected ? new Color(255, 192, 192) : new Color(255, 110, 110));
+				c.setBackground(isSelected ? UIConstants.YourPink : UIConstants.BitterSweet);
 			}
 			else
 			{
 				if (column < 2)
 				{
-					c.setBackground(isSelected ? new Color(57, 135, 213) : new Color(255, 255, 255, 32));
-					c.setForeground(isSelected ? new Color(255, 255, 255) : new Color(187, 187, 187, 128));
+					c.setBackground(isSelected ? UIConstants.CuriousBlue : new FColor(UIConstants.White, 32));
+					c.setForeground(isSelected ? UIConstants.White : new FColor(UIConstants.Silver, 128));
 				}
 				else
 				{
-					c.setBackground(isSelected ? new Color(57, 135, 213) : new Color(0, 0, 0, 0));
-					c.setForeground(isSelected ? new Color(255, 255, 255) : new Color(187, 187, 187));
+					c.setBackground(isSelected ? UIConstants.CuriousBlue : UIConstants.Transparent);
+					c.setForeground(isSelected ? UIConstants.White : UIConstants.Silver);
 				}
 			}
 		}
-
 		return c;
 	}
 }

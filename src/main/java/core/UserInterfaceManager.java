@@ -1,7 +1,7 @@
 package core;
 
 import com.formdev.flatlaf.FlatDarkLaf;
-import com.formdev.flatlaf.FlatLightLaf;
+import com.formdev.flatlaf.FlatIntelliJLaf;
 
 import javax.swing.*;
 
@@ -30,7 +30,7 @@ public class UserInterfaceManager {
     UnsupportedLookAndFeelException setThemeLight(JFrame frame) {
         saveManager.userSettings.bUseDarkMode = false;
         try {
-            javax.swing.UIManager.setLookAndFeel(new FlatLightLaf());
+            javax.swing.UIManager.setLookAndFeel(new FlatIntelliJLaf());
             SwingUtilities.updateComponentTreeUI(frame);
         } catch (UnsupportedLookAndFeelException e) {
             return e;

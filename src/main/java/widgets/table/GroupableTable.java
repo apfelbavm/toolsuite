@@ -1,9 +1,10 @@
 package widgets.table;
 
 import core.App;
-import widgets.MainMenu;
+import widgets.UIConstants;
 
 import javax.swing.*;
+import javax.swing.border.EmptyBorder;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import javax.swing.table.*;
@@ -17,28 +18,33 @@ import java.util.ArrayList;
 import java.util.List;
 
 
-public class GroupableTableCtrl extends JPanel {
+public class GroupableTable extends JPanel {
     JTable table;
     private JTextField searchInput = new JTextField();
-    private JButton clearButton = new JButton("Clear");
+    private JButton clearButton = App.createButtonWithIcon("icon_delete_text.png", UIConstants.BitterSweet);
 
-    public GroupableTableCtrl() {
+    public GroupableTable() {
         setLayout(new BorderLayout());
-        //add(jtfFilter, BorderLayout.NORTH);
 
         JPanel panel = new JPanel(new BorderLayout());
-        panel.add(new JLabel("Specify a word to match:"), BorderLayout.WEST);
+        panel.add(new JLabel("Find: "), BorderLayout.WEST);
         panel.add(searchInput, BorderLayout.CENTER);
         panel.add(clearButton, BorderLayout.EAST);
-        clearButton.addActionListener(e -> clearSearch());
+        panel.setBorder(new EmptyBorder(32, 64, 32, 64));
         add(panel, BorderLayout.NORTH);
+
+        clearButton.addActionListener(e -> clearSearch());
+        clearButton.setBackground(UIConstants.BitterSweet);
+        searchInput.setMargin(new Insets(8, 12, 8, 12));
+
+        clearSearch();
+        setClearButtonVisibility();
     }
 
-    public void createTable(LanguageTable langTable) {
-        clearSearch();
+    public void updateTable(LanguageTable langTable) {
         if (langTable == null) {
             App app = App.get();
-            app.setStatus("No data found inside Excel file(s). Did you set it up properly? Click 'Help' to read the documentation on how to setup an Excel file correctly.", App.ERROR_MESSAGE);
+            //app.setStatus("No data found inside Excel file(s). Did you set it up properly? Click 'Help' to read the documentation on how to setup an Excel file correctly.", App.ERROR_MESSAGE);
             DefaultTableModel model = new DefaultTableModel(new String[]{"Component", "Key", "Locale"}, 0);
             table = new JTable(model);
             table.setFillsViewportHeight(true);
@@ -104,15 +110,26 @@ public class GroupableTableCtrl extends JPanel {
                 }
             });
         }
-        sortFilter();
+        initSearchFilter();
+        // remove old table before adding a new table.
+        Component comp = ((BorderLayout) getLayout()).getLayoutComponent(BorderLayout.CENTER);
+        if (comp != null) {
+            remove(comp);
 
+        }
         add(new JScrollPane(table), BorderLayout.CENTER);
     }
 
-    public void clearSearch()
-    {
+    private void clearSearch() {
         searchInput.setText("");
     }
+
+    private void setClearButtonVisibility() {
+        boolean bVisible = !searchInput.getText().isBlank() && !searchInput.getText().isEmpty();
+        clearButton.setVisible(bVisible);
+        System.out.println("set clear btn vis: " + bVisible);
+    }
+
     public int getRowCount() {
         if (table != null) return table.getRowCount();
         return 0;
@@ -152,31 +169,19 @@ public class GroupableTableCtrl extends JPanel {
         }
     }
 
-    public void sortFilter() { // https://stackoverflow.com/questions/22066387/how-to-search-an-element-in-a-jtable-java
+    private void initSearchFilter() { // https://stackoverflow.com/questions/22066387/how-to-search-an-element-in-a-jtable-java
         TableRowSorter<TableModel> rowSorter = new TableRowSorter<>(table.getModel());
         table.setRowSorter(rowSorter);
 
         searchInput.getDocument().addDocumentListener(new DocumentListener() {
             @Override
             public void insertUpdate(DocumentEvent e) {
-                String text = searchInput.getText();
-
-                if (text.trim().length() == 0) {
-                    rowSorter.setRowFilter(null);
-                } else {
-                    rowSorter.setRowFilter(RowFilter.regexFilter("(?i)" + text));
-                }
+                updateSearch();
             }
 
             @Override
             public void removeUpdate(DocumentEvent e) {
-                String text = searchInput.getText();
-
-                if (text.trim().length() == 0) {
-                    rowSorter.setRowFilter(null);
-                } else {
-                    rowSorter.setRowFilter(RowFilter.regexFilter("(?i)" + text));
-                }
+                updateSearch();
             }
 
             @Override
@@ -184,5 +189,18 @@ public class GroupableTableCtrl extends JPanel {
                 throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
             }
         });
+        updateSearch();
+    }
+
+    void updateSearch() {
+        TableRowSorter<TableModel> rowSorter = (TableRowSorter)(table.getRowSorter());
+        String text = searchInput.getText();
+
+        if (text.trim().length() == 0) {
+            rowSorter.setRowFilter(null);
+        } else {
+            rowSorter.setRowFilter(RowFilter.regexFilter("(?i)" + text));
+        }
+        setClearButtonVisibility();
     }
 }

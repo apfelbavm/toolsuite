@@ -1,7 +1,6 @@
 package widgets;
 
 import java.awt.BorderLayout;
-import java.awt.Color;
 import java.awt.Component;
 import java.awt.Dimension;
 import java.awt.FlowLayout;
@@ -20,7 +19,6 @@ import javax.swing.JComboBox;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JSplitPane;
-import javax.swing.JTable;
 import javax.swing.ListSelectionModel;
 import javax.swing.border.CompoundBorder;
 import javax.swing.border.EmptyBorder;
@@ -28,14 +26,11 @@ import javax.swing.filechooser.FileFilter;
 import javax.swing.filechooser.FileNameExtensionFilter;
 import javax.swing.table.DefaultTableModel;
 
-import core.App;
-import core.SaveManager;
-import core.TranslationMgr;
-import core.TranslationMgrFlags;
+import core.*;
 import reader.OnBrandMissing;
 import reader.OnLocaleMissing;
 import widgets.table.LanguageTable;
-import widgets.table.GroupableTableCtrl;
+import widgets.table.GroupableTable;
 
 public class Excelibur extends JPanel implements OnLocaleMissing, OnBrandMissing {
 
@@ -53,13 +48,14 @@ public class Excelibur extends JPanel implements OnLocaleMissing, OnBrandMissing
     JCheckBox checkBoxMergeCompAndKey = new JCheckBox("Concat. 'Component' and 'Key'");
     JCheckBox checkBoxUseHyperlinkIfAvailable = new JCheckBox("Get hyperlink");
     JCheckBox checkIncludeHiddenSheets = new JCheckBox("Include hidden sheets");
-    GroupableTableCtrl tableCtrl = new GroupableTableCtrl();
-
+    GroupableTable table = new GroupableTable();
+    ShortcutManager shortcuts = new ShortcutManager();
     JComboBox<String> comboFolderNaming;
 
     public Excelibur(App owner) {
 
         this.owner = owner;
+        shortcuts.init(this);
         owner.setStatus("Welcome to Excelibur..", App.NORMAL_MESSAGE);
         setLayout(new BorderLayout());
         returnButton = App.createButtonWithTextAndIcon("Back", "icon_return.png");
@@ -77,7 +73,8 @@ public class Excelibur extends JPanel implements OnLocaleMissing, OnBrandMissing
         infoPanel.setBorder(b);
 
         checkBoxAutoResize.setSelected(true);
-        checkBoxAutoResize.addItemListener(e -> tableCtrl.updateTableAutoResizing(checkBoxAutoResize.isSelected()));
+        checkBoxAutoResize.addItemListener(e -> table.updateTableAutoResizing(checkBoxAutoResize.isSelected()));
+        table.updateTable(null);
         checkBoxAutoResize.setToolTipText("Change how the data is displayed in the table. Either fit to the window's size (enabled) or match each column's width to it's content (disabled)");
 
         checkBoxMergeCompAndKey.setSelected(false);
@@ -99,7 +96,7 @@ public class Excelibur extends JPanel implements OnLocaleMissing, OnBrandMissing
         infoPanel.add(checkBoxMergeCompAndKey);
         infoPanel.add(checkIncludeHiddenSheets);
         JLabel outputFolderRuleLabel = new JLabel("Output folder (struct):");
-        outputFolderRuleLabel.setForeground(new Color(128, 128, 128));
+        outputFolderRuleLabel.setForeground(UIConstants.Gray);
         infoPanel.add(outputFolderRuleLabel);
         infoPanel.add(comboFolderNaming);
         infoPanel.add(new JLabel());
@@ -134,7 +131,7 @@ public class Excelibur extends JPanel implements OnLocaleMissing, OnBrandMissing
         horSplit.setEnabled(false);
         horSplit.setDividerSize(0);
         horSplit.setLeftComponent(leftSplitPane);
-        horSplit.setRightComponent(new JScrollPane(tableCtrl, JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED, JScrollPane.HORIZONTAL_SCROLLBAR_AS_NEEDED));
+        horSplit.setRightComponent(new JScrollPane(table, JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED, JScrollPane.HORIZONTAL_SCROLLBAR_AS_NEEDED));
 
         reloadButton = App.createButtonWithTextAndIcon("Reload tables...", "icon_refresh.png");
         reloadButton.setToolTipText("Reimport the selected files. Be sure to have all imported Excel files closed or they won't be imported as Excel blocks the files when opened.");
@@ -350,10 +347,10 @@ public class Excelibur extends JPanel implements OnLocaleMissing, OnBrandMissing
         Component comp = horSplit.getRightComponent();
         if (comp != null) horSplit.remove(comp);
 
-        tableCtrl.createTable(languageTable);
-        tableCtrl.updateTableAutoResizing(checkBoxAutoResize.isSelected());
+        table.updateTable(languageTable);
+        table.updateTableAutoResizing(checkBoxAutoResize.isSelected());
 
-        horSplit.setRightComponent(tableCtrl);
+        horSplit.setRightComponent(table);
 
         translationMgr.stopTimeTrace();
         double seconds = (double) translationMgr.getCalculationTime();
@@ -376,7 +373,7 @@ public class Excelibur extends JPanel implements OnLocaleMissing, OnBrandMissing
     }
 
     private void enableUserInput(boolean bEnable) {
-        boolean bAnyFilesImported = translationMgr.getNumSelectedFiles() > 0 && tableCtrl.getRowCount() > 0;
+        boolean bAnyFilesImported = translationMgr.getNumSelectedFiles() > 0 && table.getRowCount() > 0;
         // prevent export if no files are in the "imported" list
         exportButton.setEnabled(bEnable && bAnyFilesImported);
         reloadButton.setEnabled(bEnable && bAnyFilesImported);

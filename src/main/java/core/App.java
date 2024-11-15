@@ -1,10 +1,6 @@
 package core;
 
-import java.awt.BorderLayout;
-import java.awt.Color;
-import java.awt.Component;
-import java.awt.Dimension;
-import java.awt.GridLayout;
+import java.awt.*;
 import java.awt.image.BufferedImage;
 import java.io.IOException;
 import java.io.InputStream;
@@ -25,9 +21,10 @@ import javax.swing.border.EmptyBorder;
 
 import widgets.MainMenu;
 import widgets.Throbber;
+import widgets.UIConstants;
 
 public class App extends JFrame {
-    public static final String TOOL_NAME = "Toolsuite 1.1.0";
+    public static final String TOOL_NAME = "Toolsuite 2.0.0";
     private static App instance;
     public static final int NORMAL_MESSAGE = 0;
     public static final int WARNING_MESSAGE = 1;
@@ -95,11 +92,11 @@ public class App extends JFrame {
 
         panel.add(colorLabel, BorderLayout.WEST);
         panel.add(statusBar, BorderLayout.CENTER);
-        statusBar.setBackground(new Color(31, 144, 255, 255));
+        statusBar.setBackground(UIConstants.DodgerBlue);
         statusBar.setForeground(Color.WHITE);
         statusBar.setOpaque(true);
         colorLabel.setOpaque(true);
-        colorLabel.setBackground(new Color(255, 0, 0));
+        colorLabel.setBackground(UIConstants.Red);
         colorLabel.setPreferredSize(new Dimension(24, 24));
 
         ImageIcon ico = new ImageIcon(loadResource("icon_loading_circle.png"));
@@ -108,7 +105,7 @@ public class App extends JFrame {
         colorLabel.add(throbber, BorderLayout.CENTER);
         addScreen(new MainMenu(this), TOOL_NAME);
         getContentPane().add(panel, BorderLayout.SOUTH);
-
+        setFocusable(true);
         setVisible(true);
     }
 
@@ -159,12 +156,32 @@ public class App extends JFrame {
         } else {
             button = new JButton(text);
         }
-        button.setBackground(new Color(31, 144, 255));
-        button.setForeground(Color.WHITE);
+        button.setBackground(UIConstants.DodgerBlue);
+        button.setForeground(UIConstants.White);
         button.setPreferredSize(new Dimension(200, 32));
         button.setHorizontalAlignment(JButton.LEFT);
         button.setIconTextGap(24);
 
+        return button;
+    }
+
+    public static JButton createButtonWithIcon(String iconPath, Color color) {
+        BufferedImage url = App.loadResource(iconPath);
+        JButton button;
+        if (url != null) {
+            button = new JButton(new ImageIcon(url));
+        } else {
+            button = new JButton("Img not found");
+        }
+        if(color == null)
+        {
+            color = UIConstants.DodgerBlue;
+        }
+        button.setBackground(color);
+        button.setForeground(UIConstants.White);
+        button.setPreferredSize(new Dimension(32, 32));
+        button.setHorizontalAlignment(JButton.CENTER);
+        button.setVerticalAlignment(JButton.CENTER);
         return button;
     }
 
@@ -188,13 +205,13 @@ public class App extends JFrame {
         switch (type) {
             default:
             case NORMAL_MESSAGE:
-                colorLabel.setBackground(new Color(65, 125, 88));
+                colorLabel.setBackground(UIConstants.Goblin);
                 break;
             case WARNING_MESSAGE:
-                colorLabel.setBackground(new Color(178, 139, 35));
+                colorLabel.setBackground(UIConstants.Marigold);
                 break;
             case ERROR_MESSAGE:
-                colorLabel.setBackground(new Color(255, 110, 110));
+                colorLabel.setBackground(UIConstants.BitterSweet);
                 break;
         }
     }
@@ -214,45 +231,38 @@ public class App extends JFrame {
         mainPanel.add(infoText, BorderLayout.NORTH);
 
         grid.setOpaque(true);
-        grid.setBackground(new Color(255, 0, 0));
+        grid.setBackground(UIConstants.Red);
 
-//		Color colorHeader = new Color(230, 230, 230);
-//		Color colorHeaderText = new Color(0, 0, 0);
 
-        Color white = new Color(255, 255, 255);
-        Color black = new Color(0, 0, 0);
-        Color lightgrey = new Color(230, 230, 230);
-        Color red = new Color(230, 0, 0);
+        addCell(0, 0, UIConstants.Mercury, UIConstants.Black, "");
+        addCell(0, 1, UIConstants.Mercury, UIConstants.Black, "A");
+        addCell(0, 2, UIConstants.Mercury, UIConstants.Black, "B");
+        addCell(0, 3, UIConstants.Mercury, UIConstants.Black, "C");
+        addCell(0, 4, UIConstants.Mercury, UIConstants.Black, "D");
 
-        addCell(0, 0, lightgrey, black, "");
-        addCell(0, 1, lightgrey, black, "A");
-        addCell(0, 2, lightgrey, black, "B");
-        addCell(0, 3, lightgrey, black, "C");
-        addCell(0, 4, lightgrey, black, "D");
+        addCell(1, 0, UIConstants.Mercury, UIConstants.Black, "1");
+        addCell(1, 1, UIConstants.White, UIConstants.Red2, "BRAND_NAME");
+        addCell(1, 2, UIConstants.White, UIConstants.Black, "");
+        addCell(1, 3, UIConstants.White, UIConstants.Black, "");
+        addCell(1, 4, UIConstants.White, UIConstants.Black, "");
 
-        addCell(1, 0, lightgrey, black, "1");
-        addCell(1, 1, white, red, "BRAND_NAME");
-        addCell(1, 2, white, black, "");
-        addCell(1, 3, white, black, "");
-        addCell(1, 4, white, black, "");
+        addCell(2, 0, UIConstants.Mercury, UIConstants.Black, "2");
+        addCell(2, 1, UIConstants.White, UIConstants.Red2, "component");
+        addCell(2, 2, UIConstants.White, UIConstants.Red2, "key");
+        addCell(2, 3, UIConstants.White, UIConstants.Red2, "de_DE");
+        addCell(2, 4, UIConstants.White, UIConstants.Red2, "en_US");
 
-        addCell(2, 0, lightgrey, black, "2");
-        addCell(2, 1, white, red, "component");
-        addCell(2, 2, white, red, "key");
-        addCell(2, 3, white, red, "de_DE");
-        addCell(2, 4, white, red, "en_US");
+        addCell(3, 0, UIConstants.Mercury, UIConstants.Black, "3");
+        addCell(3, 1, UIConstants.White, UIConstants.Red2, "job_dialog");
+        addCell(3, 2, UIConstants.White, UIConstants.Red2, "loading_heading");
+        addCell(3, 3, UIConstants.White, UIConstants.Black, "Beispieltext 1");
+        addCell(3, 4, UIConstants.White, UIConstants.Black, "Exampletext 2");
 
-        addCell(3, 0, lightgrey, black, "3");
-        addCell(3, 1, white, red, "job_dialog");
-        addCell(3, 2, white, red, "loading_heading");
-        addCell(3, 3, white, black, "Beispieltext 1");
-        addCell(3, 4, white, black, "Exampletext 2");
-
-        addCell(4, 0, lightgrey, black, "4");
-        addCell(4, 1, white, red, "job_dialog");
-        addCell(4, 2, white, red, "loading_title");
-        addCell(4, 3, white, black, "Beispieltext 1");
-        addCell(4, 4, white, black, "Exampletext 2");
+        addCell(4, 0, UIConstants.Mercury, UIConstants.Black, "4");
+        addCell(4, 1, UIConstants.White, UIConstants.Red2, "job_dialog");
+        addCell(4, 2, UIConstants.White, UIConstants.Red2, "loading_title");
+        addCell(4, 3, UIConstants.White, UIConstants.Black, "Beispieltext 1");
+        addCell(4, 4, UIConstants.White, UIConstants.Black, "Exampletext 2");
 
         mainPanel.add(grid, BorderLayout.CENTER);
 
