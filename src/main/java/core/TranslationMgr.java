@@ -104,6 +104,11 @@ public class TranslationMgr {
         return languageTable;
     }
 
+    void addNewFiles()
+    {
+
+    }
+
     public void startTimeTrace() {
         statCalculationTime = System.nanoTime();
     }

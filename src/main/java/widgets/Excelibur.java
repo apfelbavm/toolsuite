@@ -133,10 +133,10 @@ public class Excelibur extends JPanel implements OnLocaleMissing, OnBrandMissing
         horSplit.setLeftComponent(leftSplitPane);
         horSplit.setRightComponent(new JScrollPane(table, JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED, JScrollPane.HORIZONTAL_SCROLLBAR_AS_NEEDED));
 
-        reloadButton = App.createButtonWithTextAndIcon("Reload tables...", "icon_refresh.png");
+        reloadButton = App.createButtonWithTextAndIcon("Reimport files...", "icon_refresh.png");
         reloadButton.setToolTipText("Reimport the selected files. Be sure to have all imported Excel files closed or they won't be imported as Excel blocks the files when opened.");
         reloadButton.addActionListener(e -> updateTableView());
-        importButton = App.createButtonWithTextAndIcon("Choose Excel files...", "icon_import.png");
+        importButton = App.createButtonWithTextAndIcon("Import files...", "icon_import.png");
         importButton.setToolTipText("Import files via a selection dialog. If any new file is imported the current selection of files will be removed and the table content is refreshed.");
         importButton.addActionListener(e -> openInputDialog());
         exportButton = App.createButtonWithTextAndIcon("Export", "icon_export.png");
