@@ -18,4 +18,5 @@ public final class UIConstants {
     public static final Color CuriousBlue = new Color(57, 135, 213);
     public static final Color Goblin = new Color(65, 125, 88);
     public static final Color Marigold = new Color(178, 139, 35);
+    public static final Color RenoSand = new Color(154, 107, 20);
 }

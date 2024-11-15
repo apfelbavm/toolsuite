@@ -90,7 +90,7 @@ public class GroupableTable extends JPanel {
                 header.addColumnGroup(group);
             }
 
-            LanguageCellRenderer cellRenderer = new LanguageCellRenderer();
+            LanguageCellRenderer cellRenderer = new LanguageCellRenderer(searchInput);
             table.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
             table.getTableHeader().setReorderingAllowed(false);
             table.setDefaultRenderer(Object.class, cellRenderer);
