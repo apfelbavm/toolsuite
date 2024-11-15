@@ -7,6 +7,7 @@ import java.awt.Dimension;
 import java.awt.FlowLayout;
 import java.awt.GridLayout;
 import java.io.File;
+import java.util.Arrays;
 
 import javax.swing.Action;
 import javax.swing.JButton;
@@ -31,10 +32,12 @@ import core.App;
 import core.SaveManager;
 import core.TranslationMgr;
 import core.TranslationMgrFlags;
+import reader.OnBrandMissing;
+import reader.OnLocaleMissing;
 import widgets.table.LanguageTable;
 import widgets.table.GroupableTableCtrl;
 
-public class Excelibur extends JPanel {
+public class Excelibur extends JPanel implements OnLocaleMissing, OnBrandMissing {
 
     private TranslationMgr translationMgr = new TranslationMgr();
     private static final long serialVersionUID = 1L;
@@ -50,7 +53,6 @@ public class Excelibur extends JPanel {
     JCheckBox checkBoxAutoResize = new JCheckBox("Auto Resize Table");
     JCheckBox checkBoxMergeCompAndKey = new JCheckBox("Concat. 'Component' and 'Key'");
     JCheckBox checkBoxUseHyperlinkIfAvailable = new JCheckBox("Get hyperlink");
-    JCheckBox checkDoNotExportEmptyCells = new JCheckBox("Skip empty values");
     JCheckBox checkIncludeHiddenSheets = new JCheckBox("Include hidden sheets");
     GroupableTableCtrl tableCtrl = new GroupableTableCtrl();
 
@@ -83,8 +85,6 @@ public class Excelibur extends JPanel {
         checkBoxMergeCompAndKey.setToolTipText("Concatenates component and key. That means 'dialog' and 'heading' become 'dialog_heading'.\nThis eventually reduces the json tree depth by 1");
         checkBoxUseHyperlinkIfAvailable.setSelected(false);
         checkBoxUseHyperlinkIfAvailable.setToolTipText("Replaces cell content with hyperlink if any");
-        checkDoNotExportEmptyCells.setSelected(true);
-        checkDoNotExportEmptyCells.setToolTipText("Don't export key value pairs with empty values. This is for each language individually");
         checkIncludeHiddenSheets.setSelected(false);
         checkIncludeHiddenSheets.setToolTipText("Consider hidden and very hidden sheets in excel during import. Usually this can be toggled off.");
 
@@ -98,7 +98,6 @@ public class Excelibur extends JPanel {
         infoPanel.add(new JLabel(""));
         infoPanel.add(new JLabel("Export settings:"));
         infoPanel.add(checkBoxMergeCompAndKey);
-        infoPanel.add(checkDoNotExportEmptyCells);
         infoPanel.add(checkIncludeHiddenSheets);
         JLabel outputFolderRuleLabel = new JLabel("Output folder (struct):");
         outputFolderRuleLabel.setForeground(new Color(128, 128, 128));
@@ -175,56 +174,52 @@ public class Excelibur extends JPanel {
         enableUserInput(true);
     }
 
-//    private void createDualHeaderTable(LanguageTable langTable) {
-//        ArrayList<String> localeHeader = new ArrayList<String>();
-//        localeHeader.add("Component");
-//        localeHeader.add("Key");
-//        ArrayList<String> brandHeader = new ArrayList<String>();
-//        ArrayList<Integer> localeCount = new ArrayList<Integer>();
-//        String previousBrand = "";
-//        for (LanguageIdentifier identifier : langTable.getIdentifiers()) {
-//            if (!previousBrand.equals(identifier.brand)) {
-//                brandHeader.add(identifier.brand);
-//                localeCount.add(1);
-//                previousBrand = identifier.brand;
-//            } else {
-//                int i = localeCount.size() - 1;
-//                int count = localeCount.get(i);
-//                localeCount.set(i, ++count);
-//            }
-//            localeHeader.add(identifier.locale);
-//        }
-//
-//        DefaultTableModel dm = new DefaultTableModel();
-//        dm.setDataVector(langTable.getJTableData(), localeHeader.toArray());
-//
-//        table = new JTable(dm) {
-//            protected JTableHeader createDefaultTableHeader() {
-//                return new GroupableTableHeader(columnModel);
-//            }
-//        };
-//
-//        TableColumnModel cm = table.getColumnModel();
-//        GroupableTableHeader header = (GroupableTableHeader) table.getTableHeader();
-//        int offset = 2;
-//        for (int i = 0; i < localeCount.size(); ++i) {
-//            ColumnGroup group = new ColumnGroup(brandHeader.get(i));
-//            for (int j = 0; j < localeCount.get(i); ++j) {
-//                group.add(cm.getColumn(offset + j));
-//            }
-//            offset += localeCount.get(i);
-//            header.addColumnGroup(group);
-//        }
-//
-//        ExceliburCellRenderer cellRenderer = new ExceliburCellRenderer();
-//        table.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
-//        table.getTableHeader().setReorderingAllowed(false);
-//        table.setDefaultRenderer(Object.class, cellRenderer);
-//        table.setFillsViewportHeight(true);
-//        horSplit.setRightComponent(new JScrollPane(table));
-//        table.setRowSelectionAllowed(true);
-//        updateTableAutoResizing();
-//    }
+    @Override
+    public String onLocaleMissing(File file) {
+        return showDialogForLocale(file);
+    }
+
+    @Override
+    public String onBrandMissing(File file) {
+        return showDialogForBrand(file);
+    }
+
+    private String showDialogForLocale(File file) {
+        String arr1[] = TranslationMgr.ISO_CODES.toArray(new String[0]);
+        String arr2[] = TranslationMgr.SUCCESSFACTOR_CODES.toArray(new String[0]);
+
+        String[] mergedArray = new String[arr1.length + arr2.length];
+        System.arraycopy(arr1, 0, mergedArray, 0, arr1.length);
+        System.arraycopy(arr2, 0, mergedArray, arr1.length, arr2.length);
+        Arrays.sort(mergedArray);
+
+        String Result = null;
+        while (Result == null || Result.isBlank() || Result.isEmpty()) {
+            Result = (String) JOptionPane.showInputDialog(
+                    owner,
+                    "Could'nt detect locale, please specify manually for:\n" + file.getAbsolutePath() + "\n",
+                    "Choose Locale",
+                    JOptionPane.PLAIN_MESSAGE,
+                    null,
+                    mergedArray, "en_us");
+        }
+        return Result;
+    }
+
+    private String showDialogForBrand(File file) {
+
+        String Result = null;
+        while (Result == null || Result.isBlank() || Result.isEmpty()) {
+            Result = (String) JOptionPane.showInputDialog(
+                    owner,
+                    "Could'nt detect brand, please specify manually for:\n" + file.getAbsolutePath() + "\n",
+                    "Choose Brand",
+                    JOptionPane.PLAIN_MESSAGE,
+                    null,
+                    null, null);
+        }
+        return Result;
+    }
 
     private void createOutputFolderComboBox() {
         String[] list = new String[3];
@@ -248,15 +243,18 @@ public class Excelibur extends JPanel {
 
     void openInputDialog() {
         owner.setStatus("Choosing files to import...", App.NORMAL_MESSAGE);
-        FileFilter filter = new FileNameExtensionFilter("Microsoft Excel Documents (*.xlsx)", "xlsx");
+        FileFilter xlsxfilter = new FileNameExtensionFilter("Microsoft Excel Documents (*.xlsx)", "xlsx");
+        FileFilter jsonfilter = new FileNameExtensionFilter("JavaScript Object Notation (*.json)", "json");
 
         if (saveManager.userSettings.exceliburLastImportFolder.isBlank() || saveManager.userSettings.exceliburLastImportFolder.isEmpty()) {
             String userDir = System.getProperty("user.home");
-			saveManager.userSettings.exceliburLastImportFolder = userDir + "/Desktop";
+            saveManager.userSettings.exceliburLastImportFolder = userDir + "/Desktop";
         }
+        // https://docs.oracle.com/javase/tutorial/uiswing/components/filechooser.html
         JFileChooser fileChooser = new JFileChooser(saveManager.userSettings.exceliburLastImportFolder);
         fileChooser.setMultiSelectionEnabled(true);
-        fileChooser.setFileFilter(filter);
+        fileChooser.addChoosableFileFilter(xlsxfilter);
+        fileChooser.addChoosableFileFilter(jsonfilter);
         fileChooser.setPreferredSize(new Dimension(800, 600));
 
         // This sets the default folder view to 'details'
@@ -267,7 +265,7 @@ public class Excelibur extends JPanel {
         if (choice == JFileChooser.APPROVE_OPTION) {
             if (fileChooser.getSelectedFiles().length > 0) {
                 translationMgr.files = fileChooser.getSelectedFiles();
-				saveManager.userSettings.exceliburLastImportFolder = translationMgr.files[0].getParent();
+                saveManager.userSettings.exceliburLastImportFolder = translationMgr.files[0].getParent();
                 updateListView();
                 updateTableView();
             }
@@ -285,7 +283,7 @@ public class Excelibur extends JPanel {
 
         if (saveManager.userSettings.exceliburLastExportFolder.isBlank() || saveManager.userSettings.exceliburLastExportFolder.isEmpty()) {
             String userDir = System.getProperty("user.home");
-			saveManager.userSettings.exceliburLastExportFolder = userDir + "/Desktop";
+            saveManager.userSettings.exceliburLastExportFolder = userDir + "/Desktop";
         }
         JFileChooser chooser = new JFileChooser(saveManager.userSettings.exceliburLastExportFolder);
         chooser.setSelectedFile(new File("translations"));
@@ -299,7 +297,7 @@ public class Excelibur extends JPanel {
         if (choice == JFileChooser.APPROVE_OPTION) {
             new Thread(() -> {
                 String outputFolder = chooser.getSelectedFile().toString();
-				saveManager.userSettings.exceliburLastExportFolder = chooser.getSelectedFile().getParent();
+                saveManager.userSettings.exceliburLastExportFolder = chooser.getSelectedFile().getParent();
                 int i = outputFolder.lastIndexOf(System.getProperty("file.separator"));
                 String fileName = outputFolder.substring(i + 1, outputFolder.length());
                 outputFolder = outputFolder.substring(0, i);
@@ -349,7 +347,7 @@ public class Excelibur extends JPanel {
     private void importData() {
         translationMgr.setFlag(TranslationMgrFlags.Import.USE_HYPERLINK_IF_AVAILABLE, checkBoxUseHyperlinkIfAvailable.isSelected());
         translationMgr.setFlag(TranslationMgrFlags.Import.INCLUDE_HIDDEN_SHEETS, checkIncludeHiddenSheets.isSelected());
-        LanguageTable languageTable = translationMgr.importFiles();
+        LanguageTable languageTable = translationMgr.importFiles(this);
         Component comp = horSplit.getRightComponent();
         if (comp != null) horSplit.remove(comp);
 
@@ -387,7 +385,6 @@ public class Excelibur extends JPanel {
         returnButton.setEnabled(bEnabled);
         checkBoxAutoResize.setEnabled(bEnabled);
         checkBoxMergeCompAndKey.setEnabled(bEnabled);
-        checkDoNotExportEmptyCells.setEnabled(bEnabled);
         checkIncludeHiddenSheets.setEnabled(bEnabled);
         checkBoxUseHyperlinkIfAvailable.setEnabled(bEnabled);
         comboFolderNaming.setEnabled(bEnabled);
@@ -395,7 +392,6 @@ public class Excelibur extends JPanel {
 
     private boolean exportData(String outputFolder, String fileName) {
         translationMgr.setFlag(TranslationMgrFlags.Export.CONCAT_COMPONENT_AND_KEY, checkBoxMergeCompAndKey.isSelected());
-        translationMgr.setFlag(TranslationMgrFlags.Export.DONT_EXPORT_EMPTY_VALUES, checkDoNotExportEmptyCells.isSelected());
 
         translationMgr.folderNamingType = TranslationMgrFlags.FolderNaming.getValue(comboFolderNaming.getSelectedIndex());
         return translationMgr.export2Json(outputFolder, fileName);

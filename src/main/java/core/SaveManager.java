@@ -38,7 +38,7 @@ public class SaveManager {
             Dimension size = frame.getSize();
             prefs.putInt("W", size.width);
             prefs.putInt("H", size.height);
-            prefs.putInt("Extn", frame.getExtendedState());
+            prefs.putInt("EXTENDED_STATE", frame.getExtendedState());
             prefs.putBoolean("bUseDarkMode", userSettings.bUseDarkMode);
             prefs.put(EXCELIBUR_IMPORT_FOLDER_STRING, userSettings.exceliburLastImportFolder);
             prefs.put(EXCELIBUR_EXPORT_FOLDER_STRING, userSettings.exceliburLastExportFolder);

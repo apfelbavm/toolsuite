@@ -5,6 +5,7 @@ import java.util.Arrays;
 import java.util.HashSet;
 
 import reader.FileReader;
+import widgets.Excelibur;
 import widgets.table.LanguageIdentifier;
 import widgets.table.LanguageTable;
 import translations.I18nCSB;
@@ -59,8 +60,7 @@ public class TranslationMgr {
     public boolean export2Json(String outputFolder, String fileName) {
         JsonWriter json = new JsonWriter();
         boolean bMergeComponentAndKey = getFlag(TranslationMgrFlags.Export.CONCAT_COMPONENT_AND_KEY);
-        boolean bSkipEmptyCells = getFlag(TranslationMgrFlags.Export.DONT_EXPORT_EMPTY_VALUES);
-        return json.export2Json(csb, outputFolder, fileName, bMergeComponentAndKey, bSkipEmptyCells, folderNamingType);
+        return json.export2Json(csb, outputFolder, fileName, bMergeComponentAndKey, folderNamingType);
     }
 
     public static final HashSet<String> ISO_CODES = new HashSet<String>(Arrays.asList(new String[]{"af_za", "am_et", "ar_ae", "ar_bh", "ar_dz", "ar_eg", "ar_iq", "ar_jo", "ar_kw", "ar_lb", "ar_ly", "ar_ma",
@@ -79,8 +79,14 @@ public class TranslationMgr {
 
     public static final HashSet<String> SUCCESSFACTOR_CODES = new HashSet<String>(Arrays.asList(new String[]{"bs_id", "bs_BS", "cnr_ME"}));
 
-    public LanguageTable importFiles() {
+    public static boolean isLocale(String value) {
+        return TranslationMgr.ISO_CODES.contains(value.toLowerCase()) || TranslationMgr.SUCCESSFACTOR_CODES.contains(value.toLowerCase());
+    }
+
+    public LanguageTable importFiles(Excelibur excelibur) {
         FileReader reader = new FileReader();
+        reader.jsonReader.bindOnRequestLocale(excelibur);
+        reader.jsonReader.bindOnRequestBrand(excelibur);
         csb = reader.read(files);
 
         long statSort = System.currentTimeMillis();

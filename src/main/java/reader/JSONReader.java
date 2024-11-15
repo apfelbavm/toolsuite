@@ -55,21 +55,28 @@ public class JSONReader {
     public I18nCSB read(ArrayList<File> files) {
         I18nCSB csb = new I18nCSB();
         for (File file : files) {
-            I18nLanguage language = read("", file);
+            I18nLanguage language = read(file);
+            //if (language == null) continue;
             if (!language.hasLocale()) {
                 String locale = determineLocale(file);
                 if (locale == null) {
                     locale = requestLocale(file);
                 }
+                language.addMetaLocale(locale);
             }
-            String brandName = requestBrand(file);
-            if (brandName == null) {
-                brandName = "UNSET";
+
+            String brandName = language.getBrand();
+            if (brandName == null || brandName.isEmpty() || brandName.isBlank()) {
+                brandName = requestBrand(file);
+                if (brandName == null || brandName.isEmpty() || brandName.isBlank()) {
+                    brandName = "UNSET";
+                }
+                language.addMetaBrand(brandName);
             }
-            language.print();
-            if (language != null) {
-                csb.add("", language);
-            }
+
+            csb.add(brandName, language);
+
+            //language.print();
         }
         return csb;
     }
@@ -86,9 +93,8 @@ public class JSONReader {
         return null;
     }
 
-    private I18nLanguage read(String locale, File file) {
-
-        I18nLanguage language = new I18nLanguage("", locale);
+    private I18nLanguage read(File file) {
+        I18nLanguage language = new I18nLanguage(null, null);
         try {
             InputStream fis = new FileInputStream(file);
             JSONTokener tokener = new JSONTokener(fis);
@@ -103,11 +109,21 @@ public class JSONReader {
                         String keyNameString = keyName.toString();
                         switch (keyNameString) {
                             case I18nLanguage.META_LOCALE_STRING: {
-                                language.addMetaLocale(component.get(keyNameString).toString());
+                                String locale = component.get(keyNameString).toString();
+                                if (TranslationMgr.isLocale(locale)) {
+                                    System.out.println("found locale " + component.get(keyNameString).toString());
+                                    language.addMetaLocale(component.get(keyNameString).toString());
+                                }
                                 break;
                             }
                             case I18nLanguage.META_BRAND_STRING: {
+                                System.out.println("found brand " + component.get(keyNameString).toString());
                                 language.addMetaBrand(component.get(keyNameString).toString());
+                                break;
+                            }
+                            default: {
+                                I18n i18n = new I18n("", "", componentName.toString(), keyName.toString(), component.get(keyName.toString()).toString());
+                                boolean bAdded = language.add(i18n, false);
                                 break;
                             }
                         }

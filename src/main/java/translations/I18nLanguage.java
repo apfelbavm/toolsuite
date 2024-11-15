@@ -36,7 +36,21 @@ public class I18nLanguage implements Comparable<I18nLanguage> {
     }
 
     public boolean hasLocale() {
-        return locale != null && !locale.isBlank() && locale.isEmpty();
+        return locale != null && !locale.isBlank() && !locale.isEmpty();
+    }
+
+    public String getBrand() {
+        for(I18n i18n : translations)
+        {
+            if(i18n.component.equals(META_STRING))
+            {
+                if(i18n.key.equals(META_BRAND_STRING))
+                {
+                    return i18n.value;
+                }
+            }
+        }
+        return null;
     }
 
     public void sort() {
@@ -78,6 +92,7 @@ public class I18nLanguage implements Comparable<I18nLanguage> {
     public void addMetaLocale(String localeName) {
         if (localeName != null && !localeName.isBlank() && !localeName.isEmpty()) {
             I18n metaLocale = new I18n("", "", META_STRING, META_LOCALE_STRING, localeName);
+            locale = localeName;
             add(metaLocale, true);
         }
     }

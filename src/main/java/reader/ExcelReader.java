@@ -69,9 +69,6 @@ public class ExcelReader {
         return value.trim();
     }
 
-    private boolean isLocale(String value) {
-        return TranslationMgr.ISO_CODES.contains(value.toLowerCase()) || TranslationMgr.SUCCESSFACTOR_CODES.contains(value.toLowerCase());
-    }
 
     private String findBrand(Sheet sheet) {
         if (sheet == null) return "";
@@ -97,7 +94,7 @@ public class ExcelReader {
             int lastCol = Math.min(MAX_SEARCH_COLUMN, row.getLastCellNum());
             for (int c = 0; c < lastCol; ++c) {
                 String value = getCellValue(row, c);
-                if (value != null && isLocale(value)) {
+                if (value != null && TranslationMgr.isLocale(value)) {
                     locales.add(new Pair<LanguageIdentifier, Integer>(new LanguageIdentifier(brand, value), c));
                 }
             }

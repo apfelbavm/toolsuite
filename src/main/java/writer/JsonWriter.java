@@ -9,6 +9,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.Map;
+import java.util.TreeMap;
 
 import core.App;
 import core.TranslationMgrFlags;
@@ -20,7 +21,7 @@ import translations.I18nCSB;
 public class JsonWriter {
     private TranslationMgrFlags.FolderNaming folderNamingType;
 
-    public boolean export2Json(I18nCSB csb, String outputFolder, String fileName, boolean bMergeComponentAndKey, boolean bSkipEmptyCells,
+    public boolean export2Json(I18nCSB csb, String outputFolder, String fileName, boolean bMergeComponentAndKey,
                                TranslationMgrFlags.FolderNaming inFolderNamingType) {
         folderNamingType = inFolderNamingType;
         // we have only one line off error message, thus we just have to return wether
@@ -29,16 +30,16 @@ public class JsonWriter {
         for (I18nBrand brand : csb.brands) {
             for (I18nLanguage lang : brand.languages) {
                 if (bMergeComponentAndKey) {
-                    if (!exportSimple(lang, brand.name, outputFolder, fileName, bSkipEmptyCells)) return false;
+                    //if (!exportSimple(lang, brand.name, outputFolder, fileName, bSkipEmptyCells)) return false; @todo not finished copy logic from "advanced export"
                 } else {
-                    if (!exportAdvanced(lang, brand.name, outputFolder, fileName, bSkipEmptyCells)) return false;
+                    if (!exportAdvanced(lang, brand.name, outputFolder, fileName)) return false;
                 }
             }
         }
         return true;
     }
 
-    private boolean exportAdvanced(I18nLanguage lang, String brand, String outputFolder, String fileName, boolean skipEmptyCells) {
+    private boolean exportAdvanced(I18nLanguage lang, String brand, String outputFolder, String fileName) {
         try {
             String pathToCreate = createOutputFolder(outputFolder, brand, lang.locale);
             if (pathToCreate == null) {
@@ -64,13 +65,22 @@ public class JsonWriter {
                     if (i18n.bIsJSON) {
                         writer.write("    \"" + i18n.component + "\": {\n");
                         writer.write("        \"" + i18n.key + "\": {\n");
-                        for (Map.Entry<String, String> entry : i18n.getJSONSorted().entrySet()) {
-                            writer.write("            \"" + entry.getKey() + "\": " + "\"" + entry.getValue() + "\"\n");
+                        TreeMap<String, String> tree = i18n.getJSONSorted();
+                        int numJSONEntries = tree.size();
+                        int i = 0;
+                        for (Map.Entry<String, String> entry : tree.entrySet()) {
+                            writer.write("            \"" + entry.getKey() + "\": " + "\"" + entry.getValue() + "\"");
+                            if (i < numJSONEntries - 1) {
+                                writer.write(",\n");
+                            } else {
+                                writer.write("\n");
+                            }
+                            ++i;
                         }
                         writer.write("        }");
                     } else {
                         writer.write("    \"" + i18n.component + "\": {\n        \"" + i18n.key + "\": " + "\"" + i18n.value + "\"");
-                        writer.write("    }");
+                        //writer.write("    }");
                     }
                     lastComponent = i18n.component;
                 } else {
@@ -79,8 +89,17 @@ public class JsonWriter {
                     }
                     if (i18n.bIsJSON) {
                         writer.write("        \"" + i18n.key + "\": {\n");
-                        for (Map.Entry<String, String> entry : i18n.getJSONSorted().entrySet()) {
-                            writer.write("            \"" + entry.getKey() + "\": " + "\"" + entry.getValue() + "\"\n");
+                        TreeMap<String, String> tree = i18n.getJSONSorted();
+                        int numJSONEntries = tree.size();
+                        int i = 0;
+                        for (Map.Entry<String, String> entry : tree.entrySet()) {
+                            writer.write("            \"" + entry.getKey() + "\": " + "\"" + entry.getValue() + "\"");
+                            if (i < numJSONEntries - 1) {
+                                writer.write(",\n");
+                            } else {
+                                writer.write("\n");
+                            }
+                            ++i;
                         }
                         writer.write("        }");
                     } else {
