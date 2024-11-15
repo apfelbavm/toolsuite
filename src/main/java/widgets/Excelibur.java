@@ -43,7 +43,6 @@ public class Excelibur extends JPanel implements OnLocaleMissing, OnBrandMissing
     private static final long serialVersionUID = 1L;
     private SaveManager saveManager = SaveManager.get();
     App owner;
-    JTable table;
     JList<String> fileList = new JList<String>();
 
     JButton importButton, exportButton, returnButton, reloadButton;
@@ -68,8 +67,8 @@ public class Excelibur extends JPanel implements OnLocaleMissing, OnBrandMissing
 
         // TABLE
         DefaultTableModel model = new DefaultTableModel(new String[]{"Component", "Key", "Locale"}, 0);
-        table = new JTable(model);
-        table.setFillsViewportHeight(true);
+        //table = new JTable(model);
+        //table.setFillsViewportHeight(true);
 
         JPanel infoPanel = new JPanel();
         GridLayout grid = new GridLayout(13, 1, 8, 0);
@@ -135,7 +134,7 @@ public class Excelibur extends JPanel implements OnLocaleMissing, OnBrandMissing
         horSplit.setEnabled(false);
         horSplit.setDividerSize(0);
         horSplit.setLeftComponent(leftSplitPane);
-        horSplit.setRightComponent(new JScrollPane(table, JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED, JScrollPane.HORIZONTAL_SCROLLBAR_AS_NEEDED));
+        horSplit.setRightComponent(new JScrollPane(tableCtrl, JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED, JScrollPane.HORIZONTAL_SCROLLBAR_AS_NEEDED));
 
         reloadButton = App.createButtonWithTextAndIcon("Reload tables...", "icon_refresh.png");
         reloadButton.setToolTipText("Reimport the selected files. Be sure to have all imported Excel files closed or they won't be imported as Excel blocks the files when opened.");
@@ -351,10 +350,10 @@ public class Excelibur extends JPanel implements OnLocaleMissing, OnBrandMissing
         Component comp = horSplit.getRightComponent();
         if (comp != null) horSplit.remove(comp);
 
-        table = tableCtrl.createTable(languageTable);
+        tableCtrl.createTable(languageTable);
         tableCtrl.updateTableAutoResizing(checkBoxAutoResize.isSelected());
 
-        horSplit.setRightComponent(new JScrollPane(table));
+        horSplit.setRightComponent(tableCtrl);
 
         translationMgr.stopTimeTrace();
         double seconds = (double) translationMgr.getCalculationTime();
@@ -376,18 +375,18 @@ public class Excelibur extends JPanel implements OnLocaleMissing, OnBrandMissing
         }
     }
 
-    private void enableUserInput(boolean bEnabled) {
-        boolean bAnyFilesImported = translationMgr.getNumSelectedFiles() > 0 && table.getRowCount() > 0;
+    private void enableUserInput(boolean bEnable) {
+        boolean bAnyFilesImported = translationMgr.getNumSelectedFiles() > 0 && tableCtrl.getRowCount() > 0;
         // prevent export if no files are in the "imported" list
-        exportButton.setEnabled(bEnabled && bAnyFilesImported);
-        reloadButton.setEnabled(bEnabled && bAnyFilesImported);
-        importButton.setEnabled(bEnabled);
-        returnButton.setEnabled(bEnabled);
-        checkBoxAutoResize.setEnabled(bEnabled);
-        checkBoxMergeCompAndKey.setEnabled(bEnabled);
-        checkIncludeHiddenSheets.setEnabled(bEnabled);
-        checkBoxUseHyperlinkIfAvailable.setEnabled(bEnabled);
-        comboFolderNaming.setEnabled(bEnabled);
+        exportButton.setEnabled(bEnable && bAnyFilesImported);
+        reloadButton.setEnabled(bEnable && bAnyFilesImported);
+        importButton.setEnabled(bEnable);
+        returnButton.setEnabled(bEnable);
+        checkBoxAutoResize.setEnabled(bEnable);
+        checkBoxMergeCompAndKey.setEnabled(bEnable);
+        checkIncludeHiddenSheets.setEnabled(bEnable);
+        checkBoxUseHyperlinkIfAvailable.setEnabled(bEnable);
+        comboFolderNaming.setEnabled(bEnable);
     }
 
     private boolean exportData(String outputFolder, String fileName) {

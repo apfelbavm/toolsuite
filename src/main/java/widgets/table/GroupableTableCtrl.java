@@ -1,8 +1,11 @@
 package widgets.table;
 
 import core.App;
+import widgets.MainMenu;
 
 import javax.swing.*;
+import javax.swing.event.DocumentEvent;
+import javax.swing.event.DocumentListener;
 import javax.swing.table.*;
 import java.awt.*;
 import java.awt.datatransfer.DataFlavor;
@@ -14,18 +17,31 @@ import java.util.ArrayList;
 import java.util.List;
 
 
-public class GroupableTableCtrl {
+public class GroupableTableCtrl extends JPanel {
     JTable table;
+    private JTextField searchInput = new JTextField();
+    private JButton clearButton = new JButton("Clear");
 
-    public JTable createTable(LanguageTable langTable) {
+    public GroupableTableCtrl() {
+        setLayout(new BorderLayout());
+        //add(jtfFilter, BorderLayout.NORTH);
 
+        JPanel panel = new JPanel(new BorderLayout());
+        panel.add(new JLabel("Specify a word to match:"), BorderLayout.WEST);
+        panel.add(searchInput, BorderLayout.CENTER);
+        panel.add(clearButton, BorderLayout.EAST);
+        clearButton.addActionListener(e -> clearSearch());
+        add(panel, BorderLayout.NORTH);
+    }
+
+    public void createTable(LanguageTable langTable) {
+        clearSearch();
         if (langTable == null) {
             App app = App.get();
             app.setStatus("No data found inside Excel file(s). Did you set it up properly? Click 'Help' to read the documentation on how to setup an Excel file correctly.", App.ERROR_MESSAGE);
             DefaultTableModel model = new DefaultTableModel(new String[]{"Component", "Key", "Locale"}, 0);
             table = new JTable(model);
             table.setFillsViewportHeight(true);
-            return table;
         } else {
 
             ArrayList<String> localeHeader = new ArrayList<String>();
@@ -87,8 +103,19 @@ public class GroupableTableCtrl {
                     }
                 }
             });
-            return table;
         }
+        sortFilter();
+
+        add(new JScrollPane(table), BorderLayout.CENTER);
+    }
+
+    public void clearSearch()
+    {
+        searchInput.setText("");
+    }
+    public int getRowCount() {
+        if (table != null) return table.getRowCount();
+        return 0;
     }
 
     public void updateTableAutoResizing(boolean bAutoResize) {
@@ -120,9 +147,42 @@ public class GroupableTableCtrl {
                         break;
                     }
                 }
-
                 tableColumn.setPreferredWidth(preferredWidth);
             }
         }
+    }
+
+    public void sortFilter() { // https://stackoverflow.com/questions/22066387/how-to-search-an-element-in-a-jtable-java
+        TableRowSorter<TableModel> rowSorter = new TableRowSorter<>(table.getModel());
+        table.setRowSorter(rowSorter);
+
+        searchInput.getDocument().addDocumentListener(new DocumentListener() {
+            @Override
+            public void insertUpdate(DocumentEvent e) {
+                String text = searchInput.getText();
+
+                if (text.trim().length() == 0) {
+                    rowSorter.setRowFilter(null);
+                } else {
+                    rowSorter.setRowFilter(RowFilter.regexFilter("(?i)" + text));
+                }
+            }
+
+            @Override
+            public void removeUpdate(DocumentEvent e) {
+                String text = searchInput.getText();
+
+                if (text.trim().length() == 0) {
+                    rowSorter.setRowFilter(null);
+                } else {
+                    rowSorter.setRowFilter(RowFilter.regexFilter("(?i)" + text));
+                }
+            }
+
+            @Override
+            public void changedUpdate(DocumentEvent e) {
+                throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+            }
+        });
     }
 }
