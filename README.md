@@ -29,3 +29,7 @@ Compile it yourself or download the .jar!
 ##Fixes Windows
 If a .jar file does not run because of a java (re-)installation download this tool and fix the registry. It is most likely a wrong file association.
 http://johann.loefflmann.net/en/software/jarfix/index.html
+
+##Mac - Berechtigungsprobleme
+Systemeinstellungen → Sicherheit → ganz runterscrollen bis "Sicherheit". Dann sollte es da schon gelistet sein → "dennoch öffnen" klicken.
+Falls noch nicht da einmal starten. Sollte dann kommen.

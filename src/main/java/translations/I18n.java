@@ -81,18 +81,31 @@ public class I18n implements Comparable<I18n> {
         return I18nResult.NotFound;
     }
 
-    public TreeMap<String, String> getJSONSorted() {
+    public TreeMap<String, String> getJSONSorted(boolean bSkipEmpty) {
         TreeMap<String, String> tree = new TreeMap<String, String>();
         for (Object entry : json.names()) {
             String k = entry.toString();
             String v = json.get(k).toString();
+            if (bSkipEmpty) {
+                if (v == null || v.isBlank() || v.isEmpty()) continue;
+            }
             tree.put(k, v);
+
         }
         return tree;
     }
 
     public boolean isValid() {
-        return (bIsJSON || (value != null && !value.isBlank() && !value.isEmpty()));
+        if (bIsJSON) {
+            for (Object entry : json.names()) {
+                String k = entry.toString();
+                String v = json.get(k).toString();
+                if (v != null && !v.isBlank() && !v.isEmpty()) return true;
+            }
+        } else {
+            return (value != null && !value.isBlank() && !value.isEmpty());
+        }
+        return false;
     }
 
     public void print() {

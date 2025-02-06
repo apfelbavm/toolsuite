@@ -6,7 +6,7 @@ public class TranslationMgrFlags {
 	}
 
 	public enum Export {
-		CONCAT_COMPONENT_AND_KEY
+		CONCAT_COMPONENT_AND_KEY,DONT_EXPORT_EMPTY_VALUES
 	}
 
 	public enum FolderNaming {

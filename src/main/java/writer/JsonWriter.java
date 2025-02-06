@@ -21,7 +21,7 @@ import translations.I18nCSB;
 public class JsonWriter {
     private TranslationMgrFlags.FolderNaming folderNamingType;
 
-    public boolean export2Json(I18nCSB csb, String outputFolder, String fileName, boolean bMergeComponentAndKey,
+    public boolean export2Json(I18nCSB csb, String outputFolder, String fileName, boolean bMergeComponentAndKey, boolean bSkipEmptyCells,
                                TranslationMgrFlags.FolderNaming inFolderNamingType) {
         folderNamingType = inFolderNamingType;
         // we have only one line off error message, thus we just have to return wether
@@ -32,15 +32,16 @@ public class JsonWriter {
                 if (bMergeComponentAndKey) {
                     //if (!exportSimple(lang, brand.name, outputFolder, fileName, bSkipEmptyCells)) return false; @todo not finished copy logic from "advanced export"
                 } else {
-                    if (!exportAdvanced(lang, brand.name, outputFolder, fileName)) return false;
+                    if (!exportAdvanced(lang, brand.name, outputFolder, fileName, bSkipEmptyCells)) return false;
                 }
             }
         }
         return true;
     }
 
-    private boolean exportAdvanced(I18nLanguage lang, String brand, String outputFolder, String fileName) {
+    private boolean exportAdvanced(I18nLanguage lang, String brand, String outputFolder, String fileName, boolean bSkipEmptyCells) {
         try {
+            System.out.println("JsonWriter export-> bSkipEmptyCells: " + bSkipEmptyCells);
             String pathToCreate = createOutputFolder(outputFolder, brand, lang.locale);
             if (pathToCreate == null) {
                 return false;
@@ -51,7 +52,7 @@ public class JsonWriter {
             boolean isFirstComp = true;
             writer.write("{\n");
             for (I18n i18n : lang.translations) {
-                if (!i18n.isValid()) continue;
+                if (bSkipEmptyCells && !i18n.isValid()) continue;
                 boolean isFirstKeyValue = false;
                 if (!i18n.component.equals(lastComponent)) {
                     // New component
@@ -63,21 +64,23 @@ public class JsonWriter {
                     }
 
                     if (i18n.bIsJSON) {
-                        writer.write("    \"" + i18n.component + "\": {\n");
-                        writer.write("        \"" + i18n.key + "\": {\n");
-                        TreeMap<String, String> tree = i18n.getJSONSorted();
+                        TreeMap<String, String> tree = i18n.getJSONSorted(bSkipEmptyCells);
                         int numJSONEntries = tree.size();
-                        int i = 0;
-                        for (Map.Entry<String, String> entry : tree.entrySet()) {
-                            writer.write("            \"" + entry.getKey() + "\": " + "\"" + entry.getValue() + "\"");
-                            if (i < numJSONEntries - 1) {
-                                writer.write(",\n");
-                            } else {
-                                writer.write("\n");
+                        if (numJSONEntries > 0) {
+                            writer.write("    \"" + i18n.component + "\": {\n");
+                            writer.write("        \"" + i18n.key + "\": {\n");
+                            int i = 0;
+                            for (Map.Entry<String, String> entry : tree.entrySet()) {
+                                writer.write("            \"" + entry.getKey() + "\": " + "\"" + entry.getValue() + "\"");
+                                if (i < numJSONEntries - 1) {
+                                    writer.write(",\n");
+                                } else {
+                                    writer.write("\n");
+                                }
+                                ++i;
                             }
-                            ++i;
+                            writer.write("        }");
                         }
-                        writer.write("        }");
                     } else {
                         writer.write("    \"" + i18n.component + "\": {\n        \"" + i18n.key + "\": " + "\"" + i18n.value + "\"");
                         //writer.write("    }");
@@ -88,20 +91,22 @@ public class JsonWriter {
                         writer.write(",\n");
                     }
                     if (i18n.bIsJSON) {
-                        writer.write("        \"" + i18n.key + "\": {\n");
-                        TreeMap<String, String> tree = i18n.getJSONSorted();
+                        TreeMap<String, String> tree = i18n.getJSONSorted(bSkipEmptyCells);
                         int numJSONEntries = tree.size();
-                        int i = 0;
-                        for (Map.Entry<String, String> entry : tree.entrySet()) {
-                            writer.write("            \"" + entry.getKey() + "\": " + "\"" + entry.getValue() + "\"");
-                            if (i < numJSONEntries - 1) {
-                                writer.write(",\n");
-                            } else {
-                                writer.write("\n");
+                        if (numJSONEntries > 0) {
+                            writer.write("        \"" + i18n.key + "\": {\n");
+                            int i = 0;
+                            for (Map.Entry<String, String> entry : tree.entrySet()) {
+                                writer.write("            \"" + entry.getKey() + "\": " + "\"" + entry.getValue() + "\"");
+                                if (i < numJSONEntries - 1) {
+                                    writer.write(",\n");
+                                } else {
+                                    writer.write("\n");
+                                }
+                                ++i;
                             }
-                            ++i;
+                            writer.write("        }");
                         }
-                        writer.write("        }");
                     } else {
                         writer.write("        \"" + i18n.key + "\": " + "\"" + i18n.value + "\"");
                     }

@@ -144,10 +144,10 @@ public class ExcelReader {
             String key = getCellValue(row, keyCol);
             if (key == null || key.isBlank() || key.isEmpty()) continue;
             String value = getCellValue(row, valueCol);
-            if (value != null && !value.isBlank() && !value.isEmpty()) {
+            //if (value != null && !value.isBlank() && !value.isEmpty()) {
                 I18n i18n = new I18n("", "", component, key, value);
                 lang.add(i18n, false);
-            }
+            //}
         }
 
         return lang;

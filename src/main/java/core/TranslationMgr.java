@@ -60,7 +60,8 @@ public class TranslationMgr {
     public boolean export2Json(String outputFolder, String fileName) {
         JsonWriter json = new JsonWriter();
         boolean bMergeComponentAndKey = getFlag(TranslationMgrFlags.Export.CONCAT_COMPONENT_AND_KEY);
-        return json.export2Json(csb, outputFolder, fileName, bMergeComponentAndKey, folderNamingType);
+        boolean bSkipEmptyCells = getFlag(TranslationMgrFlags.Export.DONT_EXPORT_EMPTY_VALUES);
+        return json.export2Json(csb, outputFolder, fileName, bMergeComponentAndKey, bSkipEmptyCells, folderNamingType);
     }
 
     public static final HashSet<String> ISO_CODES = new HashSet<String>(Arrays.asList(new String[]{"af_za", "am_et", "ar_ae", "ar_bh", "ar_dz", "ar_eg", "ar_iq", "ar_jo", "ar_kw", "ar_lb", "ar_ly", "ar_ma",

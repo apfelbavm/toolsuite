@@ -6,6 +6,7 @@ import java.awt.Dimension;
 import java.awt.FlowLayout;
 import java.awt.GridLayout;
 import java.io.File;
+import java.io.Serial;
 import java.util.Arrays;
 
 import javax.swing.Action;
@@ -34,9 +35,10 @@ import widgets.table.GroupableTable;
 
 public class Excelibur extends JPanel implements OnLocaleMissing, OnBrandMissing {
 
-    private TranslationMgr translationMgr = new TranslationMgr();
+    private final TranslationMgr translationMgr = new TranslationMgr();
+    @Serial
     private static final long serialVersionUID = 1L;
-    private SaveManager saveManager = SaveManager.get();
+    private final SaveManager saveManager = SaveManager.get();
     App owner;
     JList<String> fileList = new JList<String>();
 
@@ -48,6 +50,7 @@ public class Excelibur extends JPanel implements OnLocaleMissing, OnBrandMissing
     JCheckBox checkBoxMergeCompAndKey = new JCheckBox("Concat. 'Component' and 'Key'");
     JCheckBox checkBoxUseHyperlinkIfAvailable = new JCheckBox("Get hyperlink");
     JCheckBox checkIncludeHiddenSheets = new JCheckBox("Include hidden sheets");
+    JCheckBox checkDoNotExportEmptyCells = new JCheckBox("Skip empty values");
     GroupableTable table = new GroupableTable();
     ShortcutManager shortcuts = new ShortcutManager();
     JComboBox<String> comboFolderNaming;
@@ -67,7 +70,7 @@ public class Excelibur extends JPanel implements OnLocaleMissing, OnBrandMissing
         //table.setFillsViewportHeight(true);
 
         JPanel infoPanel = new JPanel();
-        GridLayout grid = new GridLayout(13, 1, 8, 0);
+        GridLayout grid = new GridLayout(14, 1, 8, 0);
         infoPanel.setLayout(grid);
         CompoundBorder b = new CompoundBorder(infoPanel.getBorder(), new EmptyBorder(4, 4, 4, 4));
         infoPanel.setBorder(b);
@@ -81,6 +84,8 @@ public class Excelibur extends JPanel implements OnLocaleMissing, OnBrandMissing
         checkBoxMergeCompAndKey.setToolTipText("Concatenates component and key. That means 'dialog' and 'heading' become 'dialog_heading'.\nThis eventually reduces the json tree depth by 1");
         checkBoxUseHyperlinkIfAvailable.setSelected(false);
         checkBoxUseHyperlinkIfAvailable.setToolTipText("Replaces cell content with hyperlink if any");
+        checkDoNotExportEmptyCells.setSelected(true);
+        checkDoNotExportEmptyCells.setToolTipText("Don't export key value pairs with empty values. This is for each language individually");
         checkIncludeHiddenSheets.setSelected(false);
         checkIncludeHiddenSheets.setToolTipText("Consider hidden and very hidden sheets in excel during import. Usually this can be toggled off.");
 
@@ -94,6 +99,7 @@ public class Excelibur extends JPanel implements OnLocaleMissing, OnBrandMissing
         infoPanel.add(new JLabel(""));
         infoPanel.add(new JLabel("Export settings:"));
         infoPanel.add(checkBoxMergeCompAndKey);
+        infoPanel.add(checkDoNotExportEmptyCells);
         infoPanel.add(checkIncludeHiddenSheets);
         JLabel outputFolderRuleLabel = new JLabel("Output folder (struct):");
         outputFolderRuleLabel.setForeground(UIConstants.Gray);
@@ -181,8 +187,8 @@ public class Excelibur extends JPanel implements OnLocaleMissing, OnBrandMissing
     }
 
     private String showDialogForLocale(File file) {
-        String arr1[] = TranslationMgr.ISO_CODES.toArray(new String[0]);
-        String arr2[] = TranslationMgr.SUCCESSFACTOR_CODES.toArray(new String[0]);
+        String[] arr1 = TranslationMgr.ISO_CODES.toArray(new String[0]);
+        String[] arr2 = TranslationMgr.SUCCESSFACTOR_CODES.toArray(new String[0]);
 
         String[] mergedArray = new String[arr1.length + arr2.length];
         System.arraycopy(arr1, 0, mergedArray, 0, arr1.length);
@@ -381,6 +387,7 @@ public class Excelibur extends JPanel implements OnLocaleMissing, OnBrandMissing
         returnButton.setEnabled(bEnable);
         checkBoxAutoResize.setEnabled(bEnable);
         checkBoxMergeCompAndKey.setEnabled(bEnable);
+        checkDoNotExportEmptyCells.setEnabled(bEnable);
         checkIncludeHiddenSheets.setEnabled(bEnable);
         checkBoxUseHyperlinkIfAvailable.setEnabled(bEnable);
         comboFolderNaming.setEnabled(bEnable);
@@ -388,7 +395,7 @@ public class Excelibur extends JPanel implements OnLocaleMissing, OnBrandMissing
 
     private boolean exportData(String outputFolder, String fileName) {
         translationMgr.setFlag(TranslationMgrFlags.Export.CONCAT_COMPONENT_AND_KEY, checkBoxMergeCompAndKey.isSelected());
-
+        translationMgr.setFlag(TranslationMgrFlags.Export.DONT_EXPORT_EMPTY_VALUES, checkDoNotExportEmptyCells.isSelected());
         translationMgr.folderNamingType = TranslationMgrFlags.FolderNaming.getValue(comboFolderNaming.getSelectedIndex());
         return translationMgr.export2Json(outputFolder, fileName);
     }
