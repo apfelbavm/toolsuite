@@ -43,7 +43,6 @@ public class GroupableTable extends JPanel {
 
     public void updateTable(LanguageTable langTable) {
         if (langTable == null) {
-            App app = App.get();
             //app.setStatus("No data found inside Excel file(s). Did you set it up properly? Click 'Help' to read the documentation on how to setup an Excel file correctly.", App.ERROR_MESSAGE);
             DefaultTableModel model = new DefaultTableModel(new String[]{"Component", "Key", "Locale"}, 0);
             table = new JTable(model);

@@ -122,17 +122,17 @@ public class JSONReader {
                                 break;
                             }
                             default: {
-                                I18n i18n = new I18n("", "", componentName.toString(), keyName.toString(), component.get(keyName.toString()).toString());
-                                boolean bAdded = language.add(i18n, false);
+                                //I18n i18n = new I18n("", "", componentName.toString(), keyName.toString(), component.get(keyName.toString()).toString());
+                                //boolean bAdded = language.add(i18n, false);
                                 break;
                             }
                         }
                     }
                 } else {
-                    for (Object keyName : component.names()) {
-                        I18n i18n = new I18n("", "", componentName.toString(), keyName.toString(), component.get(keyName.toString()).toString());
-                        boolean bAdded = language.add(i18n, false);
-                    }
+                    //for (Object keyName : component.names()) {
+                        //I18n i18n = new I18n("", "", componentName.toString(), keyName.toString(), component.get(keyName.toString()).toString());
+                        //boolean bAdded = language.add(i18n, false);
+                    //}
                 }
             }
         } catch (Exception e) {

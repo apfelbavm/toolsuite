@@ -5,9 +5,7 @@ import java.util.ArrayList;
 
 public class SortManager {
 
-    private static Object rowPivot;
-
-    public static <T extends Comparable<? super T>> void quickSort(ArrayList<T> list) {
+   public static <T extends Comparable<? super T>> void quickSort(ArrayList<T> list) {
         if (list != null && list.size() > 1) {
             quickSort(list, 0, list.size() - 1);
         }

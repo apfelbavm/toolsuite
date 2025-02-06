@@ -3,7 +3,6 @@ package core;
 import javax.swing.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.KeyEvent;
-import java.awt.event.KeyListener;
 import java.util.HashSet;
 
 public class ShortcutManager { // https://stackoverflow.com/questions/22741215/how-to-use-key-bindings-instead-of-key-listeners

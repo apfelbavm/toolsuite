@@ -2,8 +2,6 @@ package translations;
 
 import org.json.JSONObject;
 
-import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.TreeMap;
 
 public class I18n implements Comparable<I18n> {

@@ -112,7 +112,7 @@ public class I18nCSB {
 
         String[][] data = new String[map.size()][numLangs + 2];
 
-        int statNumEmptyCells = 0;
+        //int statNumEmptyCells = 0;
         for (int c = 0; c < numLangs; ++c) {
             I18nLanguage lang = getLanguageBySortedIndex(c);
             int r = 0;
@@ -120,7 +120,7 @@ public class I18nCSB {
                 String value = lang.getRow(row.component, row.key);
                 data[r][0] = row.component;
                 data[r][1] = row.key;
-                if (value == null || value.isBlank() || value.isEmpty()) ++statNumEmptyCells;
+                if (value == null || value.isBlank() || value.isEmpty()); //++statNumEmptyCells
                 data[r][c + 2] = value;
                 ++r;
             }
