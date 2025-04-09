@@ -17,8 +17,7 @@ import java.util.ArrayList;
 import java.util.HashSet;
 
 public class ExcelReader {
-    boolean bUseHyperlinkIfAvailable = false;
-    boolean bIncludeHiddenSheets = false;
+    public ReaderConfig config;
     public int statNumEmptyCells = 0;
     // Grid size in which this tool searches for all necessary data to extract the
     // rest of a single sheet.
@@ -30,7 +29,7 @@ public class ExcelReader {
         Cell cell = row.getCell(col, Row.MissingCellPolicy.CREATE_NULL_AS_BLANK);
         if (cell == null) return null;
 
-        if (bUseHyperlinkIfAvailable) {
+        if (config.bExcelUseHyperlinkIfAvailable) {
             Hyperlink link = cell.getHyperlink();
             if (link != null) {
                 return link.getAddress();
@@ -144,9 +143,9 @@ public class ExcelReader {
             String key = getCellValue(row, keyCol);
             if (key == null || key.isBlank() || key.isEmpty()) continue;
             String value = getCellValue(row, valueCol);
-            //if (value != null && !value.isBlank() && !value.isEmpty()) {
-                I18n i18n = new I18n("", "", component, key, value);
-                lang.add(i18n, false);
+            if (value == null || value.isBlank() || value.isEmpty()) continue;
+            I18n i18n = new I18n("", "", component, key, value);
+            lang.add(i18n, false);
             //}
         }
 
@@ -197,20 +196,25 @@ public class ExcelReader {
 
         I18nBrand brand = new I18nBrand(locales.get(0).getFirst().brand);
 
-
         for (Pair<LanguageIdentifier, Integer> pair : locales) {
             int valueCol = pair.getValue();
             int firstRow = findFirstValueRow(sheet, componentCol, keyCol, valueCol);
             if (firstRow < 0) continue; // If no value was found we must escape this sheet.
 
             I18nLanguage lang = extractLanguage(sheet, pair.getKey(), firstRow, componentCol, keyCol, valueCol);
-            brand.append(lang);
+            if (lang != null && !lang.isEmpty()) {
+                brand.append(lang);
+            }
+        }
+        if (brand.isEmpty()) {
+            return null;
         }
         return brand;
     }
 
-    public I18nCSB read(ArrayList<File> files) {
+    public I18nCSB read(ArrayList<File> files, ReaderConfig config_) {
         if (files == null) return null;
+        config = config_;
         statNumEmptyCells = 0;
         HashSet<Sheet> sheets = new HashSet<Sheet>();
 
@@ -250,7 +254,7 @@ public class ExcelReader {
             boolean bIsVeryHidden = sheet.getWorkbook().isSheetVeryHidden(sheetIndex);
 
             if (bIsHidden || bIsVeryHidden) {
-                if (!bIncludeHiddenSheets) continue;
+                if (!config.bExcelIncludeHiddenSheets) continue;
             }
 
             I18nBrand brand = extractSheet(sheet);
@@ -263,5 +267,20 @@ public class ExcelReader {
         System.out.println("Extracting excel files took:" + statExtract + "ms");
 
         return csb;
+    }
+
+    public static ArrayList<String> getExcelSheetNames(File file) {
+        if (file == null) return null;
+        String extension = FileReader.getFileExtension(file);
+        if (!extension.equals(".xlsx")) return null;
+        HashSet<Sheet> sheets = new HashSet();
+        getSheetsFromExcel(sheets, file);
+        if (sheets == null) return null;
+
+        ArrayList<String> sheetNames = new ArrayList<String>();
+        for (Sheet sheet : sheets) {
+            sheetNames.add(sheet.getSheetName());
+        }
+        return sheetNames;
     }
 }

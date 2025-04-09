@@ -5,6 +5,7 @@ import java.util.Arrays;
 import java.util.HashSet;
 
 import reader.FileReader;
+import reader.ReaderConfig;
 import widgets.Excelibur;
 import widgets.table.LanguageIdentifier;
 import widgets.table.LanguageTable;
@@ -17,23 +18,14 @@ public class TranslationMgr {
     // rest of a single sheet.
     // These are variables for stat tracking.
     public int statNumEmptyCells = 0;
-    I18nCSB csb = null;
+    public I18nCSB csb = null;
     private long statCalculationTime = 0;
     public File[] files;
-    private int importFlags = 0;
     private int exportFlags = 0;
     public TranslationMgrFlags.FolderNaming folderNamingType;
 
     private boolean getFlag(TranslationMgrFlags.Export flag) {
         return ((exportFlags >> flag.ordinal()) & 1) == 1;
-    }
-
-    public void setFlag(TranslationMgrFlags.Import flag, boolean bEnable) {
-        if (bEnable) {
-            importFlags |= 1 << flag.ordinal();
-        } else {
-            importFlags &= ~(1 << flag.ordinal());
-        }
     }
 
     public void setFlag(TranslationMgrFlags.Export flag, boolean bEnable) {
@@ -84,30 +76,21 @@ public class TranslationMgr {
         return TranslationMgr.ISO_CODES.contains(value.toLowerCase()) || TranslationMgr.SUCCESSFACTOR_CODES.contains(value.toLowerCase());
     }
 
-    public LanguageTable importFiles(Excelibur excelibur) {
+    public void importFiles(Excelibur excelibur, File[] overrideFiles, ReaderConfig config) {
         FileReader reader = new FileReader();
         reader.jsonReader.bindOnRequestLocale(excelibur);
         reader.jsonReader.bindOnRequestBrand(excelibur);
-        csb = reader.read(files);
+
+        if (overrideFiles != null) {
+            csb = reader.read(overrideFiles, config);
+
+        } else {
+            csb = reader.read(files, config);
+        }
 
         long statSort = System.currentTimeMillis();
-        csb.sort();
-        //csb.print();
-
-        String[][] data = csb.createTable();
-        LanguageIdentifier[] header = csb.getHeader();
-
-        LanguageTable languageTable = new LanguageTable(header, data);
-
-        statSort = System.currentTimeMillis() - statSort;
         System.out.println("Sorting data took:" + statSort + "ms");
-
-        return languageTable;
-    }
-
-    void addNewFiles()
-    {
-
+        csb.sort();
     }
 
     public void startTimeTrace() {
@@ -121,4 +104,6 @@ public class TranslationMgr {
     public double getCalculationTime() {
         return statCalculationTime / 1000.0 / 1000000.0;
     }
+
+
 }

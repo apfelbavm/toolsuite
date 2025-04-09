@@ -1,26 +1,12 @@
 package widgets;
 
-import java.awt.BorderLayout;
-import java.awt.Component;
-import java.awt.Dimension;
-import java.awt.FlowLayout;
-import java.awt.GridLayout;
+import java.awt.*;
 import java.io.File;
 import java.io.Serial;
 import java.util.Arrays;
+import java.util.Calendar;
 
-import javax.swing.Action;
-import javax.swing.JButton;
-import javax.swing.JCheckBox;
-import javax.swing.JFileChooser;
-import javax.swing.JLabel;
-import javax.swing.JList;
-import javax.swing.JOptionPane;
-import javax.swing.JComboBox;
-import javax.swing.JPanel;
-import javax.swing.JScrollPane;
-import javax.swing.JSplitPane;
-import javax.swing.ListSelectionModel;
+import javax.swing.*;
 import javax.swing.border.CompoundBorder;
 import javax.swing.border.EmptyBorder;
 import javax.swing.filechooser.FileFilter;
@@ -30,12 +16,18 @@ import javax.swing.table.DefaultTableModel;
 import core.*;
 import reader.OnBrandMissing;
 import reader.OnLocaleMissing;
+import reader.ReaderConfig;
+import widgets.dialogs.MergeExcelDialog;
 import widgets.table.LanguageTable;
 import widgets.table.GroupableTable;
+import writer.ExcelWriter;
+import writer.FileWriter;
+import writer.FileWriterOptions;
 
 public class Excelibur extends JPanel implements OnLocaleMissing, OnBrandMissing {
 
     private final TranslationMgr translationMgr = new TranslationMgr();
+    private final TranslationMgr otherMgr = new TranslationMgr();
     @Serial
     private static final long serialVersionUID = 1L;
     private final SaveManager saveManager = SaveManager.get();
@@ -144,10 +136,10 @@ public class Excelibur extends JPanel implements OnLocaleMissing, OnBrandMissing
         reloadButton.addActionListener(e -> updateTableView());
         importButton = App.createButtonWithTextAndIcon("Import files...", "icon_import.png");
         importButton.setToolTipText("Import files via a selection dialog. If any new file is imported the current selection of files will be removed and the table content is refreshed.");
-        importButton.addActionListener(e -> openInputDialog());
+        importButton.addActionListener(e -> startImport());
         exportButton = App.createButtonWithTextAndIcon("Export", "icon_export.png");
         exportButton.setToolTipText("Bulk export every language to a .json. The locale is appended to the filename so 'translation' changes to 'translation_de_DE' etc.");
-        exportButton.addActionListener(e -> openOutputDialog());
+        exportButton.addActionListener(e -> openExportDialog());
 
         JPanel importPanel = new JPanel(new GridLayout(2, 1, 4, 4));
         importPanel.add(reloadButton);
@@ -243,10 +235,36 @@ public class Excelibur extends JPanel implements OnLocaleMissing, OnBrandMissing
         comboFolderNaming = new JComboBox<String>(list);
     }
 
-    void openInputDialog() {
+    class ImportDialogConfig {
+        public ImportDialogConfig() {
+            bAllowJson = false;
+            bAllowXLSX = false;
+            bAllowMultiSelection = false;
+        }
+
+        boolean bAllowJson;
+        boolean bAllowXLSX;
+        boolean bAllowMultiSelection;
+    }
+
+    void startImport() {
+        ImportDialogConfig cfg = new ImportDialogConfig();
+        cfg.bAllowJson = true;
+        cfg.bAllowXLSX = true;
+        cfg.bAllowMultiSelection = true;
+
+        File[] files = openInputDialog(cfg);
+        if (files != null) {
+            translationMgr.files = files;
+            saveManager.userSettings.exceliburLastImportFolder = translationMgr.files[0].getParent();
+            updateListView();
+            updateTableView();
+        }
+    }
+
+
+    File[] openInputDialog(ImportDialogConfig cfg) {
         owner.setStatus("Choosing files to import...", App.NORMAL_MESSAGE);
-        FileFilter xlsxfilter = new FileNameExtensionFilter("Microsoft Excel Documents (*.xlsx)", "xlsx");
-        FileFilter jsonfilter = new FileNameExtensionFilter("JavaScript Object Notation (*.json)", "json");
 
         if (saveManager.userSettings.exceliburLastImportFolder.isBlank() || saveManager.userSettings.exceliburLastImportFolder.isEmpty()) {
             String userDir = System.getProperty("user.home");
@@ -255,8 +273,15 @@ public class Excelibur extends JPanel implements OnLocaleMissing, OnBrandMissing
         // https://docs.oracle.com/javase/tutorial/uiswing/components/filechooser.html
         JFileChooser fileChooser = new JFileChooser(saveManager.userSettings.exceliburLastImportFolder);
         fileChooser.setMultiSelectionEnabled(true);
-        fileChooser.addChoosableFileFilter(xlsxfilter);
-        fileChooser.addChoosableFileFilter(jsonfilter);
+        if (cfg.bAllowXLSX) {
+
+            FileFilter xlsxfilter = new FileNameExtensionFilter("Microsoft Excel Documents (*.xlsx)", "xlsx");
+            fileChooser.addChoosableFileFilter(xlsxfilter);
+        }
+        if (cfg.bAllowJson) {
+            FileFilter jsonfilter = new FileNameExtensionFilter("JavaScript Object Notation (*.json)", "json");
+            fileChooser.addChoosableFileFilter(jsonfilter);
+        }
         fileChooser.setPreferredSize(new Dimension(800, 600));
 
         // This sets the default folder view to 'details'
@@ -266,57 +291,14 @@ public class Excelibur extends JPanel implements OnLocaleMissing, OnBrandMissing
         int choice = fileChooser.showOpenDialog(this);
         if (choice == JFileChooser.APPROVE_OPTION) {
             if (fileChooser.getSelectedFiles().length > 0) {
-                translationMgr.files = fileChooser.getSelectedFiles();
-                saveManager.userSettings.exceliburLastImportFolder = translationMgr.files[0].getParent();
-                updateListView();
-                updateTableView();
+                return fileChooser.getSelectedFiles();
             }
         } else if (choice == JFileChooser.CANCEL_OPTION) {
             owner.setStatus("Aborted import...", App.NORMAL_MESSAGE);
         }
+        return null;
     }
 
-    private void openOutputDialog() {
-        if (translationMgr.getNumSelectedFiles() == 0) {
-            JOptionPane.showMessageDialog(this, "Please import Excel sheets first", "Info", JOptionPane.INFORMATION_MESSAGE);
-            return;
-        }
-        owner.setStatus("Selecting output folder...", App.NORMAL_MESSAGE);
-
-        if (saveManager.userSettings.exceliburLastExportFolder.isBlank() || saveManager.userSettings.exceliburLastExportFolder.isEmpty()) {
-            String userDir = System.getProperty("user.home");
-            saveManager.userSettings.exceliburLastExportFolder = userDir + "/Desktop";
-        }
-        JFileChooser chooser = new JFileChooser(saveManager.userSettings.exceliburLastExportFolder);
-        chooser.setSelectedFile(new File("translations"));
-        chooser.setPreferredSize(new Dimension(800, 600));
-        // This sets the default folder view to 'details'
-        Action details = chooser.getActionMap().get("viewTypeDetails");
-        details.actionPerformed(null);
-        int choice = chooser.showSaveDialog(this);
-        translationMgr.startTimeTrace();
-        enableUserInput(false);
-        if (choice == JFileChooser.APPROVE_OPTION) {
-            new Thread(() -> {
-                String outputFolder = chooser.getSelectedFile().toString();
-                saveManager.userSettings.exceliburLastExportFolder = chooser.getSelectedFile().getParent();
-                int i = outputFolder.lastIndexOf(System.getProperty("file.separator"));
-                String fileName = outputFolder.substring(i + 1, outputFolder.length());
-                outputFolder = outputFolder.substring(0, i);
-                boolean success = exportData(outputFolder, fileName);
-                if (success) {
-                    translationMgr.stopTimeTrace();
-                    double seconds = (double) translationMgr.getCalculationTime();
-                    String secondsString = String.format("%.2f", seconds);
-                    owner.setStatus("Sucessfully exported Excel sheet(s) within " + secondsString + "s...", App.NORMAL_MESSAGE);
-                }
-                enableUserInput(true);
-            }).start();
-        } else {
-            owner.setStatus("Aborted export...", App.NORMAL_MESSAGE);
-            enableUserInput(true);
-        }
-    }
 
     private void updateListView() {
         fileList.setVisibleRowCount(-1);
@@ -347,9 +329,11 @@ public class Excelibur extends JPanel implements OnLocaleMissing, OnBrandMissing
     }
 
     private void importData() {
-        translationMgr.setFlag(TranslationMgrFlags.Import.USE_HYPERLINK_IF_AVAILABLE, checkBoxUseHyperlinkIfAvailable.isSelected());
-        translationMgr.setFlag(TranslationMgrFlags.Import.INCLUDE_HIDDEN_SHEETS, checkIncludeHiddenSheets.isSelected());
-        LanguageTable languageTable = translationMgr.importFiles(this);
+        ReaderConfig config = new ReaderConfig();
+        config.bExcelUseHyperlinkIfAvailable = checkBoxUseHyperlinkIfAvailable.isSelected();
+        config.bExcelIncludeHiddenSheets = checkIncludeHiddenSheets.isSelected();
+        translationMgr.importFiles(this, null, config);
+        LanguageTable languageTable = translationMgr.csb.createLanguageTable();
         Component comp = horSplit.getRightComponent();
         if (comp != null) horSplit.remove(comp);
 
@@ -400,5 +384,144 @@ public class Excelibur extends JPanel implements OnLocaleMissing, OnBrandMissing
         return translationMgr.export2Json(outputFolder, fileName);
     }
 
+    void openExportDialog() {
 
+        String[] options = {"Export as Json", "Export as new Excel File", "Fill missing in Excel File"};
+        JOptionPane pane = new JOptionPane();
+        pane.setPreferredSize(new Dimension(800, 600));
+        int selection = pane.showOptionDialog(this, "How would you like to export the data?", "Export",
+                JOptionPane.YES_NO_OPTION, JOptionPane.QUESTION_MESSAGE, null, options, options[0]);
+
+
+        if (selection != -1) {
+            FileWriterOptions writerOption = FileWriterOptions.values()[selection];
+            switch (writerOption) {
+                case JSON: {
+                    openExportJsonDialog();
+                    break;
+                }
+                case NEW_EXCEL: {
+                    openExportNewExcelDialog(writerOption);
+                    break;
+                }
+                case FILL_EXCEL: {
+                    File file = openFillExistingExcelDialog();
+                    if (file != null) {
+                        openSelectExcelSheetDialog(file);
+                    }
+                    enableUserInput(true);
+                    break;
+                }
+            }
+        }
+    }
+
+    File openFillExistingExcelDialog() {
+        ImportDialogConfig dialogCfg = new ImportDialogConfig();
+        dialogCfg.bAllowXLSX = true;
+        File[] files = openInputDialog(dialogCfg);
+        enableUserInput(false);
+        if (files != null && files.length > 0) {
+            ReaderConfig config = new ReaderConfig();
+            config.bExcelUseHyperlinkIfAvailable = checkBoxUseHyperlinkIfAvailable.isSelected();
+            config.bExcelIncludeHiddenSheets = checkIncludeHiddenSheets.isSelected();
+            otherMgr.importFiles(this, files, config);
+            otherMgr.csb.removeAllDuplicates(translationMgr.csb);
+            System.out.println("START DIFFERENCES");
+            otherMgr.csb.print();
+            System.out.println("END DIFFERENCES");
+            return files[0];
+        }
+        return null;
+    }
+
+    void openExportNewExcelDialog(FileWriterOptions writerOption) {
+        owner.setStatus("Selecting output folder...", App.NORMAL_MESSAGE);
+
+        if (saveManager.userSettings.exceliburLastExportFolder.isBlank() || saveManager.userSettings.exceliburLastExportFolder.isEmpty()) {
+            String userDir = System.getProperty("user.home");
+            saveManager.userSettings.exceliburLastExportFolder = userDir + "/Desktop";
+        }
+        JFileChooser chooser = new JFileChooser(saveManager.userSettings.exceliburLastExportFolder);
+
+        String suggestedFileName = translationMgr.csb.brands.get(0).name + "_Workbook_" + Calendar.getInstance().get(Calendar.YEAR);
+        chooser.setSelectedFile(new File(suggestedFileName));
+        chooser.setPreferredSize(new Dimension(800, 600));
+        // This sets the default folder view to 'details'
+        Action details = chooser.getActionMap().get("viewTypeDetails");
+        details.actionPerformed(null);
+        int choice = chooser.showSaveDialog(this);
+        enableUserInput(false);
+        if (choice == JFileChooser.APPROVE_OPTION) {
+            new Thread(() -> {
+                String outputFolder = chooser.getSelectedFile().toString();
+                saveManager.userSettings.exceliburLastExportFolder = chooser.getSelectedFile().getParent();
+                int i = outputFolder.lastIndexOf(System.getProperty("file.separator"));
+                String fileName = outputFolder.substring(i + 1, outputFolder.length());
+                outputFolder = outputFolder.substring(0, i);
+                FileWriter writer = new FileWriter();
+
+                boolean success = writer.export(writerOption, translationMgr.csb, outputFolder, fileName);
+                if (success) {
+                    owner.setStatus("Sucessfully exported Excel", App.NORMAL_MESSAGE);
+                }
+                enableUserInput(true);
+            }).start();
+        } else {
+            owner.setStatus("Aborted export...", App.NORMAL_MESSAGE);
+            enableUserInput(true);
+        }
+    }
+
+    void openSelectExcelSheetDialog(File file) {
+        MergeExcelDialog dialog = new MergeExcelDialog(this);
+        int selection = dialog.showDialog(file, otherMgr.csb);
+        if (selection == 0) {
+            ExcelWriter writer = new ExcelWriter();
+            writer.export(otherMgr.csb, file, dialog.sheetName);
+        }
+    }
+
+    private void openExportJsonDialog() {
+
+        if (translationMgr.getNumSelectedFiles() == 0) {
+            JOptionPane.showMessageDialog(this, "Please import Excel sheets first", "Info", JOptionPane.INFORMATION_MESSAGE);
+            return;
+        }
+        owner.setStatus("Selecting output folder...", App.NORMAL_MESSAGE);
+
+        if (saveManager.userSettings.exceliburLastExportFolder.isBlank() || saveManager.userSettings.exceliburLastExportFolder.isEmpty()) {
+            String userDir = System.getProperty("user.home");
+            saveManager.userSettings.exceliburLastExportFolder = userDir + "/Desktop";
+        }
+        JFileChooser chooser = new JFileChooser(saveManager.userSettings.exceliburLastExportFolder);
+        chooser.setSelectedFile(new File("translations"));
+        chooser.setPreferredSize(new Dimension(800, 600));
+        // This sets the default folder view to 'details'
+        Action details = chooser.getActionMap().get("viewTypeDetails");
+        details.actionPerformed(null);
+        int choice = chooser.showSaveDialog(this);
+        translationMgr.startTimeTrace();
+        enableUserInput(false);
+        if (choice == JFileChooser.APPROVE_OPTION) {
+            new Thread(() -> {
+                String outputFolder = chooser.getSelectedFile().toString();
+                saveManager.userSettings.exceliburLastExportFolder = chooser.getSelectedFile().getParent();
+                int i = outputFolder.lastIndexOf(System.getProperty("file.separator"));
+                String fileName = outputFolder.substring(i + 1, outputFolder.length());
+                outputFolder = outputFolder.substring(0, i);
+                boolean success = exportData(outputFolder, fileName);
+                if (success) {
+                    translationMgr.stopTimeTrace();
+                    double seconds = (double) translationMgr.getCalculationTime();
+                    String secondsString = String.format("%.2f", seconds);
+                    owner.setStatus("Sucessfully exported Excel sheet(s) within " + secondsString + "s...", App.NORMAL_MESSAGE);
+                }
+                enableUserInput(true);
+            }).start();
+        } else {
+            owner.setStatus("Aborted export...", App.NORMAL_MESSAGE);
+            enableUserInput(true);
+        }
+    }
 }

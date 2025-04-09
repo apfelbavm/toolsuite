@@ -40,13 +40,10 @@ public class I18nLanguage implements Comparable<I18nLanguage> {
     }
 
     public String getBrand() {
-        for(I18n i18n : translations)
-        {
-            if(i18n.component.equals(META_STRING))
-            {
-                if(i18n.key.equals(META_BRAND_STRING))
-                {
-                    return i18n.value;
+        for (I18n i18n : translations) {
+            if (i18n.component.equals(META_STRING)) {
+                if (i18n.data.key.equals(META_BRAND_STRING)) {
+                    return i18n.data.value;
                 }
             }
         }
@@ -69,14 +66,11 @@ public class I18nLanguage implements Comparable<I18nLanguage> {
         return locale.compareTo(other.locale);
     }
 
-    public String getRow(String component, String key) {
+
+    public String getRowDisplayValue(String component, String key) {
         for (I18n i18n : translations) {
-            if (i18n.component.equals(component) && i18n.key.equals(key)) {
-                if (i18n.bIsJSON) {
-                    return i18n.json.toString();
-                } else {
-                    return i18n.value;
-                }
+            if (i18n.component.equals(component) && i18n.data.key.equals(key)) {
+                return i18n.getRowDisplayValue();
             }
         }
         return null;
@@ -95,5 +89,45 @@ public class I18nLanguage implements Comparable<I18nLanguage> {
             locale = localeName;
             add(metaLocale, true);
         }
+    }
+
+    public void removeAllDuplicates(I18nLanguage other) {
+        int outerLastIndex = other.translations.size() - 1;
+        for (int outerIdx = outerLastIndex; outerIdx >= 0; --outerIdx) {
+            I18n outer = other.translations.get(outerIdx);
+
+            int innerLastIndex = translations.size() - 1;
+            for (int innerIdx = innerLastIndex; innerIdx >= 0; --innerIdx) {
+                I18n inner = translations.get(innerIdx);
+
+                if (!inner.component.equals(outer.component)) continue;
+                if (!inner.data.key.equals(outer.data.key)) continue;
+
+                if (inner.bIsJSON != outer.bIsJSON) {
+                    System.err.println("MISMATCH JSON TO JSON");
+                    // HANDLE UNEQUALITY
+
+                } else {
+                    if (inner.bIsJSON) {
+                        inner.removeJsonDuplicates(outer);
+                        if (!inner.isValid()) {
+                            translations.remove(innerIdx);
+                        }
+
+                    } else {
+                        if (inner.data.value == null && !inner.data.value.isBlank() || !inner.data.value.isEmpty() || inner.data.value.equals(outer.data.value)) {
+                            translations.remove(innerIdx);
+                        } else {
+                            inner.data.compareResult = I18nCompareResult.Override;
+                        }
+                    }
+                }
+                break;
+            }
+        }
+    }
+
+    public boolean isEmpty() {
+        return translations.isEmpty();
     }
 }

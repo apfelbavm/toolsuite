@@ -8,15 +8,13 @@ import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.ArrayList;
 import java.util.Map;
 import java.util.TreeMap;
 
 import core.App;
 import core.TranslationMgrFlags;
-import translations.I18n;
-import translations.I18nBrand;
-import translations.I18nLanguage;
-import translations.I18nCSB;
+import translations.*;
 
 public class JsonWriter {
     private TranslationMgrFlags.FolderNaming folderNamingType;
@@ -64,14 +62,14 @@ public class JsonWriter {
                     }
 
                     if (i18n.bIsJSON) {
-                        TreeMap<String, String> tree = i18n.getJSONSorted(bSkipEmptyCells);
-                        int numJSONEntries = tree.size();
+                        ArrayList<I18nData> json = i18n.getJSONSorted(bSkipEmptyCells);
+                        int numJSONEntries = json.size();
                         if (numJSONEntries > 0) {
                             writer.write("    \"" + i18n.component + "\": {\n");
-                            writer.write("        \"" + i18n.key + "\": {\n");
+                            writer.write("        \"" + i18n.data.key + "\": {\n");
                             int i = 0;
-                            for (Map.Entry<String, String> entry : tree.entrySet()) {
-                                writer.write("            \"" + entry.getKey() + "\": " + "\"" + entry.getValue() + "\"");
+                            for (I18nData data : json) {
+                                writer.write("            \"" + data.key + "\": " + "\"" + data.value + "\"");
                                 if (i < numJSONEntries - 1) {
                                     writer.write(",\n");
                                 } else {
@@ -82,7 +80,7 @@ public class JsonWriter {
                             writer.write("        }");
                         }
                     } else {
-                        writer.write("    \"" + i18n.component + "\": {\n        \"" + i18n.key + "\": " + "\"" + i18n.value + "\"");
+                        writer.write("    \"" + i18n.component + "\": {\n        \"" + i18n.data.key + "\": " + "\"" + i18n.data.value + "\"");
                         //writer.write("    }");
                     }
                     lastComponent = i18n.component;
@@ -91,13 +89,13 @@ public class JsonWriter {
                         writer.write(",\n");
                     }
                     if (i18n.bIsJSON) {
-                        TreeMap<String, String> tree = i18n.getJSONSorted(bSkipEmptyCells);
-                        int numJSONEntries = tree.size();
+                        ArrayList<I18nData> json = i18n.getJSONSorted(bSkipEmptyCells);
+                        int numJSONEntries = json.size();
                         if (numJSONEntries > 0) {
-                            writer.write("        \"" + i18n.key + "\": {\n");
+                            writer.write("        \"" + i18n.data.key + "\": {\n");
                             int i = 0;
-                            for (Map.Entry<String, String> entry : tree.entrySet()) {
-                                writer.write("            \"" + entry.getKey() + "\": " + "\"" + entry.getValue() + "\"");
+                            for (I18nData data : json) {
+                                writer.write("            \"" + data.key + "\": " + "\"" + data.value + "\"");
                                 if (i < numJSONEntries - 1) {
                                     writer.write(",\n");
                                 } else {
@@ -108,7 +106,7 @@ public class JsonWriter {
                             writer.write("        }");
                         }
                     } else {
-                        writer.write("        \"" + i18n.key + "\": " + "\"" + i18n.value + "\"");
+                        writer.write("        \"" + i18n.data.key + "\": " + "\"" + i18n.data.value + "\"");
                     }
                 }
             }
@@ -132,13 +130,13 @@ public class JsonWriter {
             writer.write("{");
             boolean isFirstItem = false;
             for (I18n i18n : lang.translations) {
-                if (i18n.value.isBlank() || i18n.value.isEmpty()) continue;
+                if (i18n.data.value.isBlank() || i18n.data.value.isEmpty()) continue;
                 if (!isFirstItem) {
                     isFirstItem = true;
                 } else {
                     writer.write(",");
                 }
-                writer.write("\n    \"" + i18n.component + "_" + i18n.key + "\": " + "\"" + i18n.value + "\"");
+                writer.write("\n    \"" + i18n.component + "_" + i18n.data.key + "\": " + "\"" + i18n.data.value + "\"");
             }
             writer.write("\n}\n");
             writer.close();

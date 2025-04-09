@@ -57,4 +57,21 @@ public class I18nBrand implements Comparable<I18nBrand> {
     public int compareTo(I18nBrand other) {
         return name.compareTo(other.name);
     }
+
+    public void removeAllDuplicates(I18nBrand other) {
+        for (I18nLanguage otherLanguage : other.languages) {
+            int lastIndex = languages.size() - 1;
+            for (int langIdx = lastIndex; langIdx >= 0; --langIdx) {
+                languages.get(langIdx).removeAllDuplicates(otherLanguage);
+                if (languages.get(langIdx).isEmpty()) {
+                    languages.remove(langIdx);
+                }
+                break;
+            }
+        }
+    }
+
+    public boolean isEmpty() {
+        return languages.isEmpty();
+    }
 }

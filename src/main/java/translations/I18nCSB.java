@@ -1,6 +1,7 @@
 package translations;
 
 import widgets.table.LanguageIdentifier;
+import widgets.table.LanguageTable;
 
 import java.util.*;
 
@@ -83,13 +84,13 @@ public class I18nCSB {
                 for (I18n i18n : lang.translations) {
                     boolean bFound = false;
                     for (I18nRowMap row : rowMap) {
-                        if (row.component.equals(i18n.component) && row.key.equals(i18n.key)) {
+                        if (row.component.equals(i18n.component) && row.key.equals(i18n.data.key)) {
                             bFound = true;
                             break;
                         }
                     }
                     if (!bFound) {
-                        rowMap.add(new I18nRowMap(i18n.component, i18n.key));
+                        rowMap.add(new I18nRowMap(i18n.component, i18n.data.key));
                     }
                 }
             }
@@ -117,10 +118,10 @@ public class I18nCSB {
             I18nLanguage lang = getLanguageBySortedIndex(c);
             int r = 0;
             for (I18nRowMap row : map) {
-                String value = lang.getRow(row.component, row.key);
+                String value = lang.getRowDisplayValue(row.component, row.key);
                 data[r][0] = row.component;
                 data[r][1] = row.key;
-                if (value == null || value.isBlank() || value.isEmpty()); //++statNumEmptyCells
+                if (value == null || value.isBlank() || value.isEmpty()) ; //++statNumEmptyCells
                 data[r][c + 2] = value;
                 ++r;
             }
@@ -157,5 +158,27 @@ public class I18nCSB {
         for (I18nBrand brand : other.brands) {
             add(brand);
         }
+    }
+
+    public void removeAllDuplicates(I18nCSB other) {
+        for (I18nBrand otherBrand : other.brands) {
+            int lastIndex = brands.size() - 1;
+            for (int brandIdx = lastIndex; brandIdx >= 0; --brandIdx) {
+                brands.get(brandIdx).removeAllDuplicates(otherBrand);
+                if (brands.get(brandIdx).isEmpty()) {
+                    brands.remove(brandIdx);
+                }
+                break;
+            }
+        }
+    }
+
+    public LanguageTable createLanguageTable() {
+        String[][] data = createTable();
+        LanguageIdentifier[] header = getHeader();
+
+        LanguageTable languageTable = new LanguageTable(header, data);
+
+        return languageTable;
     }
 }

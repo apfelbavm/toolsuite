@@ -30,20 +30,20 @@ public class MainMenu extends JPanel {
             button.setPreferredSize(new Dimension(200, 50));
             add(button, con);
         }
-        con.gridy = 1;
-        {
-            JButton button = App.createButtonWithTextAndIcon("JSON 2 Excel", "icon_json.png");
-            button.addActionListener(e -> owner.addScreen(new JSON2Excel(owner), "JSON 2 Excel"));
-            button.setPreferredSize(new Dimension(200, 50));
-            add(button, con);
-        }
-        con.gridy = 2;
-        {
-            JButton helpButton = App.createButtonWithTextAndIcon("Documentation", "icon_help.png");
-            helpButton.setPreferredSize(new Dimension(200, 50));
-            helpButton.addActionListener(e -> owner.showDocumentation());
-            add(helpButton, con);
-        }
+//        con.gridy = 1;
+//        {
+//            JButton button = App.createButtonWithTextAndIcon("JSON 2 Excel", "icon_json.png");
+//            button.addActionListener(e -> owner.addScreen(new JSON2Excel(owner), "JSON 2 Excel"));
+//            button.setPreferredSize(new Dimension(200, 50));
+//            add(button, con);
+//        }
+//        con.gridy = 2;
+//        {
+//            JButton helpButton = App.createButtonWithTextAndIcon("Documentation", "icon_help.png");
+//            helpButton.setPreferredSize(new Dimension(200, 50));
+//            helpButton.addActionListener(e -> owner.showDocumentation());
+//            add(helpButton, con);
+//        }
         owner.setStatus("Welcome to the Toolsuite...", App.NORMAL_MESSAGE);
     }
 }

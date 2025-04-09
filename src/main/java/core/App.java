@@ -24,7 +24,7 @@ import widgets.Throbber;
 import widgets.UIConstants;
 
 public class App extends JFrame {
-    public static final String TOOL_NAME = "Toolsuite 2.0.0";
+    public static final String TOOL_NAME = "Toolsuite 2.0.1";
     private static App instance;
     public static final int NORMAL_MESSAGE = 0;
     public static final int WARNING_MESSAGE = 1;
