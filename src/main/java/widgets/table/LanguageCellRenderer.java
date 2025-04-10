@@ -9,8 +9,7 @@ import javax.swing.*;
 import javax.swing.table.DefaultTableCellRenderer;
 import javax.swing.table.TableCellRenderer;
 
-public class LanguageCellRenderer implements TableCellRenderer {
-    private static final TableCellRenderer RENDERER = new DefaultTableCellRenderer();
+public class LanguageCellRenderer extends DefaultTableCellRenderer {
     private JTextField searchField;
 
     public LanguageCellRenderer(JTextField searchField) {
@@ -19,7 +18,7 @@ public class LanguageCellRenderer implements TableCellRenderer {
 
     @Override
     public Component getTableCellRendererComponent(JTable table, Object value, boolean isSelected, boolean hasFocus, int row, int column) {
-        final Component c = RENDERER.getTableCellRendererComponent(table, value, isSelected, hasFocus, row, column);
+        final Component c = super.getTableCellRendererComponent(table, value, isSelected, hasFocus, row, column);
         Object obj = table.getValueAt(row, column);
         if (obj == null) {
             c.setBackground(isSelected ? UIConstants.YourPink : UIConstants.BitterSweet);

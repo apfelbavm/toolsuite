@@ -97,7 +97,12 @@ public class GroupableTable extends JPanel {
                 localeHeader.add(identifier.locale);
             }
 
-            DefaultTableModel dm = new DefaultTableModel();
+            DefaultTableModel dm = new DefaultTableModel() {
+                @Override
+                public boolean isCellEditable(int row, int column) {
+                    return false;
+                }
+            };
             dm.setDataVector(langTable.getJTableData(), localeHeader.toArray());
 
             table = new JTable(dm) {
