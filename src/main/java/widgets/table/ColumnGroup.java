@@ -1,12 +1,11 @@
 package widgets.table;
 
-import java.awt.Component;
-import java.awt.Dimension;
+import java.awt.*;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
-import javax.swing.JTable;
+import javax.swing.*;
 import javax.swing.table.TableCellRenderer;
 import javax.swing.table.TableColumn;
 
@@ -16,6 +15,7 @@ public class ColumnGroup {
 
     protected List<TableColumn> columns;
     protected List<ColumnGroup> groups;
+
 
     protected String text;
     protected int margin = 0;
@@ -40,8 +40,7 @@ public class ColumnGroup {
     }
 
     /**
-     * @param column
-     *            TableColumn
+     * @param column TableColumn
      */
     public List<ColumnGroup> getColumnGroups(TableColumn column) {
         if (!contains(column)) {

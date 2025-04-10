@@ -45,10 +45,6 @@ public class MergeExcelDialog {
 
         GroupableTable table = new GroupableTable();
         table.updateTable(languageTable);
-        table.updateTableAutoResizing(true);
-
-        checkBoxAutoResize.setSelected(true);
-        checkBoxAutoResize.addItemListener(e -> table.updateTableAutoResizing(checkBoxAutoResize.isSelected()));
 
         {
             existingSheetOptions = new JComboBox(sheetNames.toArray());

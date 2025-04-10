@@ -38,7 +38,6 @@ public class Excelibur extends JPanel implements OnLocaleMissing, OnBrandMissing
 
     JSplitPane horSplit = new JSplitPane();
 
-    JCheckBox checkBoxAutoResize = new JCheckBox("Auto Resize Table");
     JCheckBox checkBoxMergeCompAndKey = new JCheckBox("Concat. 'Component' and 'Key'");
     JCheckBox checkBoxUseHyperlinkIfAvailable = new JCheckBox("Get hyperlink");
     JCheckBox checkIncludeHiddenSheets = new JCheckBox("Include hidden sheets");
@@ -62,15 +61,13 @@ public class Excelibur extends JPanel implements OnLocaleMissing, OnBrandMissing
         //table.setFillsViewportHeight(true);
 
         JPanel infoPanel = new JPanel();
-        GridLayout grid = new GridLayout(14, 1, 8, 0);
+        GridLayout grid = new GridLayout(11, 1, 8, 0);
         infoPanel.setLayout(grid);
         CompoundBorder b = new CompoundBorder(infoPanel.getBorder(), new EmptyBorder(4, 4, 4, 4));
         infoPanel.setBorder(b);
 
-        checkBoxAutoResize.setSelected(true);
-        checkBoxAutoResize.addItemListener(e -> table.updateTableAutoResizing(checkBoxAutoResize.isSelected()));
         table.updateTable(null);
-        checkBoxAutoResize.setToolTipText("Change how the data is displayed in the table. Either fit to the window's size (enabled) or match each column's width to it's content (disabled)");
+
 
         checkBoxMergeCompAndKey.setSelected(false);
         checkBoxMergeCompAndKey.setToolTipText("Concatenates component and key. That means 'dialog' and 'heading' become 'dialog_heading'.\nThis eventually reduces the json tree depth by 1");
@@ -83,9 +80,6 @@ public class Excelibur extends JPanel implements OnLocaleMissing, OnBrandMissing
 
         createOutputFolderComboBox();
 
-        infoPanel.add(new JLabel("View settings:"));
-        infoPanel.add(checkBoxAutoResize);
-        infoPanel.add(new JLabel(""));
         infoPanel.add(new JLabel("Import settings:"));
         infoPanel.add(checkBoxUseHyperlinkIfAvailable);
         infoPanel.add(new JLabel(""));
@@ -338,7 +332,6 @@ public class Excelibur extends JPanel implements OnLocaleMissing, OnBrandMissing
         if (comp != null) horSplit.remove(comp);
 
         table.updateTable(languageTable);
-        table.updateTableAutoResizing(checkBoxAutoResize.isSelected());
 
         horSplit.setRightComponent(table);
 
@@ -369,7 +362,7 @@ public class Excelibur extends JPanel implements OnLocaleMissing, OnBrandMissing
         reloadButton.setEnabled(bEnable && bAnyFilesImported);
         importButton.setEnabled(bEnable);
         returnButton.setEnabled(bEnable);
-        checkBoxAutoResize.setEnabled(bEnable);
+        table.setEnabled(bEnable);
         checkBoxMergeCompAndKey.setEnabled(bEnable);
         checkDoNotExportEmptyCells.setEnabled(bEnable);
         checkIncludeHiddenSheets.setEnabled(bEnable);

@@ -22,21 +22,50 @@ public class GroupableTable extends JPanel {
     JTable table;
     private JTextField searchInput = new JTextField();
     private JButton clearButton = App.createButtonWithIcon("icon_delete_text.png", UIConstants.BitterSweet);
+    private JButton buttonResizeHorizontal = App.createButtonWithIcon("icon_resize_horizontal.png", UIConstants.DodgerBlue);
+    private boolean bResize = false;
 
     public GroupableTable() {
         setLayout(new BorderLayout());
 
-        JPanel panel = new JPanel(new BorderLayout());
-        panel.add(new JLabel("Find: "), BorderLayout.WEST);
-        panel.add(searchInput, BorderLayout.CENTER);
-        panel.add(clearButton, BorderLayout.EAST);
-        panel.setBorder(new EmptyBorder(32, 64, 32, 64));
-        add(panel, BorderLayout.NORTH);
+        buttonResizeHorizontal.addActionListener(e -> {
+            bResize = !bResize;
+            updateTableAutoResizing(bResize);
+        });
+
 
         clearButton.addActionListener(e -> clearSearch());
         clearButton.setBackground(UIConstants.BitterSweet);
         searchInput.setMargin(new Insets(8, 12, 8, 12));
 
+        JPanel searchPanel = new JPanel(new BorderLayout());
+        searchPanel.add(new JLabel("Find: "), BorderLayout.WEST);
+        searchPanel.add(searchInput, BorderLayout.CENTER);
+        searchPanel.add(clearButton, BorderLayout.EAST);
+        searchPanel.setBorder(new EmptyBorder(32, 64, 32, 64));
+
+//        buttonResizeHorizontal.setAlignmentX(Component.RIGHT_ALIGNMENT);
+
+        GridBagConstraints constraints = new GridBagConstraints();
+        JPanel topPanel = new JPanel();
+        GridBagLayout layout = new GridBagLayout();
+        layout.setConstraints(topPanel, constraints);
+        topPanel.setLayout(layout);
+
+        constraints.gridx = 0;
+        constraints.fill = GridBagConstraints.HORIZONTAL;
+        constraints.anchor = GridBagConstraints.CENTER;
+        constraints.gridy = 0;
+        constraints.weightx = 1.0;
+        constraints.gridwidth = 1;
+
+        topPanel.add(searchPanel, constraints);
+        constraints.gridy = 1;
+        constraints.fill = GridBagConstraints.NONE;
+        constraints.anchor = GridBagConstraints.EAST;
+        topPanel.add(buttonResizeHorizontal, constraints);
+
+        add(topPanel, BorderLayout.NORTH);
         clearSearch();
         setClearButtonVisibility();
     }
@@ -134,7 +163,7 @@ public class GroupableTable extends JPanel {
         return 0;
     }
 
-    public void updateTableAutoResizing(boolean bAutoResize) {
+    private void updateTableAutoResizing(boolean bAutoResize) {
         if (bAutoResize) {
             for (int column = 0; column < table.getColumnCount(); column++) {
                 TableColumn tableColumn = table.getColumnModel().getColumn(column);
@@ -192,7 +221,7 @@ public class GroupableTable extends JPanel {
     }
 
     void updateSearch() {
-        TableRowSorter<TableModel> rowSorter = (TableRowSorter)(table.getRowSorter());
+        TableRowSorter<TableModel> rowSorter = (TableRowSorter) (table.getRowSorter());
         String text = searchInput.getText();
 
         if (text.trim().length() == 0) {
