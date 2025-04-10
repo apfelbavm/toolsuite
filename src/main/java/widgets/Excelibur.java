@@ -18,6 +18,7 @@ import reader.OnBrandMissing;
 import reader.OnLocaleMissing;
 import reader.ReaderConfig;
 import widgets.dialogs.MergeExcelDialog;
+import widgets.tab_control.Tab;
 import widgets.table.LanguageTable;
 import widgets.table.GroupableTable;
 import writer.ExcelWriter;
@@ -26,6 +27,7 @@ import writer.FileWriterOptions;
 
 public class Excelibur extends JPanel implements OnLocaleMissing, OnBrandMissing {
 
+    public Tab tab = null;
     private final TranslationMgr translationMgr = new TranslationMgr();
     private final TranslationMgr otherMgr = new TranslationMgr();
     @Serial
@@ -34,12 +36,11 @@ public class Excelibur extends JPanel implements OnLocaleMissing, OnBrandMissing
     App owner;
     JList<String> fileList = new JList<String>();
 
-    JButton importButton, exportButton, returnButton, reloadButton;
+    JButton importButton, exportButton, reloadButton;
 
     JSplitPane horSplit = new JSplitPane();
-
     JCheckBox checkBoxMergeCompAndKey = new JCheckBox("Concat. 'Component' and 'Key'");
-    JCheckBox checkBoxUseHyperlinkIfAvailable = new JCheckBox("Get hyperlink");
+    JCheckBox checkBoxUseHyperlinkIfAvailable = new JCheckBox("Get hyperlink instead of cell text");
     JCheckBox checkIncludeHiddenSheets = new JCheckBox("Include hidden sheets");
     JCheckBox checkDoNotExportEmptyCells = new JCheckBox("Skip empty values");
     GroupableTable table = new GroupableTable();
@@ -52,8 +53,6 @@ public class Excelibur extends JPanel implements OnLocaleMissing, OnBrandMissing
         shortcuts.init(this);
         owner.setStatus("Welcome to Excelibur..", App.NORMAL_MESSAGE);
         setLayout(new BorderLayout());
-        returnButton = App.createButtonWithTextAndIcon("Back", "icon_return.png");
-        returnButton.addActionListener(e -> owner.addScreen(new MainMenu(owner), App.TOOL_NAME));
 
         // TABLE
         DefaultTableModel model = new DefaultTableModel(new String[]{"Component", "Key", "Locale"}, 0);
@@ -109,7 +108,6 @@ public class Excelibur extends JPanel implements OnLocaleMissing, OnBrandMissing
 
         JPanel tempPanel = new JPanel();
         tempPanel.setLayout(new BorderLayout());
-        tempPanel.add(returnButton, BorderLayout.NORTH);
         tempPanel.add(infoPanel, BorderLayout.CENTER);
 
         leftSplitPane.setBottomComponent(filePane);
@@ -332,7 +330,7 @@ public class Excelibur extends JPanel implements OnLocaleMissing, OnBrandMissing
         if (comp != null) horSplit.remove(comp);
 
         table.updateTable(languageTable);
-
+        renameTab();
         horSplit.setRightComponent(table);
 
         translationMgr.stopTimeTrace();
@@ -361,7 +359,6 @@ public class Excelibur extends JPanel implements OnLocaleMissing, OnBrandMissing
         exportButton.setEnabled(bEnable && bAnyFilesImported);
         reloadButton.setEnabled(bEnable && bAnyFilesImported);
         importButton.setEnabled(bEnable);
-        returnButton.setEnabled(bEnable);
         table.setEnabled(bEnable);
         checkBoxMergeCompAndKey.setEnabled(bEnable);
         checkDoNotExportEmptyCells.setEnabled(bEnable);
@@ -473,6 +470,34 @@ public class Excelibur extends JPanel implements OnLocaleMissing, OnBrandMissing
             ExcelWriter writer = new ExcelWriter();
             writer.export(otherMgr.csb, file, dialog.sheetName);
         }
+    }
+
+    private void renameTab() {
+        String tabName = "";
+        if (translationMgr.csb != null) {
+            switch (translationMgr.csb.brands.size()) {
+                case 0: {
+                    tabName = "Excelibur";
+                    break;
+                }
+                case 1: {
+                    tabName = translationMgr.csb.brands.get(0).name;
+                    break;
+                }
+                default: {
+                    int i = 0;
+                    while (i < translationMgr.csb.brands.size() && tabName.length() < 20) {
+                        tabName += translationMgr.csb.brands.get(i).name + ", ";
+                        ++i;
+                    }
+                    if (i < translationMgr.csb.brands.size()) {
+                        tabName += "...";
+                    }
+                    break;
+                }
+            }
+        }
+        tab.rename(tabName);
     }
 
     private void openExportJsonDialog() {

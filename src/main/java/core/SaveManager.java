@@ -2,6 +2,7 @@ package core;
 
 import javax.swing.*;
 import java.awt.*;
+import java.util.Properties;
 import java.util.prefs.Preferences;
 
 public class SaveManager {

@@ -4,24 +4,21 @@ import java.awt.*;
 import java.awt.image.BufferedImage;
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Enumeration;
+import java.util.Map;
 import javax.imageio.ImageIO;
-import javax.swing.ImageIcon;
-import javax.swing.JButton;
-import javax.swing.JCheckBoxMenuItem;
-import javax.swing.JFrame;
-import javax.swing.JLabel;
-import javax.swing.JMenu;
-import javax.swing.JMenuBar;
-import javax.swing.JMenuItem;
-import javax.swing.JOptionPane;
-import javax.swing.JPanel;
-import javax.swing.ToolTipManager;
+import javax.swing.*;
 import javax.swing.border.CompoundBorder;
 import javax.swing.border.EmptyBorder;
 
+import widgets.Excelibur;
 import widgets.MainMenu;
 import widgets.Throbber;
 import widgets.UIConstants;
+import widgets.tab_control.Tab;
+import widgets.tab_control.TabbedPaneUI;
 
 public class App extends JFrame {
     public static final String TOOL_NAME = "Toolsuite 2.0.1";
@@ -46,8 +43,22 @@ public class App extends JFrame {
     private JCheckBoxMenuItem itemLight;
     JPanel grid = new JPanel(new GridLayout(5, 5, 1, 1));
 
+    JTabbedPane tabControl;
+
     private App() {
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+
+        { // order matters
+            UIManager.put("TabbedPane.hoverColor", UIConstants.Gray);
+            UIManager.put("TabbedPane.background", UIConstants.MineShaft);
+
+            UIManager.put("TabbedPaneUI", TabbedPaneUI.class.getName());
+            UIManager.put("TabbedPane.tabType", "card");
+            UIManager.put("TabbedPane.cardTabSelectionHeight", 0);
+            UIManager.put("Button.border", 0);
+            tabControl = new JTabbedPane();
+//            tabControl.putClientProperty("JTabbedPane.tabType", "card");
+        }
 
         { // Create Menu Bar
             JMenuBar menuBar = new JMenuBar();
@@ -80,6 +91,9 @@ public class App extends JFrame {
             userInterfaceManager.setThemeLight(this);
         }
         getContentPane().setLayout(layout);
+        getContentPane().add(tabControl, BorderLayout.CENTER);
+//        getContentPane().revalidate();
+//        getContentPane().repaint();
 
         ToolTipManager.sharedInstance().setInitialDelay(100);
         ToolTipManager.sharedInstance().setDismissDelay(10000);
@@ -103,7 +117,7 @@ public class App extends JFrame {
         throbber = new Throbber(ico.getImage(), 20, 20, 2, 2);
 
         colorLabel.add(throbber, BorderLayout.CENTER);
-        addScreen(new MainMenu(this), TOOL_NAME);
+        addScreen(new MainMenu(this), "Home");
         getContentPane().add(panel, BorderLayout.SOUTH);
         setFocusable(true);
         setVisible(true);
@@ -138,14 +152,17 @@ public class App extends JFrame {
     }
 
     public void addScreen(JPanel panel, String title) {
-        setTitle(title);
-        Component c = layout.getLayoutComponent(BorderLayout.CENTER);
-        if (c != null) {
-            getContentPane().remove(c);
+        tabControl.addTab(title, panel);
+        tabControl.setSelectedComponent(panel);
+
+        int tabCount = tabControl.getTabCount();
+
+        Tab tabComp = new Tab(tabControl, title, tabCount > 1);
+        tabControl.setTabComponentAt(tabCount - 1, tabComp);
+        if (panel instanceof Excelibur) {
+            Excelibur excelibur = (Excelibur) panel;
+            excelibur.tab = tabComp;
         }
-        getContentPane().add(panel, BorderLayout.CENTER);
-        getContentPane().revalidate();
-        getContentPane().repaint();
     }
 
     public static JButton createButtonWithTextAndIcon(String text, String iconPath) {
@@ -165,24 +182,29 @@ public class App extends JFrame {
         return button;
     }
 
-    public static JButton createButtonWithIcon(String iconPath, Color color) {
+    public static JButton createButtonWithIcon(String iconPath, Color color, int width, int height, int icon_width, int icon_height) {
         BufferedImage url = App.loadResource(iconPath);
         JButton button;
         if (url != null) {
-            button = new JButton(new ImageIcon(url));
+            ImageIcon icon = new ImageIcon(url);
+            Image newImg = icon.getImage().getScaledInstance(icon_width, icon_height, java.awt.Image.SCALE_SMOOTH);
+            button = new JButton(new ImageIcon(newImg));
         } else {
             button = new JButton("Img not found");
         }
-        if(color == null)
-        {
+        if (color == null) {
             color = UIConstants.DodgerBlue;
         }
         button.setBackground(color);
         button.setForeground(UIConstants.White);
-        button.setPreferredSize(new Dimension(32, 32));
+        button.setPreferredSize(new Dimension(width, height));
         button.setHorizontalAlignment(JButton.CENTER);
         button.setVerticalAlignment(JButton.CENTER);
         return button;
+    }
+
+    public static JButton createButtonWithIcon(String iconPath, Color color) {
+        return createButtonWithIcon(iconPath, color, 32, 32, 16, 16);
     }
 
     public static App get() {
@@ -233,7 +255,6 @@ public class App extends JFrame {
         grid.setOpaque(true);
         grid.setBackground(UIConstants.Red);
 
-
         addCell(0, 0, UIConstants.Mercury, UIConstants.Black, "");
         addCell(0, 1, UIConstants.Mercury, UIConstants.Black, "A");
         addCell(0, 2, UIConstants.Mercury, UIConstants.Black, "B");
@@ -269,7 +290,29 @@ public class App extends JFrame {
         JOptionPane.showMessageDialog(getContentPane(), mainPanel, "Documentation", JOptionPane.INFORMATION_MESSAGE);
     }
 
+    static void DEBUG_PRINT_UI_MANAGER_VARS() {
+//        ArrayList<String> colors = new ArrayList<String>();
+//        for (Map.Entry<Object, Object> entry : UIManager.getDefaults().entrySet()) {
+//            if (entry.getValue() instanceof Color) {
+//                colors.add((String) entry.getKey()); // all the keys are strings
+//            }
+//        }
+//        Collections.sort(colors);
+//        for (String name : colors)
+//            System.out.println(name);
+
+
+        UIDefaults defaults = UIManager.getDefaults();
+        Enumeration<Object> keysEnumeration = defaults.keys();
+        ArrayList<Object> keysList = Collections.list(keysEnumeration);
+
+        for (Object key : keysList) {
+            System.out.println(key);
+        }
+    }
+
     public static void main(String[] args) {
+        DEBUG_PRINT_UI_MANAGER_VARS();
         App.get();
     }
 }
