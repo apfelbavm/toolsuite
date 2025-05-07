@@ -13,6 +13,7 @@ import javax.swing.*;
 import javax.swing.border.CompoundBorder;
 import javax.swing.border.EmptyBorder;
 
+import authentification.MSALAuthService;
 import widgets.Excelibur;
 import widgets.MainMenu;
 import widgets.Throbber;
@@ -313,6 +314,13 @@ public class App extends JFrame {
 
     public static void main(String[] args) {
         DEBUG_PRINT_UI_MANAGER_VARS();
+        MSALAuthService auth = new MSALAuthService();
+        if (auth.login()) {
+            FileDownloader downloader = new FileDownloader(auth);
+            downloader.downloadFile();
+            ProfileManager profileManager = new ProfileManager(auth);
+            profileManager.getProfile();
+        }
         App.get();
     }
 }
