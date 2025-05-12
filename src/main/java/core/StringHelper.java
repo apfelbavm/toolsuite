@@ -41,10 +41,9 @@ public class StringHelper {
             if (c == '\n' || c == '\r') {
                 result.append(' ');
                 bPreviousWasSpace = true;
-            } else if (c == '/') {
-                result.append('/');
-                result.append('/');
-                result.append('/');
+            } else if (c == '"') {
+                result.append('\\');
+                result.append('"');
                 bPreviousWasSpace = false;
             } else if (c == ' ') {
                 if (!bPreviousWasSpace) {

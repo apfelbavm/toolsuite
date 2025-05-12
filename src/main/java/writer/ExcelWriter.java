@@ -79,7 +79,7 @@ public class ExcelWriter {
 
                         if (i18n.component.equals(I18nLanguage.META_STRING)) continue;
 
-                        if (i18n.bIsJSON) {
+                        if (i18n.isJSON()) {
                             ArrayList<I18nData> json = i18n.getJSONSorted(false);
                             for (I18nData data : json) {
                                 Row row;

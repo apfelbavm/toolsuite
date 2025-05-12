@@ -61,7 +61,7 @@ public class JsonWriter {
                         writer.write("\n    },\n");
                     }
 
-                    if (i18n.bIsJSON) {
+                    if (i18n.isJSON()) {
                         ArrayList<I18nData> json = i18n.getJSONSorted(bSkipEmptyCells);
                         int numJSONEntries = json.size();
                         if (numJSONEntries > 0) {
@@ -88,7 +88,7 @@ public class JsonWriter {
                     if (!isFirstKeyValue) {
                         writer.write(",\n");
                     }
-                    if (i18n.bIsJSON) {
+                    if (i18n.isJSON()) {
                         ArrayList<I18nData> json = i18n.getJSONSorted(bSkipEmptyCells);
                         int numJSONEntries = json.size();
                         if (numJSONEntries > 0) {

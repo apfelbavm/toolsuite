@@ -1,5 +1,6 @@
 package reader;
 
+import core.StringHelper;
 import core.TranslationMgr;
 import org.json.JSONObject;
 import org.json.JSONTokener;
@@ -66,9 +67,10 @@ public class JSONReader {
             }
 
             String brandName = language.getBrand();
-            if (brandName == null || brandName.isEmpty() || brandName.isBlank()) {
+
+            if (! StringHelper.isValid(brandName)) {
                 brandName = requestBrand(file);
-                if (brandName == null || brandName.isEmpty() || brandName.isBlank()) {
+                if (! StringHelper.isValid(brandName)) {
                     brandName = "UNSET";
                 }
                 language.addMetaBrand(brandName);
@@ -122,17 +124,17 @@ public class JSONReader {
                                 break;
                             }
                             default: {
-                                //I18n i18n = new I18n("", "", componentName.toString(), keyName.toString(), component.get(keyName.toString()).toString());
-                                //boolean bAdded = language.add(i18n, false);
-                                break;
+//                                I18n i18n = new I18n("", "", componentName.toString(), keyName.toString(), component.get(keyName.toString()).toString());
+//                                boolean bAdded = language.add(i18n, false);
+//                                break;
                             }
                         }
                     }
                 } else {
-                    //for (Object keyName : component.names()) {
-                        //I18n i18n = new I18n("", "", componentName.toString(), keyName.toString(), component.get(keyName.toString()).toString());
-                        //boolean bAdded = language.add(i18n, false);
-                    //}
+                    for (Object keyName : component.names()) {
+                        I18n i18n = new I18n("", "", componentName.toString(), keyName.toString(), component.get(keyName.toString()).toString());
+                        boolean bAdded = language.add(i18n, false);
+                    }
                 }
             }
         } catch (Exception e) {
