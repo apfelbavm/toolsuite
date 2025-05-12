@@ -1,6 +1,7 @@
 package reader;
 
 import core.App;
+import core.StringHelper;
 import core.TranslationMgr;
 import org.apache.commons.math3.util.Pair;
 import org.apache.poi.ss.usermodel.*;
@@ -41,15 +42,14 @@ public class ExcelReader {
         if (type == CellType.FORMULA) {
             type = cell.getCachedFormulaResultType();
         }
-
         switch (type) {
             default:
             case BLANK:
                 return "";
             case BOOLEAN:
-                return fixString(String.valueOf(cell.getBooleanCellValue()));
+                return StringHelper.fixString(String.valueOf(cell.getBooleanCellValue()));
             case STRING:
-                return fixString(cell.getStringCellValue());
+                return StringHelper.fixString(cell.getStringCellValue());
             case NUMERIC:
                 double value = cell.getNumericCellValue();
                 if (value % 1 == 0) {
@@ -59,15 +59,6 @@ public class ExcelReader {
                 }
         }
     }
-
-    private String fixString(String str) {
-        String value = str.replace("\n", " ").replace("\r", " ").replace(System.getProperty("line.separator"), " ");
-        // Replace double spacebar
-        value = value.replace("\"", "\\\"");
-        value = value.replaceAll("( )+", " ");
-        return value.trim();
-    }
-
 
     private String findBrand(Sheet sheet) {
         if (sheet == null) return "";
@@ -121,7 +112,7 @@ public class ExcelReader {
                     foundTableHeader = true;
                 }
             } else {
-                if (component.isBlank() || component.isEmpty() || key.isBlank() || key.isEmpty()) continue;
+                if (StringHelper.isValid(component) || StringHelper.isValid(key)) continue;
                 return r;
             }
         }
