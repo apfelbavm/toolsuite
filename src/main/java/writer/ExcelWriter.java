@@ -86,6 +86,10 @@ public class ExcelWriter {
                     }
                     Cell cell = row.createCell(colIdx);
                     cell.setCellValue(values[rowIdx][colIdx]);
+
+                    if (colIdx < 2) {
+                        cell.setCellStyle(redStyle);
+                    }
                 }
             }
 

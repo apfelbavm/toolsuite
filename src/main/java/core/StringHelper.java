@@ -39,7 +39,7 @@ public class StringHelper {
 
         boolean bPreviousWasSpace = false;
 
-        str = str.trim().replaceAll("\\\\(?![nrt])", "");
+        str = str.trim().replaceAll("\\\\(?![nrt])", ""); // remove all escape characters except for escape \n, \r, \t
         for (char c : str.toCharArray()) {
             if (c == '\n' || c == '\r') {
                 result.append(' ');

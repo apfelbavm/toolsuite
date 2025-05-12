@@ -68,9 +68,9 @@ public class JSONReader {
 
             String brandName = language.getBrand();
 
-            if (! StringHelper.isValid(brandName)) {
+            if (!StringHelper.isValid(brandName)) {
                 brandName = requestBrand(file);
-                if (! StringHelper.isValid(brandName)) {
+                if (!StringHelper.isValid(brandName)) {
                     brandName = "UNSET";
                 }
                 language.addMetaBrand(brandName);
@@ -106,6 +106,8 @@ public class JSONReader {
                 String componentNameString = componentName.toString();
                 JSONObject component = (JSONObject) parent.get(componentNameString);
 
+                System.out.println("com " + componentNameString);
+
                 if (componentNameString.equals(I18nLanguage.META_STRING)) {
                     for (Object keyName : component.names()) {
                         String keyNameString = keyName.toString();
@@ -124,7 +126,9 @@ public class JSONReader {
                                 break;
                             }
                             default: {
-//                                I18n i18n = new I18n("", "", componentName.toString(), keyName.toString(), component.get(keyName.toString()).toString());
+//                                String k = keyName.toString();
+//                                String v = component.get(k).toString();
+//                                I18n i18n = new I18n("", "", componentName.toString(), k, StringHelper.fixString(v));
 //                                boolean bAdded = language.add(i18n, false);
 //                                break;
                             }
@@ -132,12 +136,28 @@ public class JSONReader {
                     }
                 } else {
                     for (Object keyName : component.names()) {
-                        I18n i18n = new I18n("", "", componentName.toString(), keyName.toString(), component.get(keyName.toString()).toString());
-                        boolean bAdded = language.add(i18n, false);
+                        String keyNameString = keyName.toString();
+
+                        Object test = component.get(keyNameString);
+                        if (test instanceof JSONObject) {
+                            JSONObject child = (JSONObject) test;
+                            for (Object childKeys : child.names()) {
+                                String childKeyString = childKeys.toString();
+                                String value = child.get(childKeyString).toString();
+                                String combinedKey = keyNameString + "." + childKeyString;
+                                I18n i18n = new I18n("", "", componentNameString, combinedKey, StringHelper.fixString(value));
+                                boolean bAdded = language.add(i18n, false);
+                            }
+                        } else {
+                            String value = component.get(keyNameString).toString();
+                            I18n i18n = new I18n("", "", componentNameString, keyNameString, StringHelper.fixString(value));
+                            boolean bAdded = language.add(i18n, false);
+                        }
                     }
                 }
             }
-        } catch (Exception e) {
+        } catch (
+                Exception e) {
             System.out.print(e);
         }
         return language;
