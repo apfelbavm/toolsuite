@@ -53,7 +53,7 @@ public class ExcelReader {
             case BOOLEAN:
                 return StringHelper.fixString(String.valueOf(cell.getBooleanCellValue()));
             case STRING:
-                return StringHelper.fixString(cell.getStringCellValue().trim());
+                return StringHelper.fixString(cell.getStringCellValue());
             case NUMERIC:
                 double value = cell.getNumericCellValue();
                 if (value % 1 == 0) {

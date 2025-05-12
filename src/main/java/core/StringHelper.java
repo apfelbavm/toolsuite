@@ -1,5 +1,7 @@
 package core;
 
+import java.util.regex.Pattern;
+
 public class StringHelper {
     /* 1. converts '-' to '_';
      * 2. converts 'myWord' to 'my_word' * */
@@ -37,6 +39,7 @@ public class StringHelper {
 
         boolean bPreviousWasSpace = false;
 
+        str = str.trim().replaceAll("\\\\(?![nrt])", "");
         for (char c : str.toCharArray()) {
             if (c == '\n' || c == '\r') {
                 result.append(' ');

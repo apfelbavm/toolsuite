@@ -98,9 +98,6 @@ public class I18nCSB {
 
     private void maybeAdd(String component, String key, String childKey) {
         boolean bFound = false;
-
-        System.out.println("maybe add: " + component + " " + key + " " + childKey);
-
         for (I18nRowMap row : rowMap) {
             if (row.eq(component, key, childKey)) {
                 bFound = true;
@@ -189,9 +186,9 @@ public class I18nCSB {
         }
     }
 
-    public LanguageTable createLanguageTable() {
-        String[][] data = createTable(null);
-        LanguageIdentifier[] header = getHeader(null);
+    public LanguageTable createLanguageTable(String specificBrand) {
+        String[][] data = createTable(specificBrand);
+        LanguageIdentifier[] header = getHeader(specificBrand);
 
         LanguageTable languageTable = new LanguageTable(header, data);
 

@@ -41,7 +41,7 @@ public class MergeExcelDialog {
         if (file == null) return -1;
         sheetNames = ExcelReader.getExcelSheetNames(file);
 
-        LanguageTable languageTable = csb.createLanguageTable();
+        LanguageTable languageTable = csb.createLanguageTable(null);
 
         GroupableTable table = new GroupableTable();
         table.updateTable(languageTable);

@@ -184,14 +184,10 @@ public class I18n implements Comparable<I18n> {
             I18nData innerData = find(otherData.key);
             if (innerData != null) {
                 if (innerData.value.equals(otherData.value)) {
-//                    System.out.println("DELETE: component:" + component + ", key: " + data.key + ", old: " + otherData.value + ", new: " + innerData.value);
                     remove(otherData.key);
                 } else {
-//                    System.out.println("OVERRIDE: component:" + component + ", key: " + data.key + ", old: " + otherData.value + ", new: " + innerData.value);
                     data.compareResult = I18nCompareResult.Override;
                 }
-            } else {
-//                System.out.println("NOT FOUND: component:" + component + ", key: " + data.key + ", old: " + otherData.value);
             }
         }
     }
