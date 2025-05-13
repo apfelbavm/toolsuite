@@ -63,10 +63,10 @@ public class I18nCSB {
         }
     }
 
-    private ArrayList<I18nRowMap> getRowMap() {
-        if (bNeedsRegenerateRowMap) {
+    private ArrayList<I18nRowMap> getRowMap(String specificBrand) {
+        if (bNeedsRegenerateRowMap || specificBrand != null) {
             bNeedsRegenerateRowMap = false;
-            regenerateRowMap();
+            regenerateRowMap(specificBrand);
         }
         return rowMap;
     }
@@ -77,20 +77,18 @@ public class I18nCSB {
         }
     }
 
-    private void regenerateRowMap() {
+    private void regenerateRowMap(String specificBrand) {
         rowMap = new ArrayList<I18nRowMap>();
         for (I18nBrand brand : brands) {
+            if (specificBrand != null && !specificBrand.equals(brand.name)) continue;
             for (I18nLanguage lang : brand.languages) {
                 for (I18n i18n : lang.translations) {
-                    boolean bFound = false;
-                    for (I18nRowMap row : rowMap) {
-                        if (row.component.equals(i18n.component) && row.key.equals(i18n.data.key)) {
-                            bFound = true;
-                            break;
+                    if (i18n.isJSON()) {
+                        for (I18nData child : i18n.json) {
+                            maybeAdd(i18n.component, i18n.data.key, child.key);
                         }
-                    }
-                    if (!bFound) {
-                        rowMap.add(new I18nRowMap(i18n.component, i18n.data.key));
+                    } else {
+                        maybeAdd(i18n.component, i18n.data.key, null);
                     }
                 }
             }
@@ -98,30 +96,44 @@ public class I18nCSB {
         SortManager.quickSort(rowMap);
     }
 
-    private int countTotalLanguages() {
+    private void maybeAdd(String component, String key, String childKey) {
+        boolean bFound = false;
+        for (I18nRowMap row : rowMap) {
+            if (row.eq(component, key, childKey)) {
+                bFound = true;
+                break;
+            }
+        }
+        if (!bFound) {
+            rowMap.add(new I18nRowMap(component, key, childKey));
+        }
+    }
+
+    private int countTotalLanguages(String specificBrand) {
         int count = 0;
         for (I18nBrand brand : brands) {
+            if (specificBrand != null && !specificBrand.equals(brand.name)) continue;
             count += brand.languages.size();
         }
         return count;
     }
 
-    public String[][] createTable() {
-        ArrayList<I18nRowMap> map = getRowMap();
+    public String[][] createTable(String specificBrand) {
+        ArrayList<I18nRowMap> map = getRowMap(specificBrand);
 
-        int numLangs = countTotalLanguages();
+        int numLangs = countTotalLanguages(specificBrand);
 
         String[][] data = new String[map.size()][numLangs + 2];
 
         //int statNumEmptyCells = 0;
         for (int c = 0; c < numLangs; ++c) {
-            I18nLanguage lang = getLanguageBySortedIndex(c);
+            I18nLanguage lang = getLanguageBySortedIndex(c, specificBrand);
             int r = 0;
             for (I18nRowMap row : map) {
-                String value = lang.getRowDisplayValue(row.component, row.key);
+                String value = lang.getRowDisplayValue(row);
                 data[r][0] = row.component;
-                data[r][1] = row.key;
-                if (value == null || value.isBlank() || value.isEmpty()) ; //++statNumEmptyCells
+                data[r][1] = row.getBeautifulKey();
+//                if (value == null || value.isBlank() || value.isEmpty()) ; //++statNumEmptyCells
                 data[r][c + 2] = value;
                 ++r;
             }
@@ -129,9 +141,10 @@ public class I18nCSB {
         return data;
     }
 
-    public I18nLanguage getLanguageBySortedIndex(int index) {
+    public I18nLanguage getLanguageBySortedIndex(int index, String specificBrand) {
         int i = 0;
         for (I18nBrand brand : brands) {
+            if (specificBrand != null && !specificBrand.equals(brand.name)) continue;
             int langIndex = index - i;
             if (brand.languages.size() > langIndex) {
                 return brand.languages.get(langIndex);
@@ -141,8 +154,8 @@ public class I18nCSB {
         return null;
     }
 
-    public LanguageIdentifier[] getHeader() {
-        int numLangs = countTotalLanguages();
+    public LanguageIdentifier[] getHeader(String specificBrand) {
+        int numLangs = countTotalLanguages(specificBrand);
         LanguageIdentifier[] header = new LanguageIdentifier[numLangs];
         int i = 0;
         for (I18nBrand brand : brands) {
@@ -173,9 +186,9 @@ public class I18nCSB {
         }
     }
 
-    public LanguageTable createLanguageTable() {
-        String[][] data = createTable();
-        LanguageIdentifier[] header = getHeader();
+    public LanguageTable createLanguageTable(String specificBrand) {
+        String[][] data = createTable(specificBrand);
+        LanguageIdentifier[] header = getHeader(specificBrand);
 
         LanguageTable languageTable = new LanguageTable(header, data);
 

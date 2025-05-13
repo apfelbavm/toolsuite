@@ -1,6 +1,7 @@
 package reader;
 
 import core.App;
+import core.StringHelper;
 import core.TranslationMgr;
 import org.apache.commons.math3.util.Pair;
 import org.apache.poi.ss.usermodel.*;
@@ -24,6 +25,10 @@ public class ExcelReader {
     private static final int MAX_SEARCH_COLUMN = 60;
     private static final int MAX_SEARCH_ROW = 20;
 
+
+    private static final String COMPONENT = "component";
+    private static final String KEY = "key";
+
     private String getCellValue(Row row, int col) {
         if (row == null) return null;
         Cell cell = row.getCell(col, Row.MissingCellPolicy.CREATE_NULL_AS_BLANK);
@@ -41,15 +46,14 @@ public class ExcelReader {
         if (type == CellType.FORMULA) {
             type = cell.getCachedFormulaResultType();
         }
-
         switch (type) {
             default:
             case BLANK:
                 return "";
             case BOOLEAN:
-                return fixString(String.valueOf(cell.getBooleanCellValue()));
+                return StringHelper.fixString(String.valueOf(cell.getBooleanCellValue()));
             case STRING:
-                return fixString(cell.getStringCellValue());
+                return StringHelper.fixString(cell.getStringCellValue());
             case NUMERIC:
                 double value = cell.getNumericCellValue();
                 if (value % 1 == 0) {
@@ -59,15 +63,6 @@ public class ExcelReader {
                 }
         }
     }
-
-    private String fixString(String str) {
-        String value = str.replace("\n", " ").replace("\r", " ").replace(System.getProperty("line.separator"), " ");
-        // Replace double spacebar
-        value = value.replace("\"", "\\\"");
-        value = value.replaceAll("( )+", " ");
-        return value.trim();
-    }
-
 
     private String findBrand(Sheet sheet) {
         if (sheet == null) return "";
@@ -82,7 +77,7 @@ public class ExcelReader {
     private ArrayList<Pair<LanguageIdentifier, Integer>> findLocales(Sheet sheet) {
         if (sheet == null) return null;
         String brand = findBrand(sheet);
-        if (brand == null || brand.isBlank() || brand.isEmpty()) {
+        if (!StringHelper.isValid(brand)) {
             brand = "NO_BRAND";
         }
         ArrayList<Pair<LanguageIdentifier, Integer>> locales = new ArrayList<Pair<LanguageIdentifier, Integer>>(32);
@@ -103,25 +98,22 @@ public class ExcelReader {
 
     private int findFirstValueRow(Sheet sheet, int componentCol, int keyCol, int valueCol) {
         if (sheet == null) return -1;
-        final String COMPONENT = "component";
-        final String KEY = "key";
         boolean foundTableHeader = false;
         int lastRow = sheet.getLastRowNum(); // 0 based
         for (int r = 0; r <= lastRow; ++r) {
             Row row = sheet.getRow(r);
             if (row == null) continue;
             String component = getCellValue(row, componentCol);
-            if (component == null) continue;
+            if (!StringHelper.isValid(component)) continue;
 
             String key = getCellValue(row, keyCol);
-            if (key == null) continue;
+            if (!StringHelper.isValid(key)) continue;
 
             if (!foundTableHeader) {
                 if (component.equalsIgnoreCase(COMPONENT) && key.equalsIgnoreCase(KEY)) {
                     foundTableHeader = true;
                 }
             } else {
-                if (component.isBlank() || component.isEmpty() || key.isBlank() || key.isEmpty()) continue;
                 return r;
             }
         }
@@ -138,12 +130,18 @@ public class ExcelReader {
             Row row = sheet.getRow(r);
             if (row == null) continue;
             String component = getCellValue(row, componentCol);
-            if (component == null || component.isBlank() || component.isEmpty()) continue;
+//            if (component == null || component.isBlank() || component.isEmpty()) continue;
+//            System.out.println("extractLanguage ADD comp: " + sheet.getSheetName() + " " + component);
+            if (!StringHelper.isValid(component)) continue;
 
             String key = getCellValue(row, keyCol);
-            if (key == null || key.isBlank() || key.isEmpty()) continue;
+//            if (key == null || key.isBlank() || key.isEmpty()) continue;
+            if (!StringHelper.isValid(key)) continue;
             String value = getCellValue(row, valueCol);
-            if (value == null || value.isBlank() || value.isEmpty()) continue;
+//            if (value == null || value.isBlank() || value.isEmpty()) continue;
+
+//            System.out.println("extractLanguage ADD: " + component + " " + key);
+
             I18n i18n = new I18n("", "", component, key, value);
             lang.add(i18n, false);
             //}
@@ -186,12 +184,13 @@ public class ExcelReader {
         return -1;
     }
 
+
     private I18nBrand extractSheet(Sheet sheet) {
         if (sheet == null) return null;
         ArrayList<Pair<LanguageIdentifier, Integer>> locales = findLocales(sheet);
         if (locales == null || locales.isEmpty()) return null;
-        int componentCol = findColumnWithString(sheet, "component");
-        int keyCol = findColumnWithString(sheet, "key");
+        int componentCol = findColumnWithString(sheet, COMPONENT);
+        int keyCol = findColumnWithString(sheet, KEY);
         if (componentCol == -1 || keyCol == -1) return null;
 
         I18nBrand brand = new I18nBrand(locales.get(0).getFirst().brand);
@@ -199,6 +198,7 @@ public class ExcelReader {
         for (Pair<LanguageIdentifier, Integer> pair : locales) {
             int valueCol = pair.getValue();
             int firstRow = findFirstValueRow(sheet, componentCol, keyCol, valueCol);
+            System.out.println("extractSheet " + sheet.getSheetName() + " " + firstRow);
             if (firstRow < 0) continue; // If no value was found we must escape this sheet.
 
             I18nLanguage lang = extractLanguage(sheet, pair.getKey(), firstRow, componentCol, keyCol, valueCol);

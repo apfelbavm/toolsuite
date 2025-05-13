@@ -55,8 +55,8 @@ public class App extends JFrame {
 
             UIManager.put("TabbedPaneUI", TabbedPaneUI.class.getName());
             UIManager.put("TabbedPane.tabType", "card");
-            UIManager.put("TabbedPane.cardTabSelectionHeight", 0);
-            UIManager.put("Button.border", 0);
+            UIManager.put("TabbedPane.cardTabSelectionHeight", null);
+            UIManager.put("Button.border", null);
             tabControl = new JTabbedPane();
 //            tabControl.putClientProperty("JTabbedPane.tabType", "card");
         }
@@ -313,7 +313,14 @@ public class App extends JFrame {
     }
 
     public static void main(String[] args) {
-        DEBUG_PRINT_UI_MANAGER_VARS();
+//        DEBUG_PRINT_UI_MANAGER_VARS();
+//        MSALAuthService auth = new MSALAuthService();
+//        if (auth.login()) {
+//            FileDownloader downloader = new FileDownloader(auth);
+//            downloader.downloadFile();
+//            ProfileManager profileManager = new ProfileManager(auth);
+//            profileManager.getProfile();
+//        }
         App.get();
     }
 }

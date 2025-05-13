@@ -67,10 +67,19 @@ public class I18nLanguage implements Comparable<I18nLanguage> {
     }
 
 
-    public String getRowDisplayValue(String component, String key) {
+    public String getRowDisplayValue(I18nRowMap row) {
         for (I18n i18n : translations) {
-            if (i18n.component.equals(component) && i18n.data.key.equals(key)) {
-                return i18n.getRowDisplayValue();
+            if (i18n.component.equals(row.component) && i18n.data.key.equals(row.key)) {
+                if (row.childKey != null && i18n.isJSON()) {
+                    for (I18nData child : i18n.json) {
+                        if (row.childKey.equals(child.key)) {
+                            return child.value;
+                        }
+                    }
+                } else {
+                    return i18n.data.value;
+                }
+
             }
         }
         return null;
@@ -103,12 +112,12 @@ public class I18nLanguage implements Comparable<I18nLanguage> {
                 if (!inner.component.equals(outer.component)) continue;
                 if (!inner.data.key.equals(outer.data.key)) continue;
 
-                if (inner.bIsJSON != outer.bIsJSON) {
+                if (inner.isJSON() != outer.isJSON()) {
                     System.err.println("MISMATCH JSON TO JSON");
                     // HANDLE UNEQUALITY
 
                 } else {
-                    if (inner.bIsJSON) {
+                    if (inner.isJSON()) {
                         inner.removeJsonDuplicates(outer);
                         if (!inner.isValid()) {
                             translations.remove(innerIdx);

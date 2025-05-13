@@ -4,6 +4,8 @@ import core.App;
 import org.apache.poi.ss.usermodel.*;
 import org.apache.poi.xssf.usermodel.*;
 import translations.*;
+import widgets.table.LanguageIdentifier;
+import widgets.table.LanguageTable;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -46,6 +48,8 @@ public class ExcelWriter {
 
             Sheet sheet = workbook.createSheet(brand.name);
 
+            LanguageTable table = csb.createLanguageTable(brand.name);
+
             {
                 Row row = sheet.createRow(0);
                 Cell cell = row.createCell(0);
@@ -64,87 +68,121 @@ public class ExcelWriter {
                 keyCell.setCellStyle(redStyle);
             }
 
-            {
-                int langIdx = 0;
-                for (I18nLanguage lang : brand.languages) {
+            String[][] values = table.getJTableData();
+            LanguageIdentifier[] locales = table.getIdentifiers();
 
-                    {
-                        Cell cell = metaRow.createCell(COL_OFFSET_LANG + langIdx);
-                        cell.setCellValue(lang.locale);
+
+            for (int colIdx = 0; colIdx < locales.length; ++colIdx) {
+                Cell langCell = metaRow.createCell(COL_OFFSET_LANG + colIdx);
+                langCell.setCellValue(locales[colIdx].locale);
+                langCell.setCellStyle(redStyle);
+            }
+
+            for (int rowIdx = 0; rowIdx < values.length; ++rowIdx) {
+                Row row = sheet.createRow(ROW_OFFSET_TRANSLATIONS + rowIdx);
+                for (int colIdx = 0; colIdx < values[0].length; ++colIdx) {
+                    if (rowIdx < 3) {
+                        if (values[rowIdx][colIdx].equals(I18nLanguage.META_STRING)) break;
+                    }
+                    Cell cell = row.createCell(colIdx);
+                    cell.setCellValue(values[rowIdx][colIdx]);
+
+                    if (colIdx < 2) {
                         cell.setCellStyle(redStyle);
                     }
-
-                    int rowIdx = 0;
-                    for (I18n i18n : lang.translations) {
-
-                        if (i18n.component.equals(I18nLanguage.META_STRING)) continue;
-
-                        if (i18n.bIsJSON) {
-                            ArrayList<I18nData> json = i18n.getJSONSorted(false);
-                            for (I18nData data : json) {
-                                Row row;
-
-                                if (langIdx == 0) {
-                                    row = sheet.createRow(ROW_OFFSET_TRANSLATIONS + rowIdx);
-                                    {
-                                        Cell cell = row.createCell(COL_OFFSET_COMPONENT);
-                                        cell.setCellValue(i18n.component);
-                                        cell.setCellStyle(redStyle);
-                                    }
-                                    {
-                                        Cell cell = row.createCell(COL_OFFSET_KEY);
-                                        cell.setCellValue(i18n.data.key + "." + data.key);
-                                        cell.setCellStyle(redStyle);
-                                    }
-                                } else {
-                                    row = sheet.getRow(ROW_OFFSET_TRANSLATIONS + rowIdx);
-                                }
-
-                                Cell cell = row.createCell(COL_OFFSET_LANG + langIdx);
-                                cell.setCellValue(data.value);
-
-                                if (config.bColorizeChangedCells) {
-                                    switch (i18n.data.compareResult) {
-                                        default:
-                                            break;
-                                        case Override: {
-                                            cell.setCellStyle(overrideStyle);
-                                            break;
-                                        }
-                                        case New: {
-                                            cell.setCellStyle(newStyle);
-                                            break;
-                                        }
-                                    }
-                                }
-                                ++rowIdx;
-                            }
-                        } else {
-                            Row row;
-
-                            if (langIdx == 0) {
-                                row = sheet.createRow(ROW_OFFSET_TRANSLATIONS + rowIdx);
-                                {
-                                    Cell cell = row.createCell(COL_OFFSET_COMPONENT);
-                                    cell.setCellValue(i18n.component);
-                                }
-                                {
-                                    Cell cell = row.createCell(COL_OFFSET_KEY);
-                                    cell.setCellValue(i18n.data.key);
-                                }
-                            } else {
-                                row = sheet.getRow(ROW_OFFSET_TRANSLATIONS + rowIdx);
-                            }
-
-                            Cell cell = row.createCell(COL_OFFSET_LANG + langIdx);
-                            cell.setCellValue(i18n.data.value);
-
-                            ++rowIdx;
-                        }
-                    }
-                    ++langIdx;
                 }
             }
+
+//            {
+//                Row row = sheet.createRow(0);
+//                Cell cell = row.createCell(0);
+//                cell.setCellValue(brand.name);
+//                cell.setCellStyle(redStyle);
+//            }
+//
+
+//
+//            {
+//                int langIdx = 0;
+//                for (I18nLanguage lang : brand.languages) {
+//
+//                    {
+//                        Cell cell = metaRow.createCell(COL_OFFSET_LANG + langIdx);
+//                        cell.setCellValue(lang.locale);
+//                        cell.setCellStyle(redStyle);
+//                    }
+//
+//                    int rowIdx = 0;
+//                    for (I18n i18n : lang.translations) {
+//
+//                        if (i18n.component.equals(I18nLanguage.META_STRING)) continue;
+//
+//                        if (i18n.isJSON()) {
+//                            ArrayList<I18nData> json = i18n.getJSONSorted(false);
+//                            for (I18nData data : json) {
+//                                Row row;
+//
+//                                if (langIdx == 0) {
+//                                    row = sheet.createRow(ROW_OFFSET_TRANSLATIONS + rowIdx);
+//                                    {
+//                                        Cell cell = row.createCell(COL_OFFSET_COMPONENT);
+//                                        cell.setCellValue(i18n.component);
+//                                        cell.setCellStyle(redStyle);
+//                                    }
+//                                    {
+//                                        Cell cell = row.createCell(COL_OFFSET_KEY);
+//                                        cell.setCellValue(i18n.data.key + "." + data.key);
+//                                        cell.setCellStyle(redStyle);
+//                                    }
+//                                } else {
+//                                    row = sheet.getRow(ROW_OFFSET_TRANSLATIONS + rowIdx);
+//                                }
+//
+//                                Cell cell = row.createCell(COL_OFFSET_LANG + langIdx);
+//                                cell.setCellValue(data.value);
+//
+//                                if (config.bColorizeChangedCells) {
+//                                    switch (i18n.data.compareResult) {
+//                                        default:
+//                                            break;
+//                                        case Override: {
+//                                            cell.setCellStyle(overrideStyle);
+//                                            break;
+//                                        }
+//                                        case New: {
+//                                            cell.setCellStyle(newStyle);
+//                                            break;
+//                                        }
+//                                    }
+//                                }
+//                                ++rowIdx;
+//                            }
+//                        } else {
+//                            Row row;
+//
+//                            if (langIdx == 0) {
+//                                row = sheet.createRow(ROW_OFFSET_TRANSLATIONS + rowIdx);
+//                                {
+//                                    Cell cell = row.createCell(COL_OFFSET_COMPONENT);
+//                                    cell.setCellValue(i18n.component);
+//                                }
+//                                {
+//                                    Cell cell = row.createCell(COL_OFFSET_KEY);
+//                                    cell.setCellValue(i18n.data.key);
+//                                }
+//                            } else {
+//                                row = sheet.getRow(ROW_OFFSET_TRANSLATIONS + rowIdx);
+//                            }
+//
+//                            Cell cell = row.createCell(COL_OFFSET_LANG + langIdx);
+//                            cell.setCellValue(i18n.data.value);
+//
+//                            ++rowIdx;
+//                        }
+//                    }
+//                    ++langIdx;
+//                }
+//            }
         }
 
         try {

@@ -18,8 +18,12 @@ public class I18n implements Comparable<I18n> {
     //    public String key;
     //    public String value;
 //    public JSONObject json;
-    public boolean bIsJSON;
-//    public I18nCompareResult compareResult;
+
+    //    public I18nCompareResult compareResult;
+
+    public boolean isJSON() {
+        return json != null && !json.isEmpty();
+    }
 
     private I18n() {
     } // made private so you have to use the other constructor
@@ -34,7 +38,6 @@ public class I18n implements Comparable<I18n> {
         if (splitIndex > 0) {
             String[] split = key_.split("\\.");
             if (split.length == 1 || split[1] == null || split[1].isBlank() || split[1].isEmpty()) {
-                bIsJSON = false;
                 data.workbook = workbook_;
                 data.sheet = sheet_;
                 data.key = key_;
@@ -42,7 +45,6 @@ public class I18n implements Comparable<I18n> {
                 data.compareResult = I18nCompareResult.New;
 
             } else {
-                bIsJSON = true;
                 json = new ArrayList<I18nData>();
                 data.key = split[0];
                 I18nData newData = new I18nData();
@@ -55,7 +57,6 @@ public class I18n implements Comparable<I18n> {
                 json.add(newData);
             }
         } else {
-            bIsJSON = false;
             data.workbook = workbook_;
             data.sheet = sheet_;
             data.key = key_;
@@ -71,11 +72,10 @@ public class I18n implements Comparable<I18n> {
         data.key = other.data.key;
         data.value = other.data.value;
         json = other.json;
-        bIsJSON = other.bIsJSON;
     }
 
     boolean has(String key_) {
-        if (bIsJSON) {
+        if (isJSON()) {
 
             for (I18nData innerData : json) {
                 if (innerData.key.equals(key_)) {
@@ -88,7 +88,7 @@ public class I18n implements Comparable<I18n> {
     }
 
     I18nData find(String key_) {
-        if (bIsJSON) {
+        if (isJSON()) {
             for (I18nData innerData : json) {
                 if (innerData.key.equals(key_)) {
                     return innerData;
@@ -100,7 +100,7 @@ public class I18n implements Comparable<I18n> {
     }
 
     void remove(String key_) {
-        if (bIsJSON) {
+        if (isJSON()) {
             int i = 0;
             for (I18nData innerData : json) {
                 if (innerData.key.equals(key_)) {
@@ -114,19 +114,17 @@ public class I18n implements Comparable<I18n> {
 
     public I18nResult addOrOverride(I18n other, boolean bOverride) {
         if (component.equals(other.component) && data.key.equals(other.data.key)) {
-            if (bIsJSON && other.bIsJSON) {
+            if (isJSON() && other.isJSON()) {
                 I18nResult result = I18nResult.AlreadyExists;
                 for (I18nData otherData : other.json) {
                     if (!has(otherData.key)) {
                         json.add(otherData);
                         if (result != I18nResult.Overridden) {
-//                            System.out.println("TRY ADD: component:" + component + ", key: " + key + ", json: " + entryString + ", value: " + other.json.get(entryString).toString());
                             result = I18nResult.Added;
                         }
                     } else if (bOverride) {
                         json.add(otherData);
                         otherData.compareResult = I18nCompareResult.Override;
-//                        System.out.println("TRY ADD OVERRIDE: component:" + component + ", key: " + key + ", json: " + entryString + ", value: " + other.json.get(entryString).toString());
                         result = I18nResult.Overridden;
                     }
                 }
@@ -149,26 +147,8 @@ public class I18n implements Comparable<I18n> {
         return json;
     }
 
-    String getRowDisplayValue() {
-        if (bIsJSON) {
-            String str = "";
-            int idx = 0;
-            int lastIdx = json.size() - 1;
-            for (I18nData innerData : json) {
-                if (idx != lastIdx) {
-                    str += innerData.key + ": " + innerData.value + "\n";
-
-                } else {
-                    str += innerData.key + ": " + innerData.value;
-                }
-            }
-            return str;
-        }
-        return data.value;
-    }
-
     public boolean isValid() {
-        if (bIsJSON) {
+        if (isJSON()) {
             if (json == null || json.isEmpty()) return false;
 
             for (I18nData innerData : json) {
@@ -180,7 +160,7 @@ public class I18n implements Comparable<I18n> {
     }
 
     public void print() {
-        if (bIsJSON) {
+        if (isJSON()) {
             System.out.println("workbook: " + data.workbook + ", sheet: " + data.sheet + ", component: " + component);
             for (I18nData innerData : json) {
                 System.out.println(" -> key: " + data.key + "." + innerData.key + ", value:" + innerData.value);
@@ -204,14 +184,10 @@ public class I18n implements Comparable<I18n> {
             I18nData innerData = find(otherData.key);
             if (innerData != null) {
                 if (innerData.value.equals(otherData.value)) {
-//                    System.out.println("DELETE: component:" + component + ", key: " + data.key + ", old: " + otherData.value + ", new: " + innerData.value);
                     remove(otherData.key);
                 } else {
-//                    System.out.println("OVERRIDE: component:" + component + ", key: " + data.key + ", old: " + otherData.value + ", new: " + innerData.value);
                     data.compareResult = I18nCompareResult.Override;
                 }
-            } else {
-//                System.out.println("NOT FOUND: component:" + component + ", key: " + data.key + ", old: " + otherData.value);
             }
         }
     }
