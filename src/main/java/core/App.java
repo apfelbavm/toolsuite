@@ -7,13 +7,12 @@ import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Enumeration;
-import java.util.Map;
 import javax.imageio.ImageIO;
 import javax.swing.*;
 import javax.swing.border.CompoundBorder;
 import javax.swing.border.EmptyBorder;
 
-import authentification.MSALAuthService;
+import authentification.MSALService;
 import widgets.Excelibur;
 import widgets.MainMenu;
 import widgets.Throbber;
@@ -30,6 +29,7 @@ public class App extends JFrame {
 
     SaveManager saveManager = SaveManager.get();
     UserInterfaceManager userInterfaceManager = UserInterfaceManager.get();
+    public MSALService auth = new MSALService();
 
     private BorderLayout layout = new BorderLayout();
 
@@ -314,13 +314,6 @@ public class App extends JFrame {
 
     public static void main(String[] args) {
         DEBUG_PRINT_UI_MANAGER_VARS();
-        MSALAuthService auth = new MSALAuthService();
-        if (auth.login()) {
-            FileDownloader downloader = new FileDownloader(auth);
-            downloader.downloadFile();
-            ProfileManager profileManager = new ProfileManager(auth);
-            profileManager.getProfile();
-        }
         App.get();
     }
 }

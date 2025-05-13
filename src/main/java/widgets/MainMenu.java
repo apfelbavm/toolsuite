@@ -29,6 +29,13 @@ public class MainMenu extends JPanel {
             button.setPreferredSize(new Dimension(200, 50));
             add(button, con);
         }
+        con.gridy = 1;
+        {
+            JButton button = App.createButtonWithTextAndIcon("Login", "icon_excel.png");
+            button.addActionListener(e -> owner.addScreen(new LoginScreen(owner), "Login"));
+            button.setPreferredSize(new Dimension(200, 50));
+            add(button, con);
+        }
 //        con.gridy = 1;
 //        {
 //            JButton button = App.createButtonWithTextAndIcon("JSON 2 Excel", "icon_json.png");

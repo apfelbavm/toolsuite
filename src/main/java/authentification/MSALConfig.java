@@ -11,4 +11,5 @@ public class MSALConfig {
     public static final String loginRedirectUrl = "http://localhost";
     public static final String userUrl = "https://graph.microsoft.com/v1.0/me";
 }
+// , "FileStorageContainer.Selected"
 

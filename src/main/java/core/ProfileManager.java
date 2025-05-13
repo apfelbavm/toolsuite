@@ -1,17 +1,16 @@
 package core;
 
-import authentification.MSALAuthService;
+import authentification.MSALService;
 import authentification.MSALConfig;
 
-import java.io.IOException;
 import java.net.HttpURLConnection;
 import java.net.URL;
 import java.util.Scanner;
 
 public class ProfileManager {
-    MSALAuthService authService;
+    MSALService authService;
 
-    public ProfileManager(MSALAuthService authService_) {
+    public ProfileManager(MSALService authService_) {
         authService = authService_;
     }
 
