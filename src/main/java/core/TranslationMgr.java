@@ -84,17 +84,13 @@ public class TranslationMgr {
 
         ArrayList<File> fileList = new ArrayList<File>();
 
-        if (overrideFiles != null && overrideFiles.length > 0) {
-            for (int i = overrideFiles.length - 1; i >= 0; --i) {
-                if (overrideFiles[i] != null && overrideFiles[i].exists()) {
-                    fileList.add(overrideFiles[i]);
-                }
+        if (overrideFiles != null) {
+            for (File file : overrideFiles) {
+                if (file != null && file.exists()) fileList.add(file);
             }
-        } else {
-            for (int i = files.length - 1; i >= 0; --i) {
-                if (files[i] != null && files[i].exists()) {
-                    fileList.add(files[i]);
-                }
+        } else if (files != null) {
+            for (File file : files) {
+                if (file != null && file.exists()) fileList.add(file);
             }
         }
 
