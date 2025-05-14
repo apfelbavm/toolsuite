@@ -21,7 +21,7 @@ import widgets.tab_control.Tab;
 import widgets.tab_control.TabbedPaneUI;
 
 public class App extends JFrame {
-    public static final String TOOL_NAME = "Toolsuite 2.0.1";
+    public static final String TOOL_NAME = "Toolsuite 2.0.2";
     private static App instance;
     public static final int NORMAL_MESSAGE = 0;
     public static final int WARNING_MESSAGE = 1;

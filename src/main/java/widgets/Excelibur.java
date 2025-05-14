@@ -325,11 +325,15 @@ public class Excelibur extends JPanel implements OnLocaleMissing, OnBrandMissing
         config.bExcelUseHyperlinkIfAvailable = checkBoxUseHyperlinkIfAvailable.isSelected();
         config.bExcelIncludeHiddenSheets = checkIncludeHiddenSheets.isSelected();
         translationMgr.importFiles(this, null, config);
-        LanguageTable languageTable = translationMgr.csb.createLanguageTable(null);
-        Component comp = horSplit.getRightComponent();
-        if (comp != null) horSplit.remove(comp);
+        if (translationMgr.csb != null) {
+            LanguageTable languageTable = translationMgr.csb.createLanguageTable(null);
+            Component comp = horSplit.getRightComponent();
+            if (comp != null) horSplit.remove(comp);
+            table.updateTable(languageTable);
+        } else {
+            table.updateTable(null);
+        }
 
-        table.updateTable(languageTable);
         renameTab();
         horSplit.setRightComponent(table);
 

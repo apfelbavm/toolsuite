@@ -1,6 +1,7 @@
 package core;
 
 import java.io.File;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashSet;
 
@@ -81,16 +82,31 @@ public class TranslationMgr {
         reader.jsonReader.bindOnRequestLocale(excelibur);
         reader.jsonReader.bindOnRequestBrand(excelibur);
 
-        if (overrideFiles != null) {
-            csb = reader.read(overrideFiles, config);
+        ArrayList<File> fileList = new ArrayList<File>();
 
+        if (overrideFiles != null && overrideFiles.length > 0) {
+            for (int i = overrideFiles.length - 1; i >= 0; --i) {
+                if (overrideFiles[i] != null && overrideFiles[i].exists()) {
+                    fileList.add(overrideFiles[i]);
+                }
+            }
         } else {
-            csb = reader.read(files, config);
+            for (int i = files.length - 1; i >= 0; --i) {
+                if (files[i] != null && files[i].exists()) {
+                    fileList.add(files[i]);
+                }
+            }
+        }
+
+        if (!fileList.isEmpty()) {
+            csb = reader.read(fileList.toArray(new File[0]), config);
         }
 
         long statSort = System.currentTimeMillis();
         System.out.println("Sorting data took:" + statSort + "ms");
-        csb.sort();
+        if (csb != null) {
+            csb.sort();
+        }
     }
 
     public void startTimeTrace() {
