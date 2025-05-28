@@ -12,7 +12,6 @@ import javax.swing.*;
 import javax.swing.border.CompoundBorder;
 import javax.swing.border.EmptyBorder;
 
-import authentification.MSALService;
 import widgets.Excelibur;
 import widgets.MainMenu;
 import widgets.Throbber;
@@ -29,7 +28,6 @@ public class App extends JFrame {
 
     SaveManager saveManager = SaveManager.get();
     UserInterfaceManager userInterfaceManager = UserInterfaceManager.get();
-    public MSALService auth = new MSALService();
 
     private BorderLayout layout = new BorderLayout();
 

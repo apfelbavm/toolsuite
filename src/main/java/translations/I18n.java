@@ -1,5 +1,6 @@
 package translations;
 
+import core.StringHelper;
 import org.apache.poi.ss.usermodel.Sheet;
 import org.apache.poi.ss.usermodel.Workbook;
 import org.json.JSONObject;
@@ -117,19 +118,27 @@ public class I18n implements Comparable<I18n> {
             if (isJSON() && other.isJSON()) {
                 I18nResult result = I18nResult.AlreadyExists;
                 for (I18nData otherData : other.json) {
-                    if (!has(otherData.key)) {
+                    I18nData cur = find(otherData.key);
+
+                    if (cur != null) {
+                        if (!StringHelper.isValid(cur.value)) {
+                            cur.value = otherData.value;
+                        } else if (bOverride) {
+                            cur.value = otherData.value;
+                        }
+                        otherData.compareResult = I18nCompareResult.Override;
+                        result = I18nResult.Overridden;
+                    } else {
                         json.add(otherData);
                         if (result != I18nResult.Overridden) {
                             result = I18nResult.Added;
                         }
-                    } else if (bOverride) {
-                        json.add(otherData);
-                        otherData.compareResult = I18nCompareResult.Override;
-                        result = I18nResult.Overridden;
                     }
                 }
                 return result;
             } else if (bOverride) {
+                if (!StringHelper.isValid(other.data.value)) return I18nResult.AlreadyExists;
+                if (StringHelper.isValid(data.value)) return I18nResult.AlreadyExists;
                 data.value = other.data.value;
                 data.compareResult = I18nCompareResult.Override;
                 return I18nResult.Overridden;
@@ -149,14 +158,13 @@ public class I18n implements Comparable<I18n> {
 
     public boolean isValid() {
         if (isJSON()) {
-            if (json == null || json.isEmpty()) return false;
-
             for (I18nData innerData : json) {
-                if (innerData.value != null && !innerData.value.isBlank() && !innerData.value.isEmpty()) return true;
+                if (StringHelper.isValid(innerData.value))
+                    return true; // this is fucked up but we check wether just one value is actually valid in json array.
             }
             return false;
         }
-        return data.value != null && !data.value.isBlank() && !data.value.isEmpty();
+        return StringHelper.isValid(data.value);
     }
 
     public void print() {

@@ -13,6 +13,7 @@ import java.util.Map;
 import java.util.TreeMap;
 
 import core.App;
+import core.StringHelper;
 import core.TranslationMgrFlags;
 import translations.*;
 
@@ -69,6 +70,7 @@ public class JsonWriter {
                             writer.write("        \"" + i18n.data.key + "\": {\n");
                             int i = 0;
                             for (I18nData data : json) {
+                                if (!StringHelper.isValid(data.value)) continue;
                                 writer.write("            \"" + data.key + "\": " + "\"" + data.value + "\"");
                                 if (i < numJSONEntries - 1) {
                                     writer.write(",\n");
@@ -95,6 +97,7 @@ public class JsonWriter {
                             writer.write("        \"" + i18n.data.key + "\": {\n");
                             int i = 0;
                             for (I18nData data : json) {
+                                if (!StringHelper.isValid(data.value)) continue;
                                 writer.write("            \"" + data.key + "\": " + "\"" + data.value + "\"");
                                 if (i < numJSONEntries - 1) {
                                     writer.write(",\n");
