@@ -68,11 +68,16 @@ public class JsonWriter {
                         if (numJSONEntries > 0) {
                             writer.write("    \"" + i18n.component + "\": {\n");
                             writer.write("        \"" + i18n.data.key + "\": {\n");
-                            int i = 0;
+
+                            ArrayList<I18nData> validData = new ArrayList<I18nData>();
                             for (I18nData data : json) {
                                 if (!StringHelper.isValid(data.value)) continue;
+                                validData.add(data);
+                            }
+                            int i = 0;
+                            for (I18nData data : validData) {
                                 writer.write("            \"" + data.key + "\": " + "\"" + data.value + "\"");
-                                if (i < numJSONEntries - 1) {
+                                if (i < validData.size() - 1) {
                                     writer.write(",\n");
                                 } else {
                                     writer.write("\n");
@@ -83,7 +88,6 @@ public class JsonWriter {
                         }
                     } else {
                         writer.write("    \"" + i18n.component + "\": {\n        \"" + i18n.data.key + "\": " + "\"" + i18n.data.value + "\"");
-                        //writer.write("    }");
                     }
                     lastComponent = i18n.component;
                 } else {
@@ -95,11 +99,15 @@ public class JsonWriter {
                         int numJSONEntries = json.size();
                         if (numJSONEntries > 0) {
                             writer.write("        \"" + i18n.data.key + "\": {\n");
-                            int i = 0;
+                            ArrayList<I18nData> validData = new ArrayList<I18nData>();
                             for (I18nData data : json) {
                                 if (!StringHelper.isValid(data.value)) continue;
+                                validData.add(data);
+                            }
+                            int i = 0;
+                            for (I18nData data : validData) {
                                 writer.write("            \"" + data.key + "\": " + "\"" + data.value + "\"");
-                                if (i < numJSONEntries - 1) {
+                                if (i < validData.size() - 1) {
                                     writer.write(",\n");
                                 } else {
                                     writer.write("\n");
