@@ -38,6 +38,8 @@ public class JsonWriter {
         return true;
     }
 
+    private static final String INDENTATION = (" ").repeat(4);
+
     private boolean exportAdvanced(I18nLanguage lang, String brand, String outputFolder, String fileName, boolean bSkipEmptyCells) {
         try {
             System.out.println("JsonWriter export-> bSkipEmptyCells: " + bSkipEmptyCells);
@@ -48,86 +50,63 @@ public class JsonWriter {
             // We need this filewriter to allow Umlauts
             Writer writer = new OutputStreamWriter(new FileOutputStream(pathToCreate + fileName + ".json"), StandardCharsets.UTF_8);
             String lastComponent = "";
-            boolean isFirstComp = true;
+            boolean bIsFirstComp = true;
             writer.write("{\n");
             for (I18n i18n : lang.translations) {
                 if (bSkipEmptyCells && !i18n.isValid()) continue;
-                boolean isFirstKeyValue = false;
+
                 if (!i18n.component.equals(lastComponent)) {
                     // New component
-                    if (isFirstComp) {
-                        isFirstKeyValue = true;
-                        isFirstComp = false;
+                    if (bIsFirstComp) {
+                        bIsFirstComp = false;
                     } else {
-                        writer.write("\n    },\n");
+                        writer.write("\n" + INDENTATION + "},\n");
                     }
-
-                    if (i18n.isJSON()) {
-                        ArrayList<I18nData> json = i18n.getJSONSorted(bSkipEmptyCells);
-                        int numJSONEntries = json.size();
-                        if (numJSONEntries > 0) {
-                            writer.write("    \"" + i18n.component + "\": {\n");
-                            writer.write("        \"" + i18n.data.key + "\": {\n");
-
-                            ArrayList<I18nData> validData = new ArrayList<I18nData>();
-                            for (I18nData data : json) {
-                                if (!StringHelper.isValid(data.value)) continue;
-                                validData.add(data);
-                            }
-                            int i = 0;
-                            for (I18nData data : validData) {
-                                writer.write("            \"" + data.key + "\": " + "\"" + data.value + "\"");
-                                if (i < validData.size() - 1) {
-                                    writer.write(",\n");
-                                } else {
-                                    writer.write("\n");
-                                }
-                                ++i;
-                            }
-                            writer.write("        }");
-                        }
-                    } else {
-                        writer.write("    \"" + i18n.component + "\": {\n        \"" + i18n.data.key + "\": " + "\"" + i18n.data.value + "\"");
-                    }
+                    writeJsonShenanigans(writer, i18n, false, bSkipEmptyCells);
                     lastComponent = i18n.component;
                 } else {
-                    if (!isFirstKeyValue) {
-                        writer.write(",\n");
-                    }
-                    if (i18n.isJSON()) {
-                        ArrayList<I18nData> json = i18n.getJSONSorted(bSkipEmptyCells);
-                        int numJSONEntries = json.size();
-                        if (numJSONEntries > 0) {
-                            writer.write("        \"" + i18n.data.key + "\": {\n");
-                            ArrayList<I18nData> validData = new ArrayList<I18nData>();
-                            for (I18nData data : json) {
-                                if (!StringHelper.isValid(data.value)) continue;
-                                validData.add(data);
-                            }
-                            int i = 0;
-                            for (I18nData data : validData) {
-                                writer.write("            \"" + data.key + "\": " + "\"" + data.value + "\"");
-                                if (i < validData.size() - 1) {
-                                    writer.write(",\n");
-                                } else {
-                                    writer.write("\n");
-                                }
-                                ++i;
-                            }
-                            writer.write("        }");
-                        }
-                    } else {
-                        writer.write("        \"" + i18n.data.key + "\": " + "\"" + i18n.data.value + "\"");
-                    }
+                    writer.write(",\n");
+                    writeJsonShenanigans(writer, i18n, true, bSkipEmptyCells);
                 }
             }
-            writer.write("\n    }\n}\n");
+            writer.write("\n" + INDENTATION + "}\n}\n");
             writer.close();
         } catch (Exception e) {
             App.get().setStatus(e.getLocalizedMessage(), App.ERROR_MESSAGE);
             return false;
         }
         return true;
+    }
+
+    private void writeJsonShenanigans(Writer writer, I18n i18n, boolean bIsSameComponent, boolean bSkipEmptyCells) throws IOException {
+        if (i18n.isJSON()) {
+            ArrayList<I18nData> json = i18n.getJSONSorted(bSkipEmptyCells);
+            if (!json.isEmpty()) {
+                if (!bIsSameComponent) {
+                    writer.write(INDENTATION + "\"" + i18n.component + "\": {\n");
+                }
+                writer.write(INDENTATION + INDENTATION + "\"" + i18n.data.key + "\": {\n");
+
+                ArrayList<I18nData> validData = new ArrayList<I18nData>();
+                for (I18nData data : json) {
+                    if (!StringHelper.isValid(data.value)) continue;
+                    validData.add(data);
+                }
+
+                for (int i = 0; i < validData.size(); ++i) {
+                    I18nData data = validData.get(i);
+                    writer.write(INDENTATION + INDENTATION + INDENTATION + "\"" + data.key + "\": \"" + data.value + "\"");
+                    String lineEnding = (i < validData.size() - 1) ? ",\n" : "\n";
+                    writer.write(lineEnding);
+                }
+                writer.write(INDENTATION + INDENTATION + "}");
+            }
+        } else {
+            if (!bIsSameComponent) {
+                writer.write(INDENTATION + "\"" + i18n.component + "\": {\n");
+            }
+            writer.write(INDENTATION + INDENTATION + "\"" + i18n.data.key + "\": \"" + i18n.data.value + "\"");
+        }
     }
 
     private boolean exportSimple(I18nLanguage lang, String brand, String outputFolder, String fileName, boolean skipEmptyCells) {
