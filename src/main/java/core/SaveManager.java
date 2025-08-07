@@ -66,7 +66,7 @@ public class SaveManager {
             userSettings.exceliburLastExportFolder = prefs.get(EXCELIBUR_EXPORT_FOLDER_STRING, "");
             userSettings.jSONLastImportFolder = prefs.get(JSON_IMPORT_FOLDER_STRING, "");
             userSettings.jSONLastExportFolder = prefs.get(JSON_EXPORT_FOLDER_STRING, "");            ;
-            userSettings.exportFolderNaming = TranslationMgrFlags.FolderNaming.getValue(prefs.getInt(EXCELIBUR_EXPORT_FOLDER_NAMING, 0));
+            userSettings.exportFolderNaming = TranslationMgrFlags.FolderNaming.getValue(prefs.getInt(EXCELIBUR_EXPORT_FOLDER_NAMING, TranslationMgrFlags.FolderNaming.BRAND_AND_LOCALE_AS_SUBFOLDER.ordinal()));
             // We need to clamp so that the frame never opens outside of the monitor
             // boundaries
             GraphicsEnvironment env = GraphicsEnvironment.getLocalGraphicsEnvironment();
