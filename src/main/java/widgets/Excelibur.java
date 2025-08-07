@@ -225,6 +225,10 @@ public class Excelibur extends JPanel implements OnLocaleMissing, OnBrandMissing
             ++i;
         }
         comboFolderNaming = new JComboBox<String>(list);
+        comboFolderNaming.setSelectedIndex(saveManager.userSettings.exportFolderNaming.ordinal());
+        comboFolderNaming.addActionListener(e -> {
+            saveManager.userSettings.exportFolderNaming = TranslationMgrFlags.FolderNaming.getValue(comboFolderNaming.getSelectedIndex());
+        });
     }
 
     class ImportDialogConfig {

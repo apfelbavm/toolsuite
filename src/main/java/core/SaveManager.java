@@ -8,6 +8,7 @@ import java.util.prefs.Preferences;
 public class SaveManager {
     private static final String EXCELIBUR_IMPORT_FOLDER_STRING = "exceliburLastImportFolder";
     private static final String EXCELIBUR_EXPORT_FOLDER_STRING = "exceliburLastExportFolder";
+    private static final String EXCELIBUR_EXPORT_FOLDER_NAMING = "exceliburExportFolderNaming";
     private static final String JSON_IMPORT_FOLDER_STRING = "jSONLastImportFolder";
     private static final String JSON_EXPORT_FOLDER_STRING = "jSONLastExportFolder";
 
@@ -45,6 +46,7 @@ public class SaveManager {
             prefs.put(EXCELIBUR_EXPORT_FOLDER_STRING, userSettings.exceliburLastExportFolder);
             prefs.put(JSON_IMPORT_FOLDER_STRING, userSettings.jSONLastImportFolder);
             prefs.put(JSON_EXPORT_FOLDER_STRING, userSettings.jSONLastExportFolder);
+            prefs.putInt(EXCELIBUR_EXPORT_FOLDER_NAMING, userSettings.exportFolderNaming.ordinal());
         } else {
             System.err.println("SaveManager::Save -> JFrame not found!");
         }
@@ -63,8 +65,8 @@ public class SaveManager {
             userSettings.exceliburLastImportFolder = prefs.get(EXCELIBUR_IMPORT_FOLDER_STRING, "");
             userSettings.exceliburLastExportFolder = prefs.get(EXCELIBUR_EXPORT_FOLDER_STRING, "");
             userSettings.jSONLastImportFolder = prefs.get(JSON_IMPORT_FOLDER_STRING, "");
-            userSettings.jSONLastExportFolder = prefs.get(JSON_EXPORT_FOLDER_STRING, "");
-
+            userSettings.jSONLastExportFolder = prefs.get(JSON_EXPORT_FOLDER_STRING, "");            ;
+            userSettings.exportFolderNaming = TranslationMgrFlags.FolderNaming.getValue(prefs.getInt(EXCELIBUR_EXPORT_FOLDER_NAMING, 0));
             // We need to clamp so that the frame never opens outside of the monitor
             // boundaries
             GraphicsEnvironment env = GraphicsEnvironment.getLocalGraphicsEnvironment();

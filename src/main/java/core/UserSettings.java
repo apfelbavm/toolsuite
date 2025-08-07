@@ -6,4 +6,5 @@ public class UserSettings {
     public String exceliburLastExportFolder;
     public String jSONLastImportFolder;
     public String jSONLastExportFolder;
+    public TranslationMgrFlags.FolderNaming exportFolderNaming;
 }
