@@ -20,8 +20,7 @@ public class I18nLanguage implements Comparable<I18nLanguage> {
 
     public boolean add(I18n i18n, boolean bOverride) {
         for (I18n translation : translations) {
-            I18nResult Result = translation.addOrOverride(i18n, bOverride);
-            if (Result != I18nResult.NotFound) return true;
+            if (translation.addOrOverride(i18n, bOverride) != I18nResult.NotFound) return true;
         }
         translations.add(i18n);
         return true;
@@ -119,12 +118,13 @@ public class I18nLanguage implements Comparable<I18nLanguage> {
                 } else {
                     if (inner.isJSON()) {
                         inner.removeJsonDuplicates(outer);
-                        if (!inner.isValid()) {
+                        if (!inner.isValid(false)) {
                             translations.remove(innerIdx);
                         }
 
                     } else {
-                        if (inner.data.value == null && !inner.data.value.isBlank() || !inner.data.value.isEmpty() || inner.data.value.equals(outer.data.value)) {
+//                        if (inner.data.value == null && !inner.data.value.isBlank() || !inner.data.value.isEmpty() || inner.data.value.equals(outer.data.value)) {
+                        if (inner.data.value.equals(outer.data.value)) {
                             translations.remove(innerIdx);
                         } else {
                             inner.data.compareResult = I18nCompareResult.Override;

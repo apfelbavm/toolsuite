@@ -53,7 +53,7 @@ public class JsonWriter {
             boolean bIsFirstComp = true;
             writer.write("{\n");
             for (I18n i18n : lang.translations) {
-                if (bSkipEmptyCells && !i18n.isValid()) continue;
+                if (bSkipEmptyCells && !i18n.isValid(bSkipEmptyCells)) continue;
 
                 if (!i18n.component.equals(lastComponent)) {
                     // New component
@@ -89,7 +89,7 @@ public class JsonWriter {
 
                 ArrayList<I18nData> validData = new ArrayList<I18nData>();
                 for (I18nData data : json) {
-                    if (!StringHelper.isValid(data.value)) continue;
+                    if (bSkipEmptyCells && !StringHelper.isValid(data.value)) continue;
                     validData.add(data);
                 }
 

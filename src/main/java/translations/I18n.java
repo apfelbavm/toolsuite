@@ -156,7 +156,10 @@ public class I18n implements Comparable<I18n> {
         return json;
     }
 
-    public boolean isValid() {
+    public boolean isValid(boolean bSkipEmptyValues) {
+        if (!bSkipEmptyValues) {
+            return !json.isEmpty();
+        }
         if (isJSON()) {
             for (I18nData innerData : json) {
                 if (StringHelper.isValid(innerData.value))
