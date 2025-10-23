@@ -6,6 +6,7 @@ import core.TranslationMgr;
 import org.apache.commons.math3.util.Pair;
 import org.apache.poi.ss.usermodel.*;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
+import test.QueryResult;
 import widgets.table.LanguageIdentifier;
 import translations.I18n;
 import translations.I18nBrand;
@@ -65,7 +66,6 @@ public class ExcelReader {
     }
 
     private String findBrand(Sheet sheet) {
-        if (sheet == null) return "";
         Row row = sheet.getRow(0);
         if (row == null) return "";
         return getCellValue(row, 0);
@@ -74,13 +74,12 @@ public class ExcelReader {
     /**
      * @return List of all locales found in the sheet including their columnID.
      **/
-    private ArrayList<Pair<LanguageIdentifier, Integer>> findLocales(Sheet sheet) {
-        if (sheet == null) return null;
+    private ArrayList<QueryResult> findLocales(Sheet sheet) {
         String brand = findBrand(sheet);
         if (!StringHelper.isValid(brand)) {
             brand = "NO_BRAND";
         }
-        ArrayList<Pair<LanguageIdentifier, Integer>> locales = new ArrayList<Pair<LanguageIdentifier, Integer>>(32);
+        ArrayList<QueryResult> locales = new ArrayList<>();
         int lastRow = Math.min(MAX_SEARCH_ROW, sheet.getLastRowNum()); // 0 based
         for (int r = 0; r <= lastRow; ++r) {
             Row row = sheet.getRow(r);
@@ -89,7 +88,9 @@ public class ExcelReader {
             for (int c = 0; c < lastCol; ++c) {
                 String value = getCellValue(row, c);
                 if (value != null && TranslationMgr.isLocale(value)) {
-                    locales.add(new Pair<LanguageIdentifier, Integer>(new LanguageIdentifier(brand, value), c));
+                    QueryResult result = new QueryResult(brand, value);
+                    result.col = c;
+                    locales.add(result);
                 }
             }
         }
@@ -120,10 +121,8 @@ public class ExcelReader {
         return -1;
     }
 
-    private I18nLanguage extractLanguage(Sheet sheet, LanguageIdentifier ident, int startRow, int componentCol, int keyCol, int valueCol) {
-        if (sheet == null) return null;
-
-        I18nLanguage lang = new I18nLanguage(ident.brand, ident.locale);
+    private I18nLanguage extractLanguage(Sheet sheet, QueryResult result, int startRow, int componentCol, int keyCol) {
+        I18nLanguage lang = new I18nLanguage(result.brand, result.locale);
 
         for (int r = startRow; r <= sheet.getLastRowNum(); ++r)// 0 based
         {
@@ -137,7 +136,7 @@ public class ExcelReader {
             String key = getCellValue(row, keyCol);
 //            if (key == null || key.isBlank() || key.isEmpty()) continue;
             if (!StringHelper.isValid(key)) continue;
-            String value = getCellValue(row, valueCol);
+            String value = getCellValue(row, result.col);
 //            if (value == null || value.isBlank() || value.isEmpty()) continue;
 
 //            System.out.println("extractLanguage ADD: " + component + " " + key);
@@ -186,22 +185,21 @@ public class ExcelReader {
 
 
     private I18nBrand extractSheet(Sheet sheet) {
-        if (sheet == null) return null;
-        ArrayList<Pair<LanguageIdentifier, Integer>> locales = findLocales(sheet);
-        if (locales == null || locales.isEmpty()) return null;
+        ArrayList<QueryResult> results = findLocales(sheet);
+        if (results == null || results.isEmpty()) return null;
         int componentCol = findColumnWithString(sheet, COMPONENT);
         int keyCol = findColumnWithString(sheet, KEY);
         if (componentCol == -1 || keyCol == -1) return null;
 
-        I18nBrand brand = new I18nBrand(locales.get(0).getFirst().brand);
+        I18nBrand brand = new I18nBrand(results.get(0).brand);
 
-        for (Pair<LanguageIdentifier, Integer> pair : locales) {
-            int valueCol = pair.getValue();
-            int firstRow = findFirstValueRow(sheet, componentCol, keyCol, valueCol);
+        for (QueryResult result : results) {
+
+            int firstRow = findFirstValueRow(sheet, componentCol, keyCol, result.col);
             System.out.println("extractSheet " + sheet.getSheetName() + " " + firstRow);
             if (firstRow < 0) continue; // If no value was found we must escape this sheet.
 
-            I18nLanguage lang = extractLanguage(sheet, pair.getKey(), firstRow, componentCol, keyCol, valueCol);
+            I18nLanguage lang = extractLanguage(sheet, result, firstRow, componentCol, keyCol);
             if (lang != null && !lang.isEmpty()) {
                 brand.append(lang);
             }
@@ -248,6 +246,7 @@ public class ExcelReader {
 
         I18nCSB csb = new I18nCSB();
         for (Sheet sheet : sheets) {
+            if(sheet == null) continue;
             int sheetIndex = sheet.getWorkbook().getSheetIndex(sheet);
 
             boolean bIsHidden = sheet.getWorkbook().isSheetHidden(sheetIndex);

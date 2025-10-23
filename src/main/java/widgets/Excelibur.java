@@ -3,6 +3,7 @@ package widgets;
 import java.awt.*;
 import java.io.File;
 import java.io.Serial;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Calendar;
 
@@ -34,7 +35,7 @@ public class Excelibur extends JPanel implements OnLocaleMissing, OnBrandMissing
     private static final long serialVersionUID = 1L;
     private final SaveManager saveManager = SaveManager.get();
     App owner;
-    JList<String> fileList = new JList<String>();
+    FileList<String> fileList = new FileList<String>();
 
     JButton importButton, exportButton, reloadButton;
 
@@ -96,9 +97,17 @@ public class Excelibur extends JPanel implements OnLocaleMissing, OnBrandMissing
         b = new CompoundBorder(infoImportedFiles.getBorder(), new EmptyBorder(4, 4, 4, 4));
         infoImportedFiles.setBorder(b);
 
+        reloadButton = App.createButtonWithIcon("icon_refresh.png", UIConstants.DodgerBlue);
+        reloadButton.setToolTipText("Reimport the selected files.");
+        reloadButton.addActionListener(e -> updateTableView());
+
+        JPanel importedFilesPanel = new JPanel(new BorderLayout());
+        importedFilesPanel.add(infoImportedFiles, BorderLayout.WEST);
+        importedFilesPanel.add(reloadButton, BorderLayout.EAST);
+
         JPanel filePane = new JPanel();
         filePane.setLayout(new BorderLayout());
-        filePane.add(infoImportedFiles, BorderLayout.NORTH);
+        filePane.add(importedFilesPanel, BorderLayout.NORTH);
         filePane.add(new JScrollPane(fileList, JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED, JScrollPane.HORIZONTAL_SCROLLBAR_AS_NEEDED), BorderLayout.CENTER);
 
         JSplitPane leftSplitPane = new JSplitPane();
@@ -123,9 +132,6 @@ public class Excelibur extends JPanel implements OnLocaleMissing, OnBrandMissing
         horSplit.setLeftComponent(leftSplitPane);
         horSplit.setRightComponent(new JScrollPane(table, JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED, JScrollPane.HORIZONTAL_SCROLLBAR_AS_NEEDED));
 
-        reloadButton = App.createButtonWithTextAndIcon("Reimport files...", "icon_refresh.png");
-        reloadButton.setToolTipText("Reimport the selected files. Be sure to have all imported Excel files closed or they won't be imported as Excel blocks the files when opened.");
-        reloadButton.addActionListener(e -> updateTableView());
         importButton = App.createButtonWithTextAndIcon("Import files...", "icon_import.png");
         importButton.setToolTipText("Import files via a selection dialog. If any new file is imported the current selection of files will be removed and the table content is refreshed.");
         importButton.addActionListener(e -> startImport());
@@ -134,7 +140,6 @@ public class Excelibur extends JPanel implements OnLocaleMissing, OnBrandMissing
         exportButton.addActionListener(e -> openExportDialog());
 
         JPanel importPanel = new JPanel(new GridLayout(2, 1, 4, 4));
-        importPanel.add(reloadButton);
         importPanel.add(importButton);
 
         filePane.add(importPanel, BorderLayout.SOUTH);
@@ -271,6 +276,7 @@ public class Excelibur extends JPanel implements OnLocaleMissing, OnBrandMissing
         }
         // https://docs.oracle.com/javase/tutorial/uiswing/components/filechooser.html
         JFileChooser fileChooser = new JFileChooser(saveManager.userSettings.exceliburLastImportFolder);
+        fileChooser.setFileSelectionMode(JFileChooser.FILES_AND_DIRECTORIES);
         fileChooser.setMultiSelectionEnabled(true);
         if (cfg.bAllowXLSX) {
 
@@ -290,7 +296,17 @@ public class Excelibur extends JPanel implements OnLocaleMissing, OnBrandMissing
         int choice = fileChooser.showOpenDialog(this);
         if (choice == JFileChooser.APPROVE_OPTION) {
             if (fileChooser.getSelectedFiles().length > 0) {
-                return fileChooser.getSelectedFiles();
+                ArrayList<File> files = new ArrayList<>();
+                for (File file : fileChooser.getSelectedFiles()) {
+                    System.out.println("test: " + file);
+                    if (file.isFile()) {
+                        files.add(file);
+                    } else if (file.isDirectory()) {
+                        files.addAll(getAllFiles(file));
+                    }
+                }
+                File[] fileArray = new File[files.size()];
+                return files.toArray(fileArray);
             }
         } else if (choice == JFileChooser.CANCEL_OPTION) {
             owner.setStatus("Aborted import...", App.NORMAL_MESSAGE);
@@ -298,15 +314,31 @@ public class Excelibur extends JPanel implements OnLocaleMissing, OnBrandMissing
         return null;
     }
 
+    ArrayList<File> getAllFiles(File directory) {
+        ArrayList<File> foundFiles = new ArrayList<>();
+        File[] files = directory.listFiles();
+
+        if (files != null) {
+
+            for (File file : files) {
+                if (file.isFile()) {
+                    foundFiles.add(file);
+                } else if (file.isDirectory()) {
+                    foundFiles.addAll(getAllFiles(file));
+                }
+            }
+        }
+        return foundFiles;
+    }
 
     private void updateListView() {
         fileList.setVisibleRowCount(-1);
         fileList.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
         String[] fileNames = new String[translationMgr.getNumSelectedFiles()];
+
         int i = 0;
         for (File file : translationMgr.files) {
-            fileNames[i] = translationMgr.getFileName(file.getName());
-            ++i;
+            fileNames[i++] = file.getName();
         }
         fileList.setListData(fileNames);
         fileList.setSelectedIndex(0);
@@ -386,9 +418,7 @@ public class Excelibur extends JPanel implements OnLocaleMissing, OnBrandMissing
     }
 
     void openExportDialog() {
-
-//        String[] options = {"Export as Json", "Export as Excel File", "Merge into Excel File"};
-        String[] options = {"Export as Json"};
+        String[] options = {"Export as Json", "Export as Excel File", "Merge into Excel File"};
         JOptionPane pane = new JOptionPane();
         pane.setPreferredSize(new Dimension(800, 600));
         int selection = pane.showOptionDialog(this, "How would you like to export the data?", "Export",

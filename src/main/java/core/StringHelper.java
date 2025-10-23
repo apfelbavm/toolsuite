@@ -71,4 +71,30 @@ public class StringHelper {
 //        value = value.replaceAll("( )+", " ");
 //        return value.trim();
 //    }
+
+    public static String getFileName(String path) {
+        return getFileName(path, false);
+    }
+
+    public static String getFileName(String path, boolean includeExtension) {
+        int dot = path.lastIndexOf(".");
+        int slash = path.lastIndexOf("\\");
+        if (slash == -1) slash = path.lastIndexOf("/");
+        if (dot > slash)
+            if (includeExtension) {
+                return path.substring(slash > 0 ? slash + 1 : 0, 0);
+            } else {
+                return path.substring(slash > 0 ? slash + 1 : 0, dot);
+            }
+        return path.substring(slash > 0 ? slash + 1 : 0);
+    }
+
+    public static String getFileExtension(String path) {
+        int dot = path.lastIndexOf(".");
+        if (dot != -1) {
+            return path.substring(dot + 1);
+        }
+
+        return null;
+    }
 }

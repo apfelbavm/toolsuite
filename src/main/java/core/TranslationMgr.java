@@ -42,14 +42,6 @@ public class TranslationMgr {
         return files.length;
     }
 
-    public String getFileName(String path) {
-        int dot = path.lastIndexOf(".");
-        int slash = path.lastIndexOf("\\");
-        if (slash == -1) slash = path.lastIndexOf("/");
-        if (dot > slash) return path.substring(slash > 0 ? slash + 1 : 0, dot);
-        return path.substring(slash > 0 ? slash + 1 : 0);
-    }
-
     public boolean export2Json(String outputFolder, String fileName) {
         JsonWriter json = new JsonWriter();
         boolean bMergeComponentAndKey = getFlag(TranslationMgrFlags.Export.CONCAT_COMPONENT_AND_KEY);
