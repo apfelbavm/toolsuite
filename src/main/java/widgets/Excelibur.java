@@ -208,7 +208,7 @@ public class Excelibur extends JPanel implements OnLocaleMissing, OnBrandMissing
     }
 
     private void createOutputFolderComboBox() {
-        String[] list = new String[3];
+        String[] list = new String[TranslationMgrFlags.FolderNaming.values().length];
         int i = 0;
         for (TranslationMgrFlags.FolderNaming rule : TranslationMgrFlags.FolderNaming.values()) {
             switch (rule) {
@@ -220,6 +220,9 @@ public class Excelibur extends JPanel implements OnLocaleMissing, OnBrandMissing
                     break;
                 case BRAND_AND_LOCALE_AS_SUBFOLDER:
                     list[i] = "Brand / locale";
+                    break;
+                case LOCALE_AND_BRAND_AS_SUBFOLDER:
+                    list[i] = "Locale / brand";
                     break;
             }
             ++i;
@@ -384,7 +387,8 @@ public class Excelibur extends JPanel implements OnLocaleMissing, OnBrandMissing
 
     void openExportDialog() {
 
-        String[] options = {"Export as Json", "Export as Excel File", "Merge into Excel File"};
+//        String[] options = {"Export as Json", "Export as Excel File", "Merge into Excel File"};
+        String[] options = {"Export as Json"};
         JOptionPane pane = new JOptionPane();
         pane.setPreferredSize(new Dimension(800, 600));
         int selection = pane.showOptionDialog(this, "How would you like to export the data?", "Export",

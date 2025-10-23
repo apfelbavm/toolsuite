@@ -144,6 +144,9 @@ public class JsonWriter {
             case BRAND_AND_LOCALE_AS_SUBFOLDER:
                 path += brand + fileSep + locale + fileSep;
                 break;
+            case LOCALE_AND_BRAND_AS_SUBFOLDER:
+                path += locale + fileSep + brand + fileSep;
+                break;
             case BRAND_LOCALE:
                 path += brand + "_" + locale + fileSep;
                 break;

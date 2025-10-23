@@ -10,7 +10,7 @@ public class TranslationMgrFlags {
 	}
 
 	public enum FolderNaming {
-		LOCALE_BRAND, BRAND_LOCALE, BRAND_AND_LOCALE_AS_SUBFOLDER;
+		LOCALE_BRAND, BRAND_LOCALE, BRAND_AND_LOCALE_AS_SUBFOLDER, LOCALE_AND_BRAND_AS_SUBFOLDER;
 
 		public static FolderNaming getValue(int i) {
 			int index = 0;
