@@ -2,6 +2,7 @@ package widgets;
 
 import core.App;
 import core.StringHelper;
+import reader.SupportedFileType;
 
 import javax.swing.*;
 import javax.swing.border.EmptyBorder;
@@ -20,7 +21,6 @@ public class FileItemListItem extends JPanel {
         String fileName = StringHelper.getFileName(fileNameWithExtension);
         String extension = StringHelper.getFileExtension(fileNameWithExtension);
         if (extension != null) {
-
             String iconFileName = "icon_file_type_" + extension + ".png";
             BufferedImage url = App.loadResource(iconFileName);
             JButton button;

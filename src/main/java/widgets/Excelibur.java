@@ -18,6 +18,7 @@ import core.*;
 import reader.OnBrandMissing;
 import reader.OnLocaleMissing;
 import reader.ReaderConfig;
+import reader.SupportedFileType;
 import widgets.dialogs.MergeExcelDialog;
 import widgets.tab_control.Tab;
 import widgets.table.LanguageTable;
@@ -93,7 +94,7 @@ public class Excelibur extends JPanel implements OnLocaleMissing, OnBrandMissing
         infoPanel.add(comboFolderNaming);
         infoPanel.add(new JLabel());
 
-        JLabel infoImportedFiles = new JLabel("Imported file(s):");
+        JLabel infoImportedFiles = new JLabel("Imported");
         b = new CompoundBorder(infoImportedFiles.getBorder(), new EmptyBorder(4, 4, 4, 4));
         infoImportedFiles.setBorder(b);
 
@@ -133,16 +134,13 @@ public class Excelibur extends JPanel implements OnLocaleMissing, OnBrandMissing
         horSplit.setRightComponent(new JScrollPane(table, JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED, JScrollPane.HORIZONTAL_SCROLLBAR_AS_NEEDED));
 
         importButton = App.createButtonWithTextAndIcon("Import files...", "icon_import.png");
-        importButton.setToolTipText("Import files via a selection dialog. If any new file is imported the current selection of files will be removed and the table content is refreshed.");
+        importButton.setToolTipText("Import files and folders via a selection dialog. On import the current selection of files is cleared.");
         importButton.addActionListener(e -> startImport());
         exportButton = App.createButtonWithTextAndIcon("Export", "icon_export.png");
         exportButton.setToolTipText("Bulk export every language to a .json. The locale is appended to the filename so 'translation' changes to 'translation_de_DE' etc.");
         exportButton.addActionListener(e -> openExportDialog());
 
-        JPanel importPanel = new JPanel(new GridLayout(2, 1, 4, 4));
-        importPanel.add(importButton);
-
-        filePane.add(importPanel, BorderLayout.SOUTH);
+        filePane.add(importButton, BorderLayout.SOUTH);
         FlowLayout flow = new FlowLayout(FlowLayout.RIGHT);
         flow.setHgap(0);
         flow.setVgap(0);
@@ -278,13 +276,15 @@ public class Excelibur extends JPanel implements OnLocaleMissing, OnBrandMissing
         JFileChooser fileChooser = new JFileChooser(saveManager.userSettings.exceliburLastImportFolder);
         fileChooser.setFileSelectionMode(JFileChooser.FILES_AND_DIRECTORIES);
         fileChooser.setMultiSelectionEnabled(true);
-        if (cfg.bAllowXLSX) {
 
-            FileFilter xlsxfilter = new FileNameExtensionFilter("Microsoft Excel Documents (*.xlsx)", "xlsx");
+        if (cfg.bAllowXLSX && SupportedFileType.isSupported("xlsx")) {
+            SupportedFileType fileType = SupportedFileType.get("xlsx");
+            FileFilter xlsxfilter = new FileNameExtensionFilter(fileType.description, fileType.extension);
             fileChooser.addChoosableFileFilter(xlsxfilter);
         }
-        if (cfg.bAllowJson) {
-            FileFilter jsonfilter = new FileNameExtensionFilter("JavaScript Object Notation (*.json)", "json");
+        if (cfg.bAllowJson && SupportedFileType.isSupported("json")) {
+            SupportedFileType fileType = SupportedFileType.get("json");
+            FileFilter jsonfilter = new FileNameExtensionFilter(fileType.description, fileType.extension);
             fileChooser.addChoosableFileFilter(jsonfilter);
         }
         fileChooser.setPreferredSize(new Dimension(800, 600));
@@ -298,9 +298,11 @@ public class Excelibur extends JPanel implements OnLocaleMissing, OnBrandMissing
             if (fileChooser.getSelectedFiles().length > 0) {
                 ArrayList<File> files = new ArrayList<>();
                 for (File file : fileChooser.getSelectedFiles()) {
-                    System.out.println("test: " + file);
                     if (file.isFile()) {
-                        files.add(file);
+                        String fileExtension = StringHelper.getFileExtension(file.getName());
+                        if (SupportedFileType.isSupported(fileExtension)) {
+                            files.add(file);
+                        }
                     } else if (file.isDirectory()) {
                         files.addAll(getAllFiles(file));
                     }
@@ -319,10 +321,12 @@ public class Excelibur extends JPanel implements OnLocaleMissing, OnBrandMissing
         File[] files = directory.listFiles();
 
         if (files != null) {
-
             for (File file : files) {
                 if (file.isFile()) {
-                    foundFiles.add(file);
+                    String fileExtension = StringHelper.getFileExtension(file.getName());
+                    if (SupportedFileType.isSupported(fileExtension)) {
+                        foundFiles.add(file);
+                    }
                 } else if (file.isDirectory()) {
                     foundFiles.addAll(getAllFiles(file));
                 }
@@ -418,7 +422,8 @@ public class Excelibur extends JPanel implements OnLocaleMissing, OnBrandMissing
     }
 
     void openExportDialog() {
-        String[] options = {"Export as Json", "Export as Excel File", "Merge into Excel File"};
+//        String[] options = {"Export as Json", "Export as Excel File", "Merge into Excel File"};
+        String[] options = {"Export as Json", "Export as Excel File"};
         JOptionPane pane = new JOptionPane();
         pane.setPreferredSize(new Dimension(800, 600));
         int selection = pane.showOptionDialog(this, "How would you like to export the data?", "Export",

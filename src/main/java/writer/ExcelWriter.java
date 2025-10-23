@@ -186,11 +186,16 @@ public class ExcelWriter {
         }
 
         try {
-            FileOutputStream out = new FileOutputStream(
-                    new File(outputFolder + System.getProperty("file.separator") + fileName + ".xlsx"));
-            workbook.write(out);
-            out.close();
-            return true;
+            File file = new File(outputFolder + System.getProperty("file.separator") + fileName + ".xlsx");
+            if (file.canWrite()) {
+                FileOutputStream out = new FileOutputStream(file);
+                workbook.write(out);
+                out.close();
+                return true;
+            }
+            else{
+                return false;
+            }
         } catch (Exception e) {
             e.printStackTrace();
             return false;
