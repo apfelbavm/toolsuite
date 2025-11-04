@@ -120,6 +120,7 @@ public class App extends JFrame {
         getContentPane().add(panel, BorderLayout.SOUTH);
         setFocusable(true);
         setVisible(true);
+        setTitle(TOOL_NAME);
     }
 
     public static BufferedImage loadResource(String resource) {
