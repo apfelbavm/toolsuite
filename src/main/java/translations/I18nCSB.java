@@ -77,6 +77,32 @@ public class I18nCSB {
         }
     }
 
+    public void fillInEmpties() {
+        I18nLanguage defaultLanguage = new I18nLanguage("default", "default");
+        for (I18nBrand brand : brands) {
+            for (I18nLanguage lang : brand.languages) {
+                for (I18n translation : lang.translations) {
+                    I18n dummy = new I18n("", "", "", "", "");
+                    dummy.as(translation);
+                    dummy.data.value = "";
+                    if (dummy.json != null) {
+                        for (int i = 0; i < dummy.json.size(); ++i) {
+                            I18nData data = dummy.json.get(i);
+                            data.value = "";
+                        }
+                    }
+                    defaultLanguage.add(dummy, false);
+                }
+            }
+        }
+        for (I18nBrand brand : brands) {
+            for (I18nLanguage lang : brand.languages) {
+                defaultLanguage.locale = lang.locale;
+                lang.append(defaultLanguage);
+            }
+        }
+    }
+
     private void regenerateRowMap(String specificBrand) {
         rowMap = new ArrayList<I18nRowMap>();
         for (I18nBrand brand : brands) {

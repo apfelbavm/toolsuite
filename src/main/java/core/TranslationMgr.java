@@ -92,9 +92,6 @@ public class TranslationMgr {
 
         long statSort = System.currentTimeMillis();
         System.out.println("Sorting data took:" + statSort + "ms");
-        if (csb != null) {
-            csb.sort();
-        }
     }
 
     public void startTimeTrace() {

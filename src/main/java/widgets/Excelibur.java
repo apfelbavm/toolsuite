@@ -74,20 +74,20 @@ public class Excelibur extends JPanel implements OnLocaleMissing, OnBrandMissing
         checkBoxMergeCompAndKey.setToolTipText("Concatenates component and key. That means 'dialog' and 'heading' become 'dialog_heading'.\nThis eventually reduces the json tree depth by 1");
         checkBoxUseHyperlinkIfAvailable.setSelected(false);
         checkBoxUseHyperlinkIfAvailable.setToolTipText("Replaces cell content with hyperlink if any");
-        checkDoNotExportEmptyCells.setSelected(true);
-        checkDoNotExportEmptyCells.setToolTipText("Don't export key value pairs with empty values. This is for each language individually");
         checkIncludeHiddenSheets.setSelected(false);
         checkIncludeHiddenSheets.setToolTipText("Consider hidden and very hidden sheets in excel during import. Usually this can be toggled off.");
+        checkDoNotExportEmptyCells.setSelected(true);
+        checkDoNotExportEmptyCells.setToolTipText("Don't export key value pairs with empty values. This is for each language individually");
 
         createOutputFolderComboBox();
 
         infoPanel.add(new JLabel("Import settings:"));
         infoPanel.add(checkBoxUseHyperlinkIfAvailable);
+        infoPanel.add(checkIncludeHiddenSheets);
         infoPanel.add(new JLabel(""));
         infoPanel.add(new JLabel("Export settings:"));
         infoPanel.add(checkBoxMergeCompAndKey);
         infoPanel.add(checkDoNotExportEmptyCells);
-        infoPanel.add(checkIncludeHiddenSheets);
         JLabel outputFolderRuleLabel = new JLabel("Output folder (struct):");
         outputFolderRuleLabel.setForeground(UIConstants.Gray);
         infoPanel.add(outputFolderRuleLabel);

@@ -12,7 +12,7 @@ import java.util.TreeMap;
 public class I18n implements Comparable<I18n> {
 
     public I18nData data;
-    ArrayList<I18nData> json;
+    public ArrayList<I18nData> json;
     //    public String workbook;
 //    public String sheet;
     public String component;
@@ -73,6 +73,15 @@ public class I18n implements Comparable<I18n> {
         data.key = other.data.key;
         data.value = other.data.value;
         json = other.json;
+
+        if (json != null) {
+            for (int i = 0; i < json.size(); i++) {
+                I18nData data = json.get(i);
+                I18nData copy = new I18nData();
+                copy.as(data);
+                json.set(i, copy);
+            }
+        }
     }
 
     boolean has(String key_) {

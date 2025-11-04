@@ -36,6 +36,8 @@ public class FileReader {
         if (!JSONFiles.isEmpty()) {
             csb.merge(jsonReader.read(JSONFiles));
         }
+        csb.fillInEmpties();
+        csb.sort();
         return csb;
     }
 
