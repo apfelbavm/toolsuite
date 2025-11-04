@@ -423,7 +423,7 @@ public class Excelibur extends JPanel implements OnLocaleMissing, OnBrandMissing
 
     void openExportDialog() {
 //        String[] options = {"Export as Json", "Export as Excel File", "Merge into Excel File"};
-        String[] options = {"Export as Json", "Export as Excel File"};
+        String[] options = {"Export as Json"};
         JOptionPane pane = new JOptionPane();
         pane.setPreferredSize(new Dimension(800, 600));
         int selection = pane.showOptionDialog(this, "How would you like to export the data?", "Export",
