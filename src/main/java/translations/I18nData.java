@@ -7,6 +7,14 @@ public class I18nData {
     public String value;
     public I18nCompareResult compareResult;
 
+    public I18nData() {
+
+    }
+
+    public I18nData(I18nData other) {
+        as(other);
+    }
+
     public void as(I18nData other) {
         workbook = other.workbook;
         sheet = other.sheet;

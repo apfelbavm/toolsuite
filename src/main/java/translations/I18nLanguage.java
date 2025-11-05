@@ -1,5 +1,7 @@
 package translations;
 
+import core.StringHelper;
+
 import java.util.ArrayList;
 
 public class I18nLanguage implements Comparable<I18nLanguage> {
@@ -13,7 +15,7 @@ public class I18nLanguage implements Comparable<I18nLanguage> {
     public I18nLanguage(String brand_, String locale_) {
         locale = locale_;
         addMetaLocale(locale);
-        if (brand_ != null && !brand_.isEmpty() && !brand_.isBlank()) {
+        if (StringHelper.isValid(brand_)) {
             addMetaBrand(brand_);
         }
     }
@@ -22,6 +24,7 @@ public class I18nLanguage implements Comparable<I18nLanguage> {
         for (I18n translation : translations) {
             if (translation.addOrOverride(i18n, bOverride) != I18nResult.NotFound) return true;
         }
+//        i18n.print();
         translations.add(i18n);
         return true;
     }
@@ -41,8 +44,8 @@ public class I18nLanguage implements Comparable<I18nLanguage> {
     public String getBrand() {
         for (I18n i18n : translations) {
             if (i18n.component.equals(META_STRING)) {
-                if (i18n.data.key.equals(META_BRAND_STRING)) {
-                    return i18n.data.value;
+                if (i18n.key.equals(META_BRAND_STRING)) {
+                    return i18n.json.get(0).value;
                 }
             }
         }
@@ -68,31 +71,28 @@ public class I18nLanguage implements Comparable<I18nLanguage> {
 
     public String getRowDisplayValue(I18nRowMap row) {
         for (I18n i18n : translations) {
-            if (i18n.component.equals(row.component) && i18n.data.key.equals(row.key)) {
-                if (row.childKey != null && i18n.isJSON()) {
+            if (i18n.component.equals(row.component) && i18n.key.equals(row.key)) {
+                if (row.childKey != null) {
                     for (I18nData child : i18n.json) {
                         if (row.childKey.equals(child.key)) {
                             return child.value;
                         }
                     }
-                } else {
-                    return i18n.data.value;
                 }
-
             }
         }
         return null;
     }
 
     public void addMetaBrand(String brandName) {
-        if (brandName != null && !brandName.isBlank() && !brandName.isEmpty()) {
+        if (StringHelper.isValid(brandName)) {
             I18n brand = new I18n(META_STRING, META_BRAND_STRING, brandName);
             add(brand, true);
         }
     }
 
     public void addMetaLocale(String localeName) {
-        if (localeName != null && !localeName.isBlank() && !localeName.isEmpty()) {
+        if (StringHelper.isValid(localeName)) {
             I18n metaLocale = new I18n(META_STRING, META_LOCALE_STRING, localeName);
             locale = localeName;
             add(metaLocale, true);
@@ -109,27 +109,11 @@ public class I18nLanguage implements Comparable<I18nLanguage> {
                 I18n inner = translations.get(innerIdx);
 
                 if (!inner.component.equals(outer.component)) continue;
-                if (!inner.data.key.equals(outer.data.key)) continue;
+                if (!inner.key.equals(outer.key)) continue;
 
-                if (inner.isJSON() != outer.isJSON()) {
-                    System.err.println("MISMATCH JSON TO JSON");
-                    // HANDLE UNEQUALITY
-
-                } else {
-                    if (inner.isJSON()) {
-                        inner.removeJsonDuplicates(outer);
-                        if (!inner.isValid(false)) {
-                            translations.remove(innerIdx);
-                        }
-
-                    } else {
-//                        if (inner.data.value == null && !inner.data.value.isBlank() || !inner.data.value.isEmpty() || inner.data.value.equals(outer.data.value)) {
-                        if (inner.data.value.equals(outer.data.value)) {
-                            translations.remove(innerIdx);
-                        } else {
-                            inner.data.compareResult = I18nCompareResult.Override;
-                        }
-                    }
+                inner.removeJsonDuplicates(outer);
+                if (!inner.isValid(false)) {
+                    translations.remove(innerIdx);
                 }
                 break;
             }

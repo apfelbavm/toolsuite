@@ -1,5 +1,7 @@
 package translations;
 
+import core.StringHelper;
+
 public class I18nRowMap implements Comparable<I18nRowMap> {
     String component;
     String key;
@@ -12,7 +14,7 @@ public class I18nRowMap implements Comparable<I18nRowMap> {
     }
 
     public String getBeautifulKey() {
-        if (childKey == null) {
+        if (!StringHelper.isValid(childKey)) {
             return key;
         }
         return key + "." + childKey;

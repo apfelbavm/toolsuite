@@ -97,7 +97,7 @@ public class ExcelWriter {
                                     cell.setCellStyle(redStyle);
 
                                     cell = row.createCell(COL_OFFSET_KEY);
-                                    cell.setCellValue(i18n.data.key + "." + json.key);
+                                    cell.setCellValue(i18n.key + "." + json.key);
                                     cell.setCellStyle(redStyle);
                                 }
                                 Cell cell = row.createCell(columnOfLocale);
@@ -118,11 +118,11 @@ public class ExcelWriter {
                                 cell.setCellStyle(redStyle);
 
                                 cell = row.createCell(COL_OFFSET_KEY);
-                                cell.setCellValue(i18n.data.key);
+                                cell.setCellValue(i18n.key);
                                 cell.setCellStyle(redStyle);
                             }
                             Cell cell = row.createCell(columnOfLocale);
-                            cell.setCellValue(i18n.data.value);
+                            cell.setCellValue(i18n.json.get(0).value);
                             cell.setCellStyle(redStyle);
                             ++rowIndex;
                         }

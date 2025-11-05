@@ -85,7 +85,7 @@ public class JsonWriter {
                 if (!bIsSameComponent) {
                     writer.write(INDENTATION + "\"" + i18n.component + "\": {\n");
                 }
-                writer.write(INDENTATION + INDENTATION + "\"" + i18n.data.key + "\": {\n");
+                writer.write(INDENTATION + INDENTATION + "\"" + i18n.key + "\": {\n");
 
                 ArrayList<I18nData> validData = new ArrayList<I18nData>();
                 for (I18nData data : json) {
@@ -105,36 +105,8 @@ public class JsonWriter {
             if (!bIsSameComponent) {
                 writer.write(INDENTATION + "\"" + i18n.component + "\": {\n");
             }
-            writer.write(INDENTATION + INDENTATION + "\"" + i18n.data.key + "\": \"" + i18n.data.value + "\"");
+            writer.write(INDENTATION + INDENTATION + "\"" + i18n.key + "\": \"" + i18n.json.get(0).value + "\"");
         }
-    }
-
-    private boolean exportSimple(I18nLanguage lang, String brand, String outputFolder, String fileName, boolean skipEmptyCells) {
-        try {
-            String pathToCreate = createOutputFolder(outputFolder, brand, lang.locale);
-            if (pathToCreate == null) {
-                return false;
-            }
-            // We need this filewriter to allow Umlauts
-            Writer writer = new OutputStreamWriter(new FileOutputStream(pathToCreate + fileName + ".json"), StandardCharsets.UTF_8);
-            writer.write("{");
-            boolean isFirstItem = false;
-            for (I18n i18n : lang.translations) {
-                if (i18n.data.value.isBlank() || i18n.data.value.isEmpty()) continue;
-                if (!isFirstItem) {
-                    isFirstItem = true;
-                } else {
-                    writer.write(",");
-                }
-                writer.write("\n    \"" + i18n.component + "_" + i18n.data.key + "\": " + "\"" + i18n.data.value + "\"");
-            }
-            writer.write("\n}\n");
-            writer.close();
-        } catch (Exception e) {
-            App.get().setStatus(e.getLocalizedMessage(), App.ERROR_MESSAGE);
-            return false;
-        }
-        return true;
     }
 
     private String createOutputFolder(String outputFolder, String brand, String locale) {

@@ -45,11 +45,11 @@ public class I18nCSB {
     public boolean add(I18nBrand newBrand) {
         for (I18nBrand brand : brands) {
             if (brand.name.equals(newBrand.name)) {
-                boolean bSuccess = brand.append(newBrand.languages);
-                if (bSuccess) {
+                if (brand.append(newBrand.languages)) {
                     bNeedsRegenerateRowMap = true;
+                    return true;
                 }
-                return bSuccess;
+                return false;
             }
         }
         bNeedsRegenerateRowMap = true;
@@ -84,13 +84,12 @@ public class I18nCSB {
                 for (I18n translation : lang.translations) {
                     I18n dummy = new I18n("", "", "");
                     dummy.as(translation);
-                    dummy.data.value = "";
-                    if (dummy.json != null) {
-                        for (int i = 0; i < dummy.json.size(); ++i) {
-                            I18nData data = dummy.json.get(i);
-                            data.value = "";
-                        }
+
+                    for (int i = 0; i < dummy.json.size(); ++i) {
+                        I18nData data = dummy.json.get(i);
+                        data.value = "";
                     }
+
                     defaultLanguage.add(dummy, false);
                 }
             }
@@ -109,12 +108,8 @@ public class I18nCSB {
             if (specificBrand != null && !specificBrand.equals(brand.name)) continue;
             for (I18nLanguage lang : brand.languages) {
                 for (I18n i18n : lang.translations) {
-                    if (i18n.isJSON()) {
-                        for (I18nData child : i18n.json) {
-                            maybeAdd(i18n.component, i18n.data.key, child.key);
-                        }
-                    } else {
-                        maybeAdd(i18n.component, i18n.data.key, null);
+                    for (I18nData child : i18n.json) {
+                        maybeAdd(i18n.component, i18n.key, child.key);
                     }
                 }
             }
@@ -208,6 +203,16 @@ public class I18nCSB {
                     brands.remove(brandIdx);
                 }
                 break;
+            }
+        }
+    }
+
+    public void sanitize() {
+        for (I18nBrand brand : brands) {
+            for (I18nLanguage lang : brand.languages) {
+                for (I18n i18n : lang.translations) {
+                    i18n.sanitize();
+                }
             }
         }
     }

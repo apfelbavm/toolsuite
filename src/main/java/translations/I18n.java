@@ -11,142 +11,128 @@ import java.util.TreeMap;
 
 public class I18n implements Comparable<I18n> {
 
-    public I18nData data;
-    public ArrayList<I18nData> json;
-    //    public String workbook;
-//    public String sheet;
+    public ArrayList<I18nData> json = new ArrayList<I18nData>();
     public String component;
-    //    public String key;
-    //    public String value;
-//    public JSONObject json;
+    public String key;
+    public I18nCompareResult compareResult;
 
-    //    public I18nCompareResult compareResult;
-
-    public boolean isJSON() {
-        return json != null && !json.isEmpty();
-    }
 
     private I18n() {
     } // made private so you have to use the other constructor
 
     public I18n(String component_, String key_, String value_) {
-//        workbook = workbook_;
         component = component_;
-//        compareResult = I18nCompareResult.New;
-        data = new I18nData();
         int splitIndex = key_.indexOf(".");
 
-        if (splitIndex > 0) {
+        I18nData newData = new I18nData();
+        if (splitIndex != -1) {
             String[] split = key_.split("\\.");
-            if (split.length == 1 || split[1] == null || split[1].isBlank() || split[1].isEmpty()) {
-                data.key = key_;
-                data.value = value_;
-                data.compareResult = I18nCompareResult.New;
 
-            } else {
-                json = new ArrayList<I18nData>();
-                data.key = split[0];
-                I18nData newData = new I18nData();
-                newData.key = split[1];
+            ArrayList<String> validStrings = new ArrayList<>();
+            for (String str : split) {
+                if (StringHelper.isValid(str)) {
+                    validStrings.add(str);
+                }
+            }
+            if (validStrings.size() == 1 || !StringHelper.isValid(validStrings.get(1))) {
+                key = key_;
+                newData.key = "";
                 newData.value = value_;
                 newData.compareResult = I18nCompareResult.New;
 
-                json.add(newData);
+            } else {
+                key = validStrings.get(0);
+                newData.key = validStrings.get(1);
+                newData.value = value_;
+                newData.compareResult = I18nCompareResult.New;
             }
         } else {
-            data.key = key_;
-            data.value = value_;
-            data.compareResult = I18nCompareResult.New;
+            key = key_;
+            newData.key = "";
+            newData.value = value_;
+            newData.compareResult = I18nCompareResult.New;
         }
+
+        json.add(newData);
+    }
+
+    public boolean isJSON() {
+        return !json.isEmpty() && StringHelper.isValid(json.get(0).key);
     }
 
     public void as(I18n other) {
         component = other.component;
-        data.key = other.data.key;
-        data.value = other.data.value;
-        json = other.json;
-
-        if (json != null) {
-            for (int i = 0; i < json.size(); i++) {
-                I18nData data = json.get(i);
-                I18nData copy = new I18nData();
-                copy.as(data);
-                json.set(i, copy);
-            }
+        key = other.key;
+        json.clear();
+        for (I18nData data : other.json) {
+            json.add(new I18nData(data));
         }
     }
 
-    boolean has(String key_) {
-        if (isJSON()) {
-
-            for (I18nData innerData : json) {
-                if (innerData.key.equals(key_)) {
-                    return true;
-                }
-            }
-            return false;
-        }
-        return data.key.equals(key_);
-    }
 
     I18nData find(String key_) {
-        if (isJSON()) {
-            for (I18nData innerData : json) {
-                if (innerData.key.equals(key_)) {
-                    return innerData;
-                }
+        for (I18nData innerData : json) {
+            if (innerData.key.equals(key_)) {
+                return innerData;
             }
-            return null;
         }
-        return data;
+        return null;
     }
 
     void remove(String key_) {
-        if (isJSON()) {
-            int i = 0;
-            for (I18nData innerData : json) {
-                if (innerData.key.equals(key_)) {
-                    json.remove(i);
-                    return;
+        int i = 0;
+        for (I18nData innerData : json) {
+            if (innerData.key.equals(key_)) {
+                json.remove(i);
+                return;
+            }
+            ++i;
+        }
+    }
+
+    void sanitize() {
+        I18nData unset = null;
+        for (I18nData temp : json) {
+            if (temp.key == null || temp.key.isBlank()) {
+                unset = temp;
+                break;
+            }
+        }
+        if (unset != null) {
+            for (I18nData temp : json) {
+                if (temp.key != null && !temp.key.isBlank()) {
+                    if (temp.value.equals(unset.value)) {
+                        json.remove(unset);
+                        break;
+                    }
                 }
-                ++i;
             }
         }
     }
 
     public I18nResult addOrOverride(I18n other, boolean bOverride) {
-        if (component.equals(other.component) && data.key.equals(other.data.key)) {
-            if (isJSON() && other.isJSON()) {
-                I18nResult result = I18nResult.AlreadyExists;
-                for (I18nData otherJson : other.json) {
-                    I18nData cur = find(otherJson.key);
+        if (component.equals(other.component) && key.equals(other.key)) {
+            I18nResult result = I18nResult.AlreadyExists;
+            for (I18nData otherData : other.json) {
+                I18nData cur = find(otherData.key);
 
-                    if (cur != null) {
-                        System.out.println("cur.value: " + cur.value);
-                        if (!StringHelper.isValid(cur.value)) {
-                            cur.value = otherJson.value;
-                        } else if (bOverride) {
-                            cur.value = otherJson.value;
-                        }
-                        otherJson.compareResult = I18nCompareResult.Override;
-                        result = I18nResult.Overridden;
-                    } else {
-                        json.add(otherJson);
-                        if (result != I18nResult.Overridden) {
-                            result = I18nResult.Added;
-                        }
+                if (cur != null) {
+                    if (!StringHelper.isValid(cur.value)) {
+                        cur.value = otherData.value;
+                    } else if (bOverride) {
+                        cur.value = otherData.value;
+                    }
+                    otherData.compareResult = I18nCompareResult.Override;
+                    result = I18nResult.Overridden;
+                } else {
+                    I18nData copy = new I18nData(otherData);
+                    json.add(copy);
+                    if (result != I18nResult.Overridden) {
+                        result = I18nResult.Added;
                     }
                 }
-                return result;
-            } else if (bOverride) {
-                if (!StringHelper.isValid(other.data.value)) return I18nResult.AlreadyExists;
-                if (StringHelper.isValid(data.value)) return I18nResult.AlreadyExists;
-                data.value = other.data.value;
-                data.compareResult = I18nCompareResult.Override;
-                return I18nResult.Overridden;
-            } else {
-                return I18nResult.AlreadyExists;
             }
+            return result;
         }
         return I18nResult.NotFound;
     }
@@ -162,24 +148,17 @@ public class I18n implements Comparable<I18n> {
         if (!bSkipEmptyValues) {
             return !json.isEmpty();
         }
-        if (isJSON()) {
-            for (I18nData innerData : json) {
-                if (StringHelper.isValid(innerData.value))
-                    return true; // this is fucked up but we check wether just one value is actually valid in json array.
-            }
-            return false;
+        for (I18nData innerData : json) {
+            if (StringHelper.isValid(innerData.value))
+                return true; // this is fucked up but we check wether just one value is actually valid in json array.
         }
-        return StringHelper.isValid(data.value);
+        return false;
     }
 
     public void print() {
-        if (isJSON()) {
-            System.out.println("component: " + component);
-            for (I18nData innerData : json) {
-                System.out.println(" -> key: " + data.key + "." + innerData.key + ", value:" + innerData.value);
-            }
-        } else {
-            System.out.println("component: " + component + ", key: " + data.key + ", value: " + data.value);
+        System.out.println("component: " + component);
+        for (I18nData innerData : json) {
+            System.out.println(" -> key: " + key + "." + innerData.key + ", value:" + innerData.value);
         }
     }
 
@@ -189,7 +168,7 @@ public class I18n implements Comparable<I18n> {
         if (prec != 0) {
             return prec;
         }
-        return data.key.compareTo(other.data.key);
+        return key.compareTo(other.key);
     }
 
     public void removeJsonDuplicates(I18n other) {
@@ -199,7 +178,7 @@ public class I18n implements Comparable<I18n> {
                 if (innerData.value.equals(otherData.value)) {
                     remove(otherData.key);
                 } else {
-                    data.compareResult = I18nCompareResult.Override;
+                    compareResult = I18nCompareResult.Override;
                 }
             }
         }
