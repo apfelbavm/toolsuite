@@ -422,8 +422,8 @@ public class Excelibur extends JPanel implements OnLocaleMissing, OnBrandMissing
     }
 
     void openExportDialog() {
-//        String[] options = {"Export as Json", "Export as Excel File", "Merge into Excel File"};
-        String[] options = {"Export as Json"};
+        String[] options = {"Export as Json", "Export as Excel File", "Merge into Excel File"};
+//        String[] options = {"Export as Json"};
         JOptionPane pane = new JOptionPane();
         pane.setPreferredSize(new Dimension(800, 600));
         int selection = pane.showOptionDialog(this, "How would you like to export the data?", "Export",
@@ -497,7 +497,6 @@ public class Excelibur extends JPanel implements OnLocaleMissing, OnBrandMissing
                 String fileName = outputFolder.substring(i + 1, outputFolder.length());
                 outputFolder = outputFolder.substring(0, i);
                 FileWriter writer = new FileWriter();
-
                 boolean success = writer.export(writerOption, translationMgr.csb, outputFolder, fileName);
                 if (success) {
                     owner.setStatus("Sucessfully exported Excel", App.NORMAL_MESSAGE);

@@ -29,7 +29,7 @@ public class I18n implements Comparable<I18n> {
     private I18n() {
     } // made private so you have to use the other constructor
 
-    public I18n(String workbook_, String sheet_, String component_, String key_, String value_) {
+    public I18n(String component_, String key_, String value_) {
 //        workbook = workbook_;
         component = component_;
 //        compareResult = I18nCompareResult.New;
@@ -39,8 +39,6 @@ public class I18n implements Comparable<I18n> {
         if (splitIndex > 0) {
             String[] split = key_.split("\\.");
             if (split.length == 1 || split[1] == null || split[1].isBlank() || split[1].isEmpty()) {
-                data.workbook = workbook_;
-                data.sheet = sheet_;
                 data.key = key_;
                 data.value = value_;
                 data.compareResult = I18nCompareResult.New;
@@ -49,8 +47,6 @@ public class I18n implements Comparable<I18n> {
                 json = new ArrayList<I18nData>();
                 data.key = split[0];
                 I18nData newData = new I18nData();
-                newData.workbook = workbook_;
-                newData.sheet = sheet_;
                 newData.key = split[1];
                 newData.value = value_;
                 newData.compareResult = I18nCompareResult.New;
@@ -58,8 +54,6 @@ public class I18n implements Comparable<I18n> {
                 json.add(newData);
             }
         } else {
-            data.workbook = workbook_;
-            data.sheet = sheet_;
             data.key = key_;
             data.value = value_;
             data.compareResult = I18nCompareResult.New;
@@ -67,8 +61,6 @@ public class I18n implements Comparable<I18n> {
     }
 
     public void as(I18n other) {
-        data.workbook = other.data.workbook;
-        data.sheet = other.data.sheet;
         component = other.component;
         data.key = other.data.key;
         data.value = other.data.value;
@@ -126,19 +118,20 @@ public class I18n implements Comparable<I18n> {
         if (component.equals(other.component) && data.key.equals(other.data.key)) {
             if (isJSON() && other.isJSON()) {
                 I18nResult result = I18nResult.AlreadyExists;
-                for (I18nData otherData : other.json) {
-                    I18nData cur = find(otherData.key);
+                for (I18nData otherJson : other.json) {
+                    I18nData cur = find(otherJson.key);
 
                     if (cur != null) {
+                        System.out.println("cur.value: " + cur.value);
                         if (!StringHelper.isValid(cur.value)) {
-                            cur.value = otherData.value;
+                            cur.value = otherJson.value;
                         } else if (bOverride) {
-                            cur.value = otherData.value;
+                            cur.value = otherJson.value;
                         }
-                        otherData.compareResult = I18nCompareResult.Override;
+                        otherJson.compareResult = I18nCompareResult.Override;
                         result = I18nResult.Overridden;
                     } else {
-                        json.add(otherData);
+                        json.add(otherJson);
                         if (result != I18nResult.Overridden) {
                             result = I18nResult.Added;
                         }
@@ -181,12 +174,12 @@ public class I18n implements Comparable<I18n> {
 
     public void print() {
         if (isJSON()) {
-            System.out.println("workbook: " + data.workbook + ", sheet: " + data.sheet + ", component: " + component);
+            System.out.println("component: " + component);
             for (I18nData innerData : json) {
                 System.out.println(" -> key: " + data.key + "." + innerData.key + ", value:" + innerData.value);
             }
         } else {
-            System.out.println("workbook: " + data.workbook + ", sheet: " + data.sheet + ", component: " + component + ", key: " + data.key + ", value: " + data.value);
+            System.out.println("component: " + component + ", key: " + data.key + ", value: " + data.value);
         }
     }
 

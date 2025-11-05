@@ -30,8 +30,7 @@ public class StringHelper {
 
     /* Checks if 'str' is not null and is not blank. * */
     public static boolean isValid(String str) {
-        if (str == null) return false;
-        return !str.isBlank();
+        return str != null && !str.isBlank();
     }
 
     public static String fixString(String str) {
