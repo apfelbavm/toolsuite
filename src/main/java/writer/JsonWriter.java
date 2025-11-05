@@ -29,7 +29,7 @@ public class JsonWriter {
         for (I18nBrand brand : csb.brands) {
             for (I18nLanguage lang : brand.languages) {
                 if (bMergeComponentAndKey) {
-                    //if (!exportSimple(lang, brand.name, outputFolder, fileName, bSkipEmptyCells)) return false; @todo not finished copy logic from "advanced export"
+                    if (!exportSimple(lang, brand.name, outputFolder, fileName, bSkipEmptyCells)) return false;
                 } else {
                     if (!exportAdvanced(lang, brand.name, outputFolder, fileName, bSkipEmptyCells)) return false;
                 }
@@ -70,6 +70,41 @@ public class JsonWriter {
                 }
             }
             writer.write("\n" + INDENTATION + "}\n}\n");
+            writer.close();
+        } catch (Exception e) {
+            App.get().setStatus(e.getLocalizedMessage(), App.ERROR_MESSAGE);
+            return false;
+        }
+        return true;
+    }
+
+    private boolean exportSimple(I18nLanguage lang, String brand, String outputFolder, String fileName, boolean bSkipEmptyCells) {
+        try {
+            System.out.println("JsonWriter export-> bSkipEmptyCells: " + bSkipEmptyCells);
+            String pathToCreate = createOutputFolder(outputFolder, brand, lang.locale);
+            if (pathToCreate == null) {
+                return false;
+            }
+            // We need this filewriter to allow Umlauts
+            Writer writer = new OutputStreamWriter(new FileOutputStream(pathToCreate + fileName + ".json"), StandardCharsets.UTF_8);
+
+            boolean bIsFirst = true;
+            writer.write("{");
+            for (I18n i18n : lang.translations) {
+                for (I18nData data : i18n.json) {
+                    if (bSkipEmptyCells && !StringHelper.isValid(data.value)) continue;
+                    if (!bIsFirst) {
+                        writer.write(",");
+                    }
+                    if (StringHelper.isValid(data.key)) {
+                        writer.write("\n" + INDENTATION + "\"" + i18n.component + "." + i18n.key + "." + data.key + "\": \"" + data.value + "\"");
+                    } else {
+                        writer.write("\n" + INDENTATION + "\"" + i18n.component + "." + i18n.key + "\": \"" + data.value + "\"");
+                    }
+                    bIsFirst = false;
+                }
+            }
+            writer.write("\n}\n");
             writer.close();
         } catch (Exception e) {
             App.get().setStatus(e.getLocalizedMessage(), App.ERROR_MESSAGE);
