@@ -145,12 +145,12 @@ public class JSONReader {
                                 String childKeyString = childKeys.toString();
                                 String value = child.get(childKeyString).toString();
                                 String combinedKey = keyNameString + "." + childKeyString;
-                                I18n i18n = new I18n("", "", componentNameString, combinedKey, StringHelper.fixString(value));
+                                I18n i18n = new I18n(componentNameString, combinedKey, StringHelper.fixString(value));
                                 boolean bAdded = language.add(i18n, false);
                             }
                         } else {
                             String value = component.get(keyNameString).toString();
-                            I18n i18n = new I18n("", "", componentNameString, keyNameString, StringHelper.fixString(value));
+                            I18n i18n = new I18n(componentNameString, keyNameString, StringHelper.fixString(value));
                             boolean bAdded = language.add(i18n, false);
                         }
                     }

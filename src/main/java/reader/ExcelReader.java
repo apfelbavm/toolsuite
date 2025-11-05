@@ -141,7 +141,7 @@ public class ExcelReader {
 
 //            System.out.println("extractLanguage ADD: " + component + " " + key);
 
-            I18n i18n = new I18n("", "", component, key, value);
+            I18n i18n = new I18n(component, key, value);
             lang.add(i18n, false);
             //}
         }
@@ -246,7 +246,7 @@ public class ExcelReader {
 
         I18nCSB csb = new I18nCSB();
         for (Sheet sheet : sheets) {
-            if(sheet == null) continue;
+            if (sheet == null) continue;
             int sheetIndex = sheet.getWorkbook().getSheetIndex(sheet);
 
             boolean bIsHidden = sheet.getWorkbook().isSheetHidden(sheetIndex);

@@ -82,7 +82,7 @@ public class I18nCSB {
         for (I18nBrand brand : brands) {
             for (I18nLanguage lang : brand.languages) {
                 for (I18n translation : lang.translations) {
-                    I18n dummy = new I18n("", "", "", "", "");
+                    I18n dummy = new I18n("", "", "");
                     dummy.as(translation);
                     dummy.data.value = "";
                     if (dummy.json != null) {

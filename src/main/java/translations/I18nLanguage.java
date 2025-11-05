@@ -86,14 +86,14 @@ public class I18nLanguage implements Comparable<I18nLanguage> {
 
     public void addMetaBrand(String brandName) {
         if (brandName != null && !brandName.isBlank() && !brandName.isEmpty()) {
-            I18n brand = new I18n("", "", META_STRING, META_BRAND_STRING, brandName);
+            I18n brand = new I18n(META_STRING, META_BRAND_STRING, brandName);
             add(brand, true);
         }
     }
 
     public void addMetaLocale(String localeName) {
         if (localeName != null && !localeName.isBlank() && !localeName.isEmpty()) {
-            I18n metaLocale = new I18n("", "", META_STRING, META_LOCALE_STRING, localeName);
+            I18n metaLocale = new I18n(META_STRING, META_LOCALE_STRING, localeName);
             locale = localeName;
             add(metaLocale, true);
         }
