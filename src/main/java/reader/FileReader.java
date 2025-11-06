@@ -36,7 +36,7 @@ public class FileReader {
         if (!JSONFiles.isEmpty()) {
             csb.merge(jsonReader.read(JSONFiles));
         }
-        csb.fillInEmpties();
+        csb.fillInEmpties(true);
         csb.sanitize();
         csb.sort();
         return csb;

@@ -86,11 +86,17 @@ public class ExcelWriter {
             if (csb.brands.size() == 1) {
                 updateExistingSheets(workbook, csb);
                 if (csb.isValid()) {
+                    csb.fillInEmpties(true);
+                    csb.sanitize();
+                    csb.sort();
                     writeNewTable(workbook, csb.brands.get(0), sheetName);
                 }
             } else {
                 updateExistingSheets(workbook, csb);
                 if (csb.isValid()) {
+                    csb.fillInEmpties(true);
+                    csb.sanitize();
+                    csb.sort();
                     for (I18nBrand brand : csb.brands) {
                         writeNewTable(workbook, brand, brand.name + "_" + sheetName);
                     }
@@ -218,18 +224,15 @@ public class ExcelWriter {
             boolean bSheetWasUpdated = false;
             XSSFSheet sheet = workbook.getSheetAt(i);
             String sheetBrand = reader.getBrand(sheet);
-            System.out.println("debug sheet: " + sheetBrand);
             for (int brandIdx = csb.brands.size() - 1; brandIdx >= 0; --brandIdx) {
                 I18nBrand brand = csb.brands.get(brandIdx);
 
-                System.out.println("debug csb brand: " + brand.name);
                 if (brand.name.equals(sheetBrand)) {
                     int componentCol = reader.findColumnWithString(sheet, ExcelReader.COMPONENT);
                     int keyCol = reader.findColumnWithString(sheet, ExcelReader.KEY);
 
                     ArrayList<QueryResult> sheetLocales = reader.findLocales(sheet);
                     for (QueryResult sheetLocale : sheetLocales) {
-                        System.out.println("debug query: " + sheetLocale.locale);
                         for (int rowIdx = sheetLocale.row; rowIdx <= sheet.getLastRowNum(); ++rowIdx) {
                             Row row = sheet.getRow(rowIdx);
                             if (row == null) continue;
@@ -238,18 +241,17 @@ public class ExcelWriter {
                             for (int langIdx = brand.languages.size() - 1; langIdx >= 0; --langIdx) {
                                 I18nLanguage lang = brand.languages.get(langIdx);
                                 if (sheetLocale.locale.equals(lang.locale)) {
-                                    System.out.println("debug 2: ");
                                     for (int translationIdx = lang.translations.size() - 1; translationIdx >= 0; --translationIdx) {
                                         I18n translation = lang.translations.get(translationIdx);
                                         if (!component.equals(translation.component)) continue;
 
                                         if (translation.isJSON()) {
-                                            System.out.println("debug 3: ");
                                             for (int dataIdx = translation.json.size() - 1; dataIdx >= 0; --dataIdx) {
                                                 I18nData data = translation.json.get(dataIdx);
                                                 String csbKey = translation.key + "." + data.key;
                                                 if (!key.equals(csbKey)) continue;
                                                 String sheetValue = reader.getCellValue(row, sheetLocale.col);
+                                                if (!StringHelper.isValid(data.value)) continue;
                                                 if (sheetValue.equals(data.value)) continue;
                                                 Cell cell = row.getCell(sheetLocale.col);
                                                 cell.setCellValue(data.value);
@@ -258,12 +260,13 @@ public class ExcelWriter {
                                                 }
                                                 translation.json.remove(dataIdx);
                                                 bSheetWasUpdated = true;
+                                                break;
                                             }
                                         } else {
-                                            System.out.println("debug 4: ");
                                             I18nData data = translation.json.get(0);
                                             if (!key.equals(translation.key)) continue;
                                             String sheetValue = reader.getCellValue(row, sheetLocale.col);
+                                            if (!StringHelper.isValid(data.value)) continue;
                                             if (sheetValue.equals(data.value)) continue;
                                             Cell cell = row.getCell(sheetLocale.col);
                                             cell.setCellValue(data.value);

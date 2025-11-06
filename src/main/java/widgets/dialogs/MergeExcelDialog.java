@@ -152,6 +152,8 @@ public class MergeExcelDialog {
             addToGrid(openNewColorPickerButton, 4, 1);
 
             addToGrid(table, 5, 0, 1, 2, true);
+
+            existingSheet.setEnabled(false);
         }
 
         Dimension defaultDimension = (Dimension) UIManager.get("OptionPane.minimumSize");
