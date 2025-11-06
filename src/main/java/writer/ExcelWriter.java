@@ -115,8 +115,14 @@ public class ExcelWriter {
         if (!StringHelper.isValid(sheetName)) {
             sheetName = brand.name;
         }
-        Sheet sheet = workbook.createSheet(sheetName);
+        XSSFSheet sheet = workbook.createSheet(sheetName);
+        if (config.bColorizeNew) {
+            System.out.println("colorize new");
+            sheet.setTabColor(config.getNewCellFillColor(workbook));
+        } else {
+            System.out.println("NOT colorize new");
 
+        }
         int columnOfLocale = COL_OFFSET_LANG;
         boolean bBlankSheet = true;
         for (I18nLanguage lang : brand.languages) {
@@ -124,8 +130,7 @@ public class ExcelWriter {
                 Row row = sheet.createRow(0);
                 Cell cell = row.createCell(0);
                 cell.setCellValue(brand.name);
-//                cell.setCellStyle(redStyle);
-                cell.setCellStyle(overrideStyle);
+                cell.setCellStyle(redStyle);
             }
 
             {
@@ -172,7 +177,9 @@ public class ExcelWriter {
                             }
                             Cell cell = row.createCell(columnOfLocale);
                             cell.setCellValue(json.value);
-                            cell.setCellStyle(redStyle);
+                            if (config.bColorizeNew) {
+                                cell.setCellStyle(newStyle);
+                            }
                             ++rowIndex;
                         }
                     } else {
@@ -193,7 +200,9 @@ public class ExcelWriter {
                         }
                         Cell cell = row.createCell(columnOfLocale);
                         cell.setCellValue(i18n.json.get(0).value);
-                        cell.setCellStyle(redStyle);
+                        if (config.bColorizeNew) {
+                            cell.setCellStyle(newStyle);
+                        }
                         ++rowIndex;
                     }
                 }
@@ -206,7 +215,8 @@ public class ExcelWriter {
 
     void updateExistingSheets(XSSFWorkbook workbook, I18nCSB csb) {
         for (int i = 0; i < workbook.getNumberOfSheets(); ++i) {
-            Sheet sheet = workbook.getSheetAt(i);
+            boolean bSheetWasUpdated = false;
+            XSSFSheet sheet = workbook.getSheetAt(i);
             String sheetBrand = reader.getBrand(sheet);
             System.out.println("debug sheet: " + sheetBrand);
             for (int brandIdx = csb.brands.size() - 1; brandIdx >= 0; --brandIdx) {
@@ -243,8 +253,11 @@ public class ExcelWriter {
                                                 if (sheetValue.equals(data.value)) continue;
                                                 Cell cell = row.getCell(sheetLocale.col);
                                                 cell.setCellValue(data.value);
-                                                cell.setCellStyle(newStyle);
+                                                if (config.bColorizeOverridden) {
+                                                    cell.setCellStyle(overrideStyle);
+                                                }
                                                 translation.json.remove(dataIdx);
+                                                bSheetWasUpdated = true;
                                             }
                                         } else {
                                             System.out.println("debug 4: ");
@@ -254,8 +267,11 @@ public class ExcelWriter {
                                             if (sheetValue.equals(data.value)) continue;
                                             Cell cell = row.getCell(sheetLocale.col);
                                             cell.setCellValue(data.value);
-                                            cell.setCellStyle(newStyle);
+                                            if (config.bColorizeOverridden) {
+                                                cell.setCellStyle(overrideStyle);
+                                            }
                                             translation.json.clear();
+                                            bSheetWasUpdated = true;
                                         }
                                         if (!translation.isValid(false)) {
                                             lang.translations.remove(translationIdx);
@@ -272,6 +288,11 @@ public class ExcelWriter {
                 }
                 if (brand.isEmpty()) {
                     csb.brands.remove(brandIdx);
+                }
+            }
+            if (bSheetWasUpdated) {
+                if (config.bColorizeOverridden) {
+                    sheet.setTabColor(config.getOverrideCellFillColor(workbook));
                 }
             }
         }

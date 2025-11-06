@@ -242,7 +242,19 @@ public class I18nCSB {
     }
 
     public boolean isValid() {
-        return !brands.isEmpty();
+        if (brands.isEmpty()) {
+            return false;
+        }
+        for (I18nBrand brand : brands) {
+            for (I18nLanguage lang : brand.languages) {
+                for (I18n translation : lang.translations) {
+                    if (!translation.component.equals(I18nLanguage.META_STRING)) {
+                        return true;
+                    }
+                }
+            }
+        }
+        return false;
     }
 
     public void sanitize() {

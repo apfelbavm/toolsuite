@@ -63,14 +63,18 @@ public class MergeExcelDialog {
             openOverrideColorPickerButton.setBackground(DEFAULT_OVERRIDE_FILL_COLOR);
             useOverrideFillColor.addActionListener(e -> {
                 openOverrideColorPickerButton.setEnabled(useOverrideFillColor.isSelected());
+                writerConfig.bColorizeOverridden = useOverrideFillColor.isSelected();
             });
             useOverrideFillColor.setSelected(true);
+            writerConfig.bColorizeOverridden = useOverrideFillColor.isSelected();
 
             openNewColorPickerButton.setBackground(DEFAULT_NEW_FILL_COLOR);
             useNewFillColor.addActionListener(e -> {
                 openNewColorPickerButton.setEnabled(useNewFillColor.isSelected());
+                writerConfig.bColorizeNew = useNewFillColor.isSelected();
             });
             useNewFillColor.setSelected(true);
+            writerConfig.bColorizeNew = useNewFillColor.isSelected();
 
             existingSheetOptions = new JComboBox(sheetNames.toArray());
 
