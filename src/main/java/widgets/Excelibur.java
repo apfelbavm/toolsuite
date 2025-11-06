@@ -363,11 +363,15 @@ public class Excelibur extends JPanel implements OnLocaleMissing, OnBrandMissing
         }).start();
     }
 
-    private void importData() {
+    private ReaderConfig createReaderConfig() {
         ReaderConfig config = new ReaderConfig();
         config.bExcelUseHyperlinkIfAvailable = checkBoxUseHyperlinkIfAvailable.isSelected();
         config.bExcelIncludeHiddenSheets = checkIncludeHiddenSheets.isSelected();
-        translationMgr.importFiles(this, null, config);
+        return config;
+    }
+
+    private void importData() {
+        translationMgr.importFiles(this, null, createReaderConfig());
         if (translationMgr.csb != null) {
             LanguageTable languageTable = translationMgr.csb.createLanguageTable(null);
             Component comp = horSplit.getRightComponent();
@@ -463,10 +467,8 @@ public class Excelibur extends JPanel implements OnLocaleMissing, OnBrandMissing
         File[] files = openInputDialog(dialogCfg);
         enableUserInput(false);
         if (files != null && files.length > 0) {
-            ReaderConfig config = new ReaderConfig();
-            config.bExcelUseHyperlinkIfAvailable = checkBoxUseHyperlinkIfAvailable.isSelected();
-            config.bExcelIncludeHiddenSheets = checkIncludeHiddenSheets.isSelected();
-            translationMgrDifference.importFiles(this, files, config);
+
+            translationMgrDifference.importFiles(this, files, createReaderConfig());
             translationMgrDifference.csb.makeDifferenceTo(translationMgr.csb);
 //            System.out.println("START DIFFERENCES");
 //            translationMgrDifference.csb.print();
@@ -519,7 +521,7 @@ public class Excelibur extends JPanel implements OnLocaleMissing, OnBrandMissing
         translationMgr.writerConfig = dialog.writerConfig;
         if (selection == 0) {
             ExcelWriter writer = new ExcelWriter();
-            writer.updateExcelSheet(dialog.writerConfig, translationMgrDifference.csb, file, dialog.sheetName);
+            writer.updateExcelSheet(createReaderConfig(), dialog.writerConfig, translationMgrDifference.csb, file, dialog.sheetName);
         } else if (selection == 1) {
 
         }

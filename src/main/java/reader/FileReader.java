@@ -9,7 +9,7 @@ public class FileReader {
     public JSONReader jsonReader = new JSONReader();
     public ExcelReader excelReader = new ExcelReader();
 
-    public I18nCSB read(File[] files, ReaderConfig config) {
+    public I18nCSB read(File[] files, ReaderConfig readerConfig) {
         ArrayList<File> XLSXFiles = new ArrayList<>();
         ArrayList<File> JSONFiles = new ArrayList<>();
 
@@ -31,7 +31,7 @@ public class FileReader {
 
         I18nCSB csb = new I18nCSB();
         if (!XLSXFiles.isEmpty()) {
-            csb.merge(excelReader.read(XLSXFiles, config));
+            csb.merge(excelReader.read(XLSXFiles, readerConfig));
         }
         if (!JSONFiles.isEmpty()) {
             csb.merge(jsonReader.read(JSONFiles));

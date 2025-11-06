@@ -25,8 +25,8 @@ public class ExcelReader {
     // rest of a single sheet.
     private static final int MAX_SEARCH_COLUMN = 60;
     private static final int MAX_SEARCH_ROW = 20;
-    private static final String COMPONENT = "component";
-    private static final String KEY = "key";
+    public static final String COMPONENT = "component";
+    public static final String KEY = "key";
 
     public String getCellValue(Row row, int col) {
         if (row == null) return null;
@@ -72,7 +72,7 @@ public class ExcelReader {
     /**
      * @return List of all locales found in the sheet including their columnID.
      **/
-    private ArrayList<QueryResult> findLocales(Sheet sheet) {
+    public ArrayList<QueryResult> findLocales(Sheet sheet) {
         String brand = findBrand(sheet);
         if (!StringHelper.isValid(brand)) {
             brand = "NO_BRAND";
@@ -181,6 +181,15 @@ public class ExcelReader {
         return -1;
     }
 
+    public String getBrand(Sheet sheet) {
+        if (sheet != null) {
+            Row row = sheet.getRow(0);
+            if (row != null) {
+                return getCellValue(row, 0);
+            }
+        }
+        return "";
+    }
 
     private I18nBrand extractSheet(Sheet sheet) {
         ArrayList<QueryResult> results = findLocales(sheet);

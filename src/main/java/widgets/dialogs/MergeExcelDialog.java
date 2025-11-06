@@ -34,7 +34,6 @@ public class MergeExcelDialog {
 
     JButton openNewColorPickerButton = new JButton("Choose Color");
     JCheckBox useNewFillColor = new JCheckBox("Use new cell Fillcolor");
-
     ArrayList<String> sheetNames;
     JPanel panel = new JPanel();
     GridBagLayout layout = new GridBagLayout();
@@ -153,7 +152,9 @@ public class MergeExcelDialog {
 
         Dimension defaultDimension = (Dimension) UIManager.get("OptionPane.minimumSize");
         UIManager.put("OptionPane.minimumSize", new Dimension(800, 600));
-        int selection = JOptionPane.showConfirmDialog(parentComponent, panel, "Merge into Excel file...", JOptionPane.PLAIN_MESSAGE);
+
+        int selection = JOptionPane.showConfirmDialog(parentComponent, panel, "Merge into Excel file...", JOptionPane.PLAIN_MESSAGE );
+
         UIManager.put("OptionPane.minimumSize", defaultDimension);
 
         bNewExcelSheet = !existingSheet.isSelected();

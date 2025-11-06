@@ -4,12 +4,16 @@ import core.App;
 import core.StringHelper;
 import org.apache.poi.ss.usermodel.*;
 import org.apache.poi.xssf.usermodel.*;
+import reader.ExcelReader;
+import reader.ReaderConfig;
+import test.QueryResult;
 import translations.*;
 
 import java.io.*;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.ArrayList;
 
 import static org.apache.poi.ss.usermodel.Font.COLOR_RED;
 
@@ -20,23 +24,31 @@ public class ExcelWriter {
     private static final int COL_OFFSET_LANG = 2;
     private static final int ROW_OFFSET_TRANSLATIONS = 4;
     private static final int ROW_OFFSET_META = 2;
+    ExcelReader reader = new ExcelReader();
+    XSSFCellStyle overrideStyle;
+    XSSFCellStyle newStyle;
+    XSSFCellStyle redStyle;
+
+    void initStyles(XSSFWorkbook workbook) {
+        overrideStyle = workbook.createCellStyle();
+        overrideStyle.setFillForegroundColor(config.getOverrideCellFillColor(workbook));
+        overrideStyle.setFillPattern(FillPatternType.SOLID_FOREGROUND);
+
+        newStyle = workbook.createCellStyle();
+        newStyle.setFillForegroundColor(config.getNewCellFillColor(workbook));
+        newStyle.setFillPattern(FillPatternType.SOLID_FOREGROUND);
+
+        Font redFont = workbook.createFont();
+        redFont.setColor(COLOR_RED);
+        redStyle = workbook.createCellStyle();
+        redStyle.setFont(redFont);
+    }
 
     public boolean writeNewExcelFiles(WriterConfig writerConfig, I18nCSB csb, String outputFolder, String fileName, boolean bSkipEmptyCells) {
 
         config = writerConfig;
         XSSFWorkbook workbook = new XSSFWorkbook();
-
-        Font redFont = workbook.createFont();
-        redFont.setColor(COLOR_RED);
-        XSSFCellStyle redStyle = workbook.createCellStyle();
-        redStyle.setFont(redFont);
-
-        XSSFCellStyle overrideStyle = workbook.createCellStyle();
-        XSSFCellStyle newStyle = workbook.createCellStyle();
-        overrideStyle.setFillForegroundColor(config.getOverrideCellFillColor(workbook));
-        overrideStyle.setFillPattern(FillPatternType.SOLID_FOREGROUND);
-        newStyle.setFillBackgroundColor(config.getNewCellFillColor(workbook));
-        newStyle.setFillPattern(FillPatternType.SOLID_FOREGROUND);
+        initStyles(workbook);
 
         for (I18nBrand brand : csb.brands) {
             writeNewTable(workbook, brand, null);
@@ -58,8 +70,10 @@ public class ExcelWriter {
         }
     }
 
-    public boolean updateExcelSheet(WriterConfig writerConfig, I18nCSB csb, File excelFile, String sheetName) {
+    public boolean updateExcelSheet(ReaderConfig readerConfig, WriterConfig writerConfig, I18nCSB csb, File excelFile, String sheetName) {
         config = writerConfig;
+        reader.config = readerConfig;
+
         if (excelFile == null || !Files.isWritable(excelFile.toPath())) return false;
 
         FileInputStream fis;
@@ -67,12 +81,19 @@ public class ExcelWriter {
             // don't know why but FIS proved to be 2-3 times faster than directly using file or OPC package.
             fis = new FileInputStream(excelFile);
             XSSFWorkbook workbook = new XSSFWorkbook(fis);
+            initStyles(workbook);
 
             if (csb.brands.size() == 1) {
-                writeNewTable(workbook, csb.brands.get(0), sheetName);
+                updateExistingSheets(workbook, csb);
+                if (csb.isValid()) {
+                    writeNewTable(workbook, csb.brands.get(0), sheetName);
+                }
             } else {
-                for (I18nBrand brand : csb.brands) {
-                    writeNewTable(workbook, brand, brand.name + "_" + sheetName);
+                updateExistingSheets(workbook, csb);
+                if (csb.isValid()) {
+                    for (I18nBrand brand : csb.brands) {
+                        writeNewTable(workbook, brand, brand.name + "_" + sheetName);
+                    }
                 }
             }
             fis.close();
@@ -89,17 +110,7 @@ public class ExcelWriter {
     }
 
     public void writeNewTable(XSSFWorkbook workbook, I18nBrand brand, String sheetName) {
-        Font redFont = workbook.createFont();
-        redFont.setColor(COLOR_RED);
-        XSSFCellStyle redStyle = workbook.createCellStyle();
-        redStyle.setFont(redFont);
-
-        XSSFCellStyle overrideStyle = workbook.createCellStyle();
-        XSSFCellStyle newStyle = workbook.createCellStyle();
-        overrideStyle.setFillForegroundColor(config.getOverrideCellFillColor(workbook));
-        overrideStyle.setFillPattern(FillPatternType.SOLID_FOREGROUND);
-        newStyle.setFillBackgroundColor(config.getNewCellFillColor(workbook));
-        newStyle.setFillPattern(FillPatternType.SOLID_FOREGROUND);
+        initStyles(workbook);
 
         if (!StringHelper.isValid(sheetName)) {
             sheetName = brand.name;
@@ -192,7 +203,80 @@ public class ExcelWriter {
         }
 
     }
-    
+
+    void updateExistingSheets(XSSFWorkbook workbook, I18nCSB csb) {
+        for (int i = 0; i < workbook.getNumberOfSheets(); ++i) {
+            Sheet sheet = workbook.getSheetAt(i);
+            String sheetBrand = reader.getBrand(sheet);
+            System.out.println("debug sheet: " + sheetBrand);
+            for (int brandIdx = csb.brands.size() - 1; brandIdx >= 0; --brandIdx) {
+                I18nBrand brand = csb.brands.get(brandIdx);
+
+                System.out.println("debug csb brand: " + brand.name);
+                if (brand.name.equals(sheetBrand)) {
+                    int componentCol = reader.findColumnWithString(sheet, ExcelReader.COMPONENT);
+                    int keyCol = reader.findColumnWithString(sheet, ExcelReader.KEY);
+
+                    ArrayList<QueryResult> sheetLocales = reader.findLocales(sheet);
+                    for (QueryResult sheetLocale : sheetLocales) {
+                        System.out.println("debug query: " + sheetLocale.locale);
+                        for (int rowIdx = sheetLocale.row; rowIdx <= sheet.getLastRowNum(); ++rowIdx) {
+                            Row row = sheet.getRow(rowIdx);
+                            if (row == null) continue;
+                            String component = reader.getCellValue(row, componentCol);
+                            String key = reader.getCellValue(row, keyCol);
+                            for (int langIdx = brand.languages.size() - 1; langIdx >= 0; --langIdx) {
+                                I18nLanguage lang = brand.languages.get(langIdx);
+                                if (sheetLocale.locale.equals(lang.locale)) {
+                                    System.out.println("debug 2: ");
+                                    for (int translationIdx = lang.translations.size() - 1; translationIdx >= 0; --translationIdx) {
+                                        I18n translation = lang.translations.get(translationIdx);
+                                        if (!component.equals(translation.component)) continue;
+
+                                        if (translation.isJSON()) {
+                                            System.out.println("debug 3: ");
+                                            for (int dataIdx = translation.json.size() - 1; dataIdx >= 0; --dataIdx) {
+                                                I18nData data = translation.json.get(dataIdx);
+                                                String csbKey = translation.key + "." + data.key;
+                                                if (!key.equals(csbKey)) continue;
+                                                String sheetValue = reader.getCellValue(row, sheetLocale.col);
+                                                if (sheetValue.equals(data.value)) continue;
+                                                Cell cell = row.getCell(sheetLocale.col);
+                                                cell.setCellValue(data.value);
+                                                cell.setCellStyle(newStyle);
+                                                translation.json.remove(dataIdx);
+                                            }
+                                        } else {
+                                            System.out.println("debug 4: ");
+                                            I18nData data = translation.json.get(0);
+                                            if (!key.equals(translation.key)) continue;
+                                            String sheetValue = reader.getCellValue(row, sheetLocale.col);
+                                            if (sheetValue.equals(data.value)) continue;
+                                            Cell cell = row.getCell(sheetLocale.col);
+                                            cell.setCellValue(data.value);
+                                            cell.setCellStyle(newStyle);
+                                            translation.json.clear();
+                                        }
+                                        if (!translation.isValid(false)) {
+                                            lang.translations.remove(translationIdx);
+                                        }
+                                    }
+                                }
+                                if (lang.isEmpty()) {
+                                    brand.languages.remove(langIdx);
+                                }
+                            }
+                        }
+                    }
+                    break;
+                }
+                if (brand.isEmpty()) {
+                    csb.brands.remove(brandIdx);
+                }
+            }
+        }
+    }
+
     private String createOutputFolder(String outputFolder, String brand, String locale) {
         String fileSep = System.getProperty("file.separator");
         String path = outputFolder + fileSep;

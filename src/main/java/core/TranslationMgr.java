@@ -71,7 +71,7 @@ public class TranslationMgr {
         return TranslationMgr.ISO_CODES.contains(value.toLowerCase()) || TranslationMgr.SUCCESSFACTOR_CODES.contains(value.toLowerCase());
     }
 
-    public void importFiles(Excelibur excelibur, File[] overrideFiles, ReaderConfig config) {
+    public void importFiles(Excelibur excelibur, File[] overrideFiles, ReaderConfig readerConfig) {
         FileReader reader = new FileReader();
         reader.jsonReader.bindOnRequestLocale(excelibur);
         reader.jsonReader.bindOnRequestBrand(excelibur);
@@ -89,7 +89,7 @@ public class TranslationMgr {
         }
 
         if (!fileList.isEmpty()) {
-            csb = reader.read(fileList.toArray(new File[0]), config);
+            csb = reader.read(fileList.toArray(new File[0]), readerConfig);
         }
 
         long statSort = System.currentTimeMillis();
