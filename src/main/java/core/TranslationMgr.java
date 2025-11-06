@@ -12,6 +12,7 @@ import widgets.table.LanguageIdentifier;
 import widgets.table.LanguageTable;
 import translations.I18nCSB;
 import writer.JsonWriter;
+import writer.WriterConfig;
 
 
 public class TranslationMgr {
@@ -24,6 +25,7 @@ public class TranslationMgr {
     public File[] files;
     private int exportFlags = 0;
     public TranslationMgrFlags.FolderNaming folderNamingType;
+    public WriterConfig writerConfig = new WriterConfig();
 
     private boolean getFlag(TranslationMgrFlags.Export flag) {
         return ((exportFlags >> flag.ordinal()) & 1) == 1;

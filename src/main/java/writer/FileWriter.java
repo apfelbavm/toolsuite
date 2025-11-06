@@ -4,14 +4,14 @@ package writer;
 import translations.I18nCSB;
 
 public class FileWriter {
-    public boolean export(FileWriterOptions options, I18nCSB csb, String outputFolder, String fileName) {
+    public boolean export(FileWriterOptions options, WriterConfig config, I18nCSB csb, String outputFolder, String fileName) {
         switch (options) {
             case JSON: {
                 break;
             }
             case NEW_EXCEL: {
                 ExcelWriter writer = new ExcelWriter();
-                return writer.export(csb, outputFolder, fileName, false);
+                return writer.writeNewExcelFiles(config, csb, outputFolder, fileName, false);
             }
             case FILL_EXCEL: {
                 break;

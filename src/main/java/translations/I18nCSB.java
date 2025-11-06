@@ -26,6 +26,21 @@ public class I18nCSB {
         return i18nBrand.add(locale, i18n);
     }
 
+    public void as(I18nCSB other) {
+        brands.clear();
+        for (I18nBrand otherbrand : other.brands) {
+            I18nBrand brand = new I18nBrand(otherbrand.name);
+            brands.add(brand);
+            for (I18nLanguage otherLang : otherbrand.languages) {
+                I18nLanguage lang = new I18nLanguage(otherbrand.name, otherLang.locale);
+                for (I18n otherI18n : otherLang.translations) {
+                    lang.translations.add(new I18n(otherI18n));
+                }
+                brand.languages.add(lang);
+            }
+        }
+    }
+
     public boolean add(String brand, I18nLanguage language) {
         for (I18nBrand i18nBrand : brands) {
             if (i18nBrand.name.equals(brand)) {
@@ -194,17 +209,40 @@ public class I18nCSB {
         }
     }
 
-    public void removeAllDuplicates(I18nCSB other) {
-        for (I18nBrand otherBrand : other.brands) {
+    public void makeDifferenceTo(I18nCSB other) {
+        I18nCSB difference = new I18nCSB();
+        difference.as(other);
+
+        for (I18nBrand brand : brands) {
             int lastIndex = brands.size() - 1;
             for (int brandIdx = lastIndex; brandIdx >= 0; --brandIdx) {
-                brands.get(brandIdx).removeAllDuplicates(otherBrand);
-                if (brands.get(brandIdx).isEmpty()) {
-                    brands.remove(brandIdx);
+                I18nBrand differenceBrand = difference.brands.get(brandIdx);
+                if (!differenceBrand.name.equals(brand.name)) continue;
+                differenceBrand.removeAllDuplicates(brand);
+                if (differenceBrand.isEmpty()) {
+                    difference.brands.remove(brandIdx);
+                } else {
+                    boolean bValidLanguage = false;
+                    for (I18nLanguage lang : differenceBrand.languages) {
+                        for (I18n translation : lang.translations) {
+                            if (!translation.component.equals(I18nLanguage.META_STRING)) {
+                                bValidLanguage = true;
+                                break;
+                            }
+                        }
+                    }
+                    if (!bValidLanguage) {
+                        difference.brands.remove(brandIdx);
+                    }
                 }
                 break;
             }
         }
+        as(difference);
+    }
+
+    public boolean isValid() {
+        return !brands.isEmpty();
     }
 
     public void sanitize() {

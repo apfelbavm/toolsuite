@@ -25,12 +25,10 @@ public class ExcelReader {
     // rest of a single sheet.
     private static final int MAX_SEARCH_COLUMN = 60;
     private static final int MAX_SEARCH_ROW = 20;
-
-
     private static final String COMPONENT = "component";
     private static final String KEY = "key";
 
-    private String getCellValue(Row row, int col) {
+    public String getCellValue(Row row, int col) {
         if (row == null) return null;
         Cell cell = row.getCell(col, Row.MissingCellPolicy.CREATE_NULL_AS_BLANK);
         if (cell == null) return null;
@@ -169,7 +167,7 @@ public class ExcelReader {
     /**
      * Searches in a clamped area of r= MAX_SEARCH_ROW to c = MAX_SEARCH_COLUMN and returns the index of the first occurence of the specified string.
      */
-    private int findColumnWithString(Sheet sheet, String string) {
+    public int findColumnWithString(Sheet sheet, String string) {
         if (sheet == null) return -1;
         int lastRow = Math.min(MAX_SEARCH_ROW, sheet.getLastRowNum()); // 0 based
         for (int r = 0; r <= lastRow; ++r) {

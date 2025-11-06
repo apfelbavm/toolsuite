@@ -20,6 +20,11 @@ public class I18n implements Comparable<I18n> {
     private I18n() {
     } // made private so you have to use the other constructor
 
+    public I18n(I18n other)
+    {
+        as(other);
+    }
+
     public I18n(String component_, String key_, String value_) {
         component = component_;
         int splitIndex = key_.indexOf(".");
@@ -63,6 +68,8 @@ public class I18n implements Comparable<I18n> {
     public void as(I18n other) {
         component = other.component;
         key = other.key;
+        compareResult = other.compareResult;
+
         json.clear();
         for (I18nData data : other.json) {
             json.add(new I18nData(data));
@@ -156,9 +163,8 @@ public class I18n implements Comparable<I18n> {
     }
 
     public void print() {
-        System.out.println("component: " + component);
         for (I18nData innerData : json) {
-            System.out.println(" -> key: " + key + "." + innerData.key + ", value:" + innerData.value);
+            System.out.println("component: " + component + ", key: " + key + "." + innerData.key + ", value:" + innerData.value);
         }
     }
 
@@ -173,10 +179,12 @@ public class I18n implements Comparable<I18n> {
 
     public void removeJsonDuplicates(I18n other) {
         for (I18nData otherData : other.json) {
-            I18nData innerData = find(otherData.key);
-            if (innerData != null) {
-                if (innerData.value.equals(otherData.value)) {
+            I18nData thisData = find(otherData.key);
+
+            if (thisData != null) {
+                if (thisData.value.equals(otherData.value)) {
                     remove(otherData.key);
+//                    System.out.println("remove: " + otherData.value + ", key: " + otherData.key);
                 } else {
                     compareResult = I18nCompareResult.Override;
                 }

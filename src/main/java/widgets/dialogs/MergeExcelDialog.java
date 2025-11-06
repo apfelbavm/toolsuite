@@ -6,6 +6,7 @@ import widgets.FColor;
 import widgets.UIConstants;
 import widgets.table.GroupableTable;
 import widgets.table.LanguageTable;
+import writer.WriterConfig;
 
 import javax.swing.*;
 import javax.swing.event.DocumentEvent;
@@ -15,8 +16,11 @@ import java.io.File;
 import java.util.ArrayList;
 
 public class MergeExcelDialog {
+    static final Color DEFAULT_OVERRIDE_FILL_COLOR = new Color(255, 0, 255);
+    static final Color DEFAULT_NEW_FILL_COLOR = new Color(0, 255, 0);
     public boolean bNewExcelSheet;
     public String sheetName;
+    public WriterConfig writerConfig = new WriterConfig();
 
     JComponent parentComponent;
     JRadioButton newSheet = new JRadioButton("Add new sheet...");
@@ -24,11 +28,17 @@ public class MergeExcelDialog {
     JTextField newSheetNameInput = new JTextField("Tabelle 1", 10);
     JComboBox existingSheetOptions;
     JLabel errorLabel = new JLabel("This sheet already exists!");
+
+    JButton openOverrideColorPickerButton = new JButton("Choose Color");
+    JCheckBox useOverrideFillColor = new JCheckBox("Use override cell Fillcolor");
+
+    JButton openNewColorPickerButton = new JButton("Choose Color");
+    JCheckBox useNewFillColor = new JCheckBox("Use new cell Fillcolor");
+
     ArrayList<String> sheetNames;
     JPanel panel = new JPanel();
     GridBagLayout layout = new GridBagLayout();
     GridBagConstraints constraints = new GridBagConstraints();
-    JCheckBox checkBoxAutoResize = new JCheckBox("Auto Resize Table");
 
     public MergeExcelDialog(JComponent parentComponent_) {
         parentComponent = parentComponent_;
@@ -46,7 +56,23 @@ public class MergeExcelDialog {
         GroupableTable table = new GroupableTable();
         table.updateTable(languageTable);
 
+        writerConfig = new WriterConfig();
+        writerConfig.setOverrideCellFillColor(DEFAULT_OVERRIDE_FILL_COLOR);
+        writerConfig.setNewCellFillColor(DEFAULT_NEW_FILL_COLOR);
+
         {
+            openOverrideColorPickerButton.setBackground(DEFAULT_OVERRIDE_FILL_COLOR);
+            useOverrideFillColor.addActionListener(e -> {
+                openOverrideColorPickerButton.setEnabled(useOverrideFillColor.isSelected());
+            });
+            useOverrideFillColor.setSelected(true);
+
+            openNewColorPickerButton.setBackground(DEFAULT_NEW_FILL_COLOR);
+            useNewFillColor.addActionListener(e -> {
+                openNewColorPickerButton.setEnabled(useNewFillColor.isSelected());
+            });
+            useNewFillColor.setSelected(true);
+
             existingSheetOptions = new JComboBox(sheetNames.toArray());
 
             newSheet.setSelected(true);
@@ -71,6 +97,22 @@ public class MergeExcelDialog {
                 existingSheetOptions.setEnabled(true);
                 newSheetNameInput.setEnabled(false);
                 errorLabel.setVisible(false);
+            });
+
+            openOverrideColorPickerButton.addActionListener(e -> {
+                Color newColor = JColorChooser.showDialog(parentComponent, "Choose a cell override  color", DEFAULT_OVERRIDE_FILL_COLOR);
+                if (newColor != null) {
+                    writerConfig.setOverrideCellFillColor(newColor);
+                    openOverrideColorPickerButton.setBackground(newColor);
+                }
+            });
+
+            openNewColorPickerButton.addActionListener(e -> {
+                Color newColor = JColorChooser.showDialog(parentComponent, "Choose a new cell color", DEFAULT_NEW_FILL_COLOR);
+                if (newColor != null) {
+                    writerConfig.setNewCellFillColor(newColor);
+                    openNewColorPickerButton.setBackground(newColor);
+                }
             });
 
             validate();
@@ -99,9 +141,14 @@ public class MergeExcelDialog {
 
             addToGrid(existingSheet, 2, 0);
             addToGrid(existingSheetOptions, 2, 1);
-            addToGrid(checkBoxAutoResize, 3, 0);
-            addToGrid(table, 4, 0, 1, 2, true);
 
+            addToGrid(useOverrideFillColor, 3, 0);
+            addToGrid(openOverrideColorPickerButton, 3, 1);
+
+            addToGrid(useNewFillColor, 4, 0);
+            addToGrid(openNewColorPickerButton, 4, 1);
+
+            addToGrid(table, 5, 0, 1, 2, true);
         }
 
         Dimension defaultDimension = (Dimension) UIManager.get("OptionPane.minimumSize");

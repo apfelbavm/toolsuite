@@ -31,7 +31,7 @@ public class Excelibur extends JPanel implements OnLocaleMissing, OnBrandMissing
 
     public Tab tab = null;
     private final TranslationMgr translationMgr = new TranslationMgr();
-    private final TranslationMgr otherMgr = new TranslationMgr();
+    private final TranslationMgr translationMgrDifference = new TranslationMgr();
     @Serial
     private static final long serialVersionUID = 1L;
     private final SaveManager saveManager = SaveManager.get();
@@ -443,8 +443,12 @@ public class Excelibur extends JPanel implements OnLocaleMissing, OnBrandMissing
                 }
                 case FILL_EXCEL: {
                     File file = openFillExistingExcelDialog();
-                    if (file != null) {
-                        openSelectExcelSheetDialog(file);
+                    if (translationMgrDifference.csb.isValid()) {
+                        if (file != null) {
+                            openSelectExcelSheetDialog(file);
+                        }
+                    } else {
+                        int success = JOptionPane.showConfirmDialog(this, "No translation differences found", "No changes", JOptionPane.DEFAULT_OPTION, JOptionPane.PLAIN_MESSAGE);
                     }
                     enableUserInput(true);
                     break;
@@ -462,11 +466,11 @@ public class Excelibur extends JPanel implements OnLocaleMissing, OnBrandMissing
             ReaderConfig config = new ReaderConfig();
             config.bExcelUseHyperlinkIfAvailable = checkBoxUseHyperlinkIfAvailable.isSelected();
             config.bExcelIncludeHiddenSheets = checkIncludeHiddenSheets.isSelected();
-            otherMgr.importFiles(this, files, config);
-            otherMgr.csb.removeAllDuplicates(translationMgr.csb);
-            System.out.println("START DIFFERENCES");
-            otherMgr.csb.print();
-            System.out.println("END DIFFERENCES");
+            translationMgrDifference.importFiles(this, files, config);
+            translationMgrDifference.csb.makeDifferenceTo(translationMgr.csb);
+//            System.out.println("START DIFFERENCES");
+//            translationMgrDifference.csb.print();
+//            System.out.println("END DIFFERENCES");
             return files[0];
         }
         return null;
@@ -497,7 +501,7 @@ public class Excelibur extends JPanel implements OnLocaleMissing, OnBrandMissing
                 String fileName = outputFolder.substring(i + 1, outputFolder.length());
                 outputFolder = outputFolder.substring(0, i);
                 FileWriter writer = new FileWriter();
-                boolean success = writer.export(writerOption, translationMgr.csb, outputFolder, fileName);
+                boolean success = writer.export(writerOption, translationMgr.writerConfig, translationMgr.csb, outputFolder, fileName);
                 if (success) {
                     owner.setStatus("Sucessfully exported Excel", App.NORMAL_MESSAGE);
                 }
@@ -511,10 +515,13 @@ public class Excelibur extends JPanel implements OnLocaleMissing, OnBrandMissing
 
     void openSelectExcelSheetDialog(File file) {
         MergeExcelDialog dialog = new MergeExcelDialog(this);
-        int selection = dialog.showDialog(file, otherMgr.csb);
+        int selection = dialog.showDialog(file, translationMgrDifference.csb);
+        translationMgr.writerConfig = dialog.writerConfig;
         if (selection == 0) {
             ExcelWriter writer = new ExcelWriter();
-            writer.export(otherMgr.csb, file, dialog.sheetName);
+            writer.updateExcelSheet(dialog.writerConfig, translationMgrDifference.csb, file, dialog.sheetName);
+        } else if (selection == 1) {
+
         }
     }
 

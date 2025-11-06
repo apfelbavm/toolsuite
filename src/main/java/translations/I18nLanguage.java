@@ -100,20 +100,21 @@ public class I18nLanguage implements Comparable<I18nLanguage> {
     }
 
     public void removeAllDuplicates(I18nLanguage other) {
-        int outerLastIndex = other.translations.size() - 1;
-        for (int outerIdx = outerLastIndex; outerIdx >= 0; --outerIdx) {
-            I18n outer = other.translations.get(outerIdx);
+        int otherLastIndex = other.translations.size() - 1;
+        for (int otherIdx = otherLastIndex; otherIdx >= 0; --otherIdx) {
+            I18n otherI18n = other.translations.get(otherIdx);
 
-            int innerLastIndex = translations.size() - 1;
-            for (int innerIdx = innerLastIndex; innerIdx >= 0; --innerIdx) {
-                I18n inner = translations.get(innerIdx);
+            int thisLastIndex = translations.size() - 1;
+            for (int thisIdx = thisLastIndex; thisIdx >= 0; --thisIdx) {
+                I18n thisI18n = translations.get(thisIdx);
 
-                if (!inner.component.equals(outer.component)) continue;
-                if (!inner.key.equals(outer.key)) continue;
+                if (!thisI18n.component.equals(otherI18n.component)) continue;
+                if (!thisI18n.key.equals(otherI18n.key)) continue;
 
-                inner.removeJsonDuplicates(outer);
-                if (!inner.isValid(false)) {
-                    translations.remove(innerIdx);
+                thisI18n.removeJsonDuplicates(otherI18n);
+                thisI18n.print();
+                if (!thisI18n.isValid(true)) {
+                    translations.remove(thisIdx);
                 }
                 break;
             }

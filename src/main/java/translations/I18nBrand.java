@@ -59,11 +59,13 @@ public class I18nBrand implements Comparable<I18nBrand> {
     }
 
     public void removeAllDuplicates(I18nBrand other) {
-        for (I18nLanguage otherLanguage : other.languages) {
+        for (I18nLanguage otherLang : other.languages) {
             int lastIndex = languages.size() - 1;
             for (int langIdx = lastIndex; langIdx >= 0; --langIdx) {
-                languages.get(langIdx).removeAllDuplicates(otherLanguage);
-                if (languages.get(langIdx).isEmpty()) {
+                I18nLanguage lang = languages.get(langIdx);
+                if(!lang.locale.equals(otherLang.locale)) continue;
+                lang.removeAllDuplicates(otherLang);
+                if (lang.isEmpty()) {
                     languages.remove(langIdx);
                 }
                 break;
