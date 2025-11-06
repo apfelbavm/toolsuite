@@ -214,8 +214,7 @@ public class I18nCSB {
         difference.as(other);
 
         for (I18nBrand brand : brands) {
-            int lastIndex = brands.size() - 1;
-            for (int brandIdx = lastIndex; brandIdx >= 0; --brandIdx) {
+            for (int brandIdx = difference.brands.size() - 1; brandIdx >= 0; --brandIdx) {
                 I18nBrand differenceBrand = difference.brands.get(brandIdx);
                 if (!differenceBrand.name.equals(brand.name)) continue;
                 differenceBrand.removeAllDuplicates(brand);
