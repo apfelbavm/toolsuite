@@ -38,6 +38,8 @@ public class MergeExcelDialog {
     JPanel panel = new JPanel();
     GridBagLayout layout = new GridBagLayout();
     GridBagConstraints constraints = new GridBagConstraints();
+    JOptionPane optionPane;
+    JButton OKButton;
 
     public MergeExcelDialog(JComponent parentComponent_) {
         parentComponent = parentComponent_;
@@ -78,13 +80,6 @@ public class MergeExcelDialog {
 
             existingSheetOptions = new JComboBox(sheetNames.toArray());
 
-            newSheet.setSelected(true);
-            existingSheet.setSelected(false);
-            bNewExcelSheet = true;
-
-            newSheetNameInput.setEnabled(true);
-            existingSheetOptions.setEnabled(false);
-
             newSheet.addActionListener(e -> {
                 existingSheet.setSelected(false);
                 newSheet.setSelected(true);
@@ -102,6 +97,14 @@ public class MergeExcelDialog {
                 errorLabel.setVisible(false);
             });
 
+            newSheet.setSelected(true);
+            existingSheet.setSelected(false);
+            bNewExcelSheet = true;
+
+            newSheetNameInput.setEnabled(true);
+            existingSheetOptions.setEnabled(false);
+
+
             openOverrideColorPickerButton.addActionListener(e -> {
                 Color newColor = JColorChooser.showDialog(parentComponent, "Choose a cell override  color", DEFAULT_OVERRIDE_FILL_COLOR);
                 if (newColor != null) {
@@ -117,8 +120,6 @@ public class MergeExcelDialog {
                     openNewColorPickerButton.setBackground(newColor);
                 }
             });
-
-            validate();
 
             newSheetNameInput.getDocument().addDocumentListener(new DocumentListener() {
 
@@ -159,8 +160,34 @@ public class MergeExcelDialog {
         Dimension defaultDimension = (Dimension) UIManager.get("OptionPane.minimumSize");
         UIManager.put("OptionPane.minimumSize", new Dimension(800, 600));
 
-        int selection = JOptionPane.showConfirmDialog(parentComponent, panel, "Merge into Excel file...", JOptionPane.PLAIN_MESSAGE );
+        OKButton = new JButton("OK");
+        OKButton.addActionListener(e -> {
+            optionPane.setValue(0);
+        });
+        JButton CancelButton = new JButton("Cancel");
+        CancelButton.addActionListener(e -> {
+            optionPane.setValue(1);
+        });
 
+        JButton[] arr = new JButton[]{OKButton, CancelButton};
+        optionPane = new JOptionPane(panel,
+                JOptionPane.PLAIN_MESSAGE,
+                JOptionPane.OK_CANCEL_OPTION,
+                null, arr, OKButton);
+
+        validate();
+        
+        JDialog dialog = optionPane.createDialog(parentComponent, "Merge into Excel file...");
+        dialog.setVisible(true);
+        Object result = optionPane.getValue();
+        int selection = -1;
+        if (result instanceof Integer) {
+            selection = (Integer) result;
+        } else {
+            System.out.println("OH NOOO");
+        }
+//        int selection = optionPane.showOptionDialog(parentComponent, panel, "Merge into Excel file...", JOptionPane.OK_CANCEL_OPTION, JOptionPane.PLAIN_MESSAGE, null, arr, OKButton);
+        System.out.println("test");
         UIManager.put("OptionPane.minimumSize", defaultDimension);
 
         bNewExcelSheet = !existingSheet.isSelected();
@@ -205,5 +232,6 @@ public class MergeExcelDialog {
         boolean bInvalidName = sheetNames.contains(newSheetNameInput.getText());
         int alpha = bInvalidName ? 255 : 0;
         errorLabel.setForeground(new FColor(UIConstants.BitterSweet, alpha));
+        OKButton.setEnabled(!bInvalidName);
     }
 }
