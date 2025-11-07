@@ -44,23 +44,6 @@ public class ExcelWriter {
         redStyle.setFont(redFont);
     }
 
-    private String getFilePath(String outputFolder, String fileName) {
-        String path;
-        if (config.bSaveAsNewFile) {
-            int index = 0;
-            path = outputFolder + System.getProperty("file.separator") + StringHelper.getFileName(fileName) + "_merged " + index + ".xlsx";
-            File file = new File(path);
-            while (file.exists()) {
-                path = outputFolder + System.getProperty("file.separator") + StringHelper.getFileName(fileName) + "_merged " + (++index) + ".xlsx";
-                file = new File(path);
-            }
-        } else {
-            path = outputFolder + System.getProperty("file.separator") + StringHelper.getFileName(fileName) + ".xlsx";
-        }
-        System.out.println("path: " + path);
-        return path;
-    }
-
     public boolean writeNewExcelFiles(WriterConfig writerConfig, I18nCSB csb, String outputFolder, String fileName, boolean bSkipEmptyCells) {
 
         config = writerConfig;
@@ -74,9 +57,10 @@ public class ExcelWriter {
         try {
             String path = outputFolder + System.getProperty("file.separator") + StringHelper.getFileName(fileName) + ".xlsx";
             File file = new File(path);
-            FileOutputStream out = new FileOutputStream(file);
-            workbook.write(out);
-            out.close();
+            FileOutputStream fos = new FileOutputStream(file);
+            workbook.write(fos);
+            fos.close();
+            workbook.close();
             return true;
 
         } catch (Exception e) {
@@ -120,20 +104,17 @@ public class ExcelWriter {
             }
             fis.close();
 
+            FileOutputStream fos;
             if (config.bSaveAsNewFile) {
-                System.out.println("Saving new file: " + config.exportAbsolutePath);
                 File file = new File(config.exportAbsolutePath);
-                FileOutputStream fos = new FileOutputStream(file);
-                workbook.write(fos);
-                fos.close();
-                workbook.close();
+                fos = new FileOutputStream(file);
             } else {
-                System.out.println("Updating file: " + config.exportAbsolutePath);
-                FileOutputStream fos = new FileOutputStream(config.exportAbsolutePath);
-                workbook.write(fos);
-                fos.close();
-                workbook.close();
+                fos = new FileOutputStream(config.exportAbsolutePath);
             }
+
+            workbook.write(fos);
+            fos.close();
+            workbook.close();
         } catch (Exception e) {
             App.get().setStatus(e.getLocalizedMessage(), App.ERROR_MESSAGE);
         }
@@ -324,33 +305,6 @@ public class ExcelWriter {
                     sheet.setTabColor(config.getOverrideCellFillColor(workbook));
                 }
             }
-        }
-    }
-
-    private String createOutputFolder(String outputFolder, String brand, String locale) {
-        String fileSep = System.getProperty("file.separator");
-        String path = outputFolder + fileSep;
-        path += locale + "_" + brand + fileSep;
-        if (!createFolder(path)) return null;
-
-        return path;
-    }
-
-    private boolean createFolder(String path) {
-        Path pathObj = Paths.get(path);
-        return createFolder(pathObj);
-    }
-
-    private boolean createFolder(Path path) {
-        if (Files.exists(path)) return true;
-        try {
-            // Create directory doesnt with with sub directories when the parent older is
-            // not created yet
-            Files.createDirectories(path);
-            return true;
-        } catch (IOException e) {
-            App.get().setStatus(e.getLocalizedMessage(), App.ERROR_MESSAGE);
-            return false;
         }
     }
 }
