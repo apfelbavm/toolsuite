@@ -423,22 +423,16 @@ public class Excelibur extends JPanel implements OnLocaleMissing, OnBrandMissing
     }
 
     private boolean exportData(String outputFolder, String fileName) {
-        translationMgr.setFlag(TranslationMgrFlags.Export.CONCAT_COMPONENT_AND_KEY, checkBoxMergeCompAndKey.isSelected());
-        translationMgr.setFlag(TranslationMgrFlags.Export.DONT_EXPORT_EMPTY_VALUES, checkDoNotExportEmptyCells.isSelected());
-        translationMgr.folderNamingType = TranslationMgrFlags.FolderNaming.getValue(comboFolderNaming.getSelectedIndex());
-        return translationMgr.export2Json(outputFolder, fileName);
+        translationMgr.writerConfig.CONCAT_COMPONENT_AND_KEY = checkBoxMergeCompAndKey.isSelected();
+        translationMgr.writerConfig.DONT_EXPORT_EMPTY_VALUES = checkDoNotExportEmptyCells.isSelected();
+        translationMgr.writerConfig.folderNamingType = TranslationMgrFlags.FolderNaming.getValue(comboFolderNaming.getSelectedIndex());
+        FileWriter writer = new FileWriter();
+        return writer.export(FileWriterOptions.JSON, translationMgr.writerConfig, translationMgr.csb, outputFolder, fileName);
     }
 
     void openExportDialog() {
         ExportOptionsDialog dialog = new ExportOptionsDialog();
         ExportChoice choice = dialog.showDialog(this);
-
-//        String[] options = {"Export as Json", "Export as Excel File", "Merge into Excel File"};
-////        String[] options = {"Export as Json"};
-//        JOptionPane pane = new JOptionPane();
-//        pane.setPreferredSize(new Dimension(800, 600));
-//        int selection = pane.showOptionDialog(this, "How would you like to export the data?", "Export",
-//                JOptionPane.YES_NO_OPTION, JOptionPane.QUESTION_MESSAGE, null, options, options[0]);
 
         switch (choice) {
             case ABORT: {
@@ -527,9 +521,7 @@ public class Excelibur extends JPanel implements OnLocaleMissing, OnBrandMissing
 
             if (translationMgr.writerConfig.bSaveAsNewFile) {
                 String suggestion = StringHelper.getFileName(file.getAbsolutePath(), false) + "_merged";
-                String newPath = saveManager.userSettings.exceliburLastImportFolder + System.getProperty("file.separator") + suggestion;
-
-                JFileChooser chooser = new JFileChooser(newPath);
+                JFileChooser chooser = new JFileChooser(saveManager.userSettings.exceliburLastImportFolder);
 
                 chooser.setSelectedFile(new File(suggestion));
                 chooser.setPreferredSize(new Dimension(800, 600));
@@ -540,8 +532,6 @@ public class Excelibur extends JPanel implements OnLocaleMissing, OnBrandMissing
                 if (choice != JFileChooser.APPROVE_OPTION) {
                     return;
                 }
-
-
                 translationMgr.writerConfig.exportAbsolutePath = chooser.getSelectedFile().toString();
                 if (!StringHelper.isValid(translationMgr.writerConfig.exportAbsolutePath)) {
                     translationMgr.writerConfig.exportAbsolutePath = "translations";
@@ -554,8 +544,9 @@ public class Excelibur extends JPanel implements OnLocaleMissing, OnBrandMissing
             }
             //-------end
 
-            ExcelWriter writer = new ExcelWriter();
-            writer.updateExcelSheet(createReaderConfig(), dialog.writerConfig, translationMgrDifference.csb, file, dialog.sheetName);
+            FileWriter fileWriter = new FileWriter();
+            fileWriter.mergeExcelFile(createReaderConfig(), dialog.writerConfig, translationMgrDifference.csb, file, dialog.sheetName);
+
         } else if (selection == 1) {
 
         }

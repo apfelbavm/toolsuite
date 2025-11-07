@@ -4,14 +4,10 @@ import java.io.File;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashSet;
-
 import reader.FileReader;
 import reader.ReaderConfig;
 import widgets.Excelibur;
-import widgets.table.LanguageIdentifier;
-import widgets.table.LanguageTable;
 import translations.I18nCSB;
-import writer.JsonWriter;
 import writer.WriterConfig;
 
 
@@ -23,32 +19,11 @@ public class TranslationMgr {
     public I18nCSB csb = null;
     private long statCalculationTime = 0;
     public File[] files;
-    private int exportFlags = 0;
-    public TranslationMgrFlags.FolderNaming folderNamingType;
     public WriterConfig writerConfig = new WriterConfig();
-
-    private boolean getFlag(TranslationMgrFlags.Export flag) {
-        return ((exportFlags >> flag.ordinal()) & 1) == 1;
-    }
-
-    public void setFlag(TranslationMgrFlags.Export flag, boolean bEnable) {
-        if (bEnable) {
-            exportFlags |= 1 << flag.ordinal();
-        } else {
-            exportFlags &= ~(1 << flag.ordinal());
-        }
-    }
 
     public int getNumSelectedFiles() {
         if (files == null) return 0;
         return files.length;
-    }
-
-    public boolean export2Json(String outputFolder, String fileName) {
-        JsonWriter json = new JsonWriter();
-        boolean bMergeComponentAndKey = getFlag(TranslationMgrFlags.Export.CONCAT_COMPONENT_AND_KEY);
-        boolean bSkipEmptyCells = getFlag(TranslationMgrFlags.Export.DONT_EXPORT_EMPTY_VALUES);
-        return json.export2Json(csb, outputFolder, fileName, bMergeComponentAndKey, bSkipEmptyCells, folderNamingType);
     }
 
     public static final HashSet<String> ISO_CODES = new HashSet<String>(Arrays.asList(new String[]{"af_za", "am_et", "ar_ae", "ar_bh", "ar_dz", "ar_eg", "ar_iq", "ar_jo", "ar_kw", "ar_lb", "ar_ly", "ar_ma",
