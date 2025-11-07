@@ -89,11 +89,12 @@ public class StringHelper {
     }
 
     public static String getFileExtension(String path) {
-        int dot = path.lastIndexOf(".");
-        if (dot != -1) {
-            return path.substring(dot + 1);
+        if (path != null) {
+            int dot = path.lastIndexOf(".");
+            if (dot != -1) {
+                return path.substring(dot + 1);
+            }
         }
-
-        return null;
+        return "";
     }
 }

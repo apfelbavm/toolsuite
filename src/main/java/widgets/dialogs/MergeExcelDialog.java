@@ -34,6 +34,7 @@ public class MergeExcelDialog {
 
     JButton openNewColorPickerButton = new JButton("Choose Color");
     JCheckBox useNewFillColor = new JCheckBox("Use new cell Fillcolor");
+    JCheckBox saveAsNewFile = new JCheckBox("Save as new file");
     ArrayList<String> sheetNames;
     JPanel panel = new JPanel();
     GridBagLayout layout = new GridBagLayout();
@@ -104,6 +105,11 @@ public class MergeExcelDialog {
             newSheetNameInput.setEnabled(true);
             existingSheetOptions.setEnabled(false);
 
+            saveAsNewFile.setSelected(false);
+            saveAsNewFile.addActionListener(e -> {
+                writerConfig.bSaveAsNewFile = saveAsNewFile.isSelected();
+            });
+            writerConfig.bSaveAsNewFile = saveAsNewFile.isSelected();
 
             openOverrideColorPickerButton.addActionListener(e -> {
                 Color newColor = JColorChooser.showDialog(parentComponent, "Choose a cell override  color", DEFAULT_OVERRIDE_FILL_COLOR);
@@ -152,7 +158,9 @@ public class MergeExcelDialog {
             addToGrid(useNewFillColor, 4, 0);
             addToGrid(openNewColorPickerButton, 4, 1);
 
-            addToGrid(table, 5, 0, 1, 2, true);
+            addToGrid(saveAsNewFile, 5, 0);
+
+            addToGrid(table, 6, 0, 1, 2, true);
 
             existingSheet.setEnabled(false);
         }
@@ -176,7 +184,7 @@ public class MergeExcelDialog {
                 null, arr, OKButton);
 
         validate();
-        
+
         JDialog dialog = optionPane.createDialog(parentComponent, "Merge into Excel file...");
         dialog.setVisible(true);
         Object result = optionPane.getValue();

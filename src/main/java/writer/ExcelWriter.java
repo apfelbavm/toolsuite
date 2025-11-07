@@ -44,6 +44,23 @@ public class ExcelWriter {
         redStyle.setFont(redFont);
     }
 
+    private String getFilePath(String outputFolder, String fileName) {
+        String path;
+        if (config.bSaveAsNewFile) {
+            int index = 0;
+            path = outputFolder + System.getProperty("file.separator") + StringHelper.getFileName(fileName) + "_merged " + index + ".xlsx";
+            File file = new File(path);
+            while (file.exists()) {
+                path = outputFolder + System.getProperty("file.separator") + StringHelper.getFileName(fileName) + "_merged " + (++index) + ".xlsx";
+                file = new File(path);
+            }
+        } else {
+            path = outputFolder + System.getProperty("file.separator") + StringHelper.getFileName(fileName) + ".xlsx";
+        }
+        System.out.println("path: " + path);
+        return path;
+    }
+
     public boolean writeNewExcelFiles(WriterConfig writerConfig, I18nCSB csb, String outputFolder, String fileName, boolean bSkipEmptyCells) {
 
         config = writerConfig;
@@ -56,7 +73,6 @@ public class ExcelWriter {
 
         try {
             String path = outputFolder + System.getProperty("file.separator") + StringHelper.getFileName(fileName) + ".xlsx";
-
             File file = new File(path);
             FileOutputStream out = new FileOutputStream(file);
             workbook.write(out);
@@ -104,10 +120,20 @@ public class ExcelWriter {
             }
             fis.close();
 
-            FileOutputStream fos = new FileOutputStream(excelFile.getAbsolutePath());
-            workbook.write(fos);
-            fos.close();
-            workbook.close();
+            if (config.bSaveAsNewFile) {
+                System.out.println("Saving new file: " + config.exportAbsolutePath);
+                File file = new File(config.exportAbsolutePath);
+                FileOutputStream fos = new FileOutputStream(file);
+                workbook.write(fos);
+                fos.close();
+                workbook.close();
+            } else {
+                System.out.println("Updating file: " + config.exportAbsolutePath);
+                FileOutputStream fos = new FileOutputStream(config.exportAbsolutePath);
+                workbook.write(fos);
+                fos.close();
+                workbook.close();
+            }
         } catch (Exception e) {
             App.get().setStatus(e.getLocalizedMessage(), App.ERROR_MESSAGE);
         }

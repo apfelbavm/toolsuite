@@ -7,6 +7,8 @@ import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 public class WriterConfig {
     public boolean bColorizeOverridden = false;
     public boolean bColorizeNew = false;
+    public boolean bSaveAsNewFile = false;
+    public String exportAbsolutePath = null;
     private java.awt.Color overrideCellFillColor = new java.awt.Color(0, 0, 0, 0);
     private java.awt.Color newCellFillColor = new java.awt.Color(0, 0, 0, 0);
 

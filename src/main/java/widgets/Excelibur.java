@@ -26,6 +26,7 @@ import widgets.table.GroupableTable;
 import writer.ExcelWriter;
 import writer.FileWriter;
 import writer.FileWriterOptions;
+import writer.WriterConfig;
 
 public class Excelibur extends JPanel implements OnLocaleMissing, OnBrandMissing {
 
@@ -519,7 +520,41 @@ public class Excelibur extends JPanel implements OnLocaleMissing, OnBrandMissing
         MergeExcelDialog dialog = new MergeExcelDialog(this);
         int selection = dialog.showDialog(file, translationMgrDifference.csb);
         translationMgr.writerConfig = dialog.writerConfig;
+
         if (selection == 0) {
+
+            //-------start
+            owner.setStatus("Selecting output folder...", App.NORMAL_MESSAGE);
+
+            if (translationMgr.writerConfig.bSaveAsNewFile) {
+                String suggestion = StringHelper.getFileName(file.getAbsolutePath(), false) + "_merged";
+                String newPath = saveManager.userSettings.exceliburLastImportFolder + System.getProperty("file.separator") + suggestion;
+
+                JFileChooser chooser = new JFileChooser(newPath);
+
+                chooser.setSelectedFile(new File(suggestion));
+                chooser.setPreferredSize(new Dimension(800, 600));
+                // This sets the default folder view to 'details'
+                Action details = chooser.getActionMap().get("viewTypeDetails");
+                details.actionPerformed(null);
+                int choice = chooser.showSaveDialog(this);
+                if (choice != JFileChooser.APPROVE_OPTION) {
+                    return;
+                }
+
+
+                translationMgr.writerConfig.exportAbsolutePath = chooser.getSelectedFile().toString();
+                if (!StringHelper.isValid(translationMgr.writerConfig.exportAbsolutePath)) {
+                    translationMgr.writerConfig.exportAbsolutePath = "translations";
+                }
+                if (!StringHelper.getFileExtension(translationMgr.writerConfig.exportAbsolutePath).equals(".xlsx")) {
+                    translationMgr.writerConfig.exportAbsolutePath += ".xlsx";
+                }
+            } else {
+                translationMgr.writerConfig.exportAbsolutePath = file.getAbsolutePath();
+            }
+            //-------end
+
             ExcelWriter writer = new ExcelWriter();
             writer.updateExcelSheet(createReaderConfig(), dialog.writerConfig, translationMgrDifference.csb, file, dialog.sheetName);
         } else if (selection == 1) {
@@ -556,7 +591,6 @@ public class Excelibur extends JPanel implements OnLocaleMissing, OnBrandMissing
     }
 
     private void openExportJsonDialog() {
-
         if (translationMgr.getNumSelectedFiles() == 0) {
             JOptionPane.showMessageDialog(this, "Please import Excel sheets first", "Info", JOptionPane.INFORMATION_MESSAGE);
             return;
