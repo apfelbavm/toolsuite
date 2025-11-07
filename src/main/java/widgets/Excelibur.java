@@ -19,6 +19,9 @@ import reader.OnBrandMissing;
 import reader.OnLocaleMissing;
 import reader.ReaderConfig;
 import reader.SupportedFileType;
+import widgets.dialogs.ExportChoice;
+import widgets.dialogs.ExportExcelDialog;
+import widgets.dialogs.ExportOptionsDialog;
 import widgets.dialogs.MergeExcelDialog;
 import widgets.tab_control.Tab;
 import widgets.table.LanguageTable;
@@ -427,39 +430,42 @@ public class Excelibur extends JPanel implements OnLocaleMissing, OnBrandMissing
     }
 
     void openExportDialog() {
-        String[] options = {"Export as Json", "Export as Excel File", "Merge into Excel File"};
-//        String[] options = {"Export as Json"};
-        JOptionPane pane = new JOptionPane();
-        pane.setPreferredSize(new Dimension(800, 600));
-        int selection = pane.showOptionDialog(this, "How would you like to export the data?", "Export",
-                JOptionPane.YES_NO_OPTION, JOptionPane.QUESTION_MESSAGE, null, options, options[0]);
+        ExportOptionsDialog dialog = new ExportOptionsDialog();
+        ExportChoice choice = dialog.showDialog(this);
 
+//        String[] options = {"Export as Json", "Export as Excel File", "Merge into Excel File"};
+////        String[] options = {"Export as Json"};
+//        JOptionPane pane = new JOptionPane();
+//        pane.setPreferredSize(new Dimension(800, 600));
+//        int selection = pane.showOptionDialog(this, "How would you like to export the data?", "Export",
+//                JOptionPane.YES_NO_OPTION, JOptionPane.QUESTION_MESSAGE, null, options, options[0]);
 
-        if (selection != -1) {
-            FileWriterOptions writerOption = FileWriterOptions.values()[selection];
-            switch (writerOption) {
-                case JSON: {
-                    openExportJsonDialog();
-                    break;
-                }
-                case NEW_EXCEL: {
-                    openExportNewExcelDialog(writerOption);
-                    break;
-                }
-                case FILL_EXCEL: {
-                    File file = openFillExistingExcelDialog();
-                    if (translationMgrDifference.csb.isValid()) {
-                        if (file != null) {
-                            openSelectExcelSheetDialog(file);
-                        }
-                    } else {
-                        int success = JOptionPane.showConfirmDialog(this, "No translation differences found", "No changes", JOptionPane.DEFAULT_OPTION, JOptionPane.PLAIN_MESSAGE);
+        switch (choice) {
+            case ABORT: {
+                break;
+            }
+            case EXPORT_JSON: {
+                openExportJsonDialog();
+                break;
+            }
+            case EXPORT_EXCEL: {
+                openExportNewExcelDialog();
+                break;
+            }
+            case MERGE_EXCEL: {
+                File file = openFillExistingExcelDialog();
+                if (translationMgrDifference.csb.isValid()) {
+                    if (file != null) {
+                        openSelectExcelSheetDialog(file);
                     }
-                    enableUserInput(true);
-                    break;
+                } else {
+                    int success = JOptionPane.showConfirmDialog(this, "No translation differences found", "No changes", JOptionPane.DEFAULT_OPTION, JOptionPane.PLAIN_MESSAGE);
                 }
+                enableUserInput(true);
+                break;
             }
         }
+
     }
 
     File openFillExistingExcelDialog() {
@@ -479,32 +485,25 @@ public class Excelibur extends JPanel implements OnLocaleMissing, OnBrandMissing
         return null;
     }
 
-    void openExportNewExcelDialog(FileWriterOptions writerOption) {
+    void openExportNewExcelDialog() {
         owner.setStatus("Selecting output folder...", App.NORMAL_MESSAGE);
 
         if (saveManager.userSettings.exceliburLastExportFolder.isBlank() || saveManager.userSettings.exceliburLastExportFolder.isEmpty()) {
             String userDir = System.getProperty("user.home");
             saveManager.userSettings.exceliburLastExportFolder = userDir + "/Desktop";
         }
-        JFileChooser chooser = new JFileChooser(saveManager.userSettings.exceliburLastExportFolder);
-
-        String suggestedFileName = translationMgr.csb.brands.get(0).name + "_Workbook_" + Calendar.getInstance().get(Calendar.YEAR);
-        chooser.setSelectedFile(new File(suggestedFileName));
-        chooser.setPreferredSize(new Dimension(800, 600));
-        // This sets the default folder view to 'details'
-        Action details = chooser.getActionMap().get("viewTypeDetails");
-        details.actionPerformed(null);
-        int choice = chooser.showSaveDialog(this);
+        ExportExcelDialog dialog = new ExportExcelDialog();
+        int choice = dialog.showDialog(this, translationMgr.csb);
         enableUserInput(false);
         if (choice == JFileChooser.APPROVE_OPTION) {
             new Thread(() -> {
-                String outputFolder = chooser.getSelectedFile().toString();
-                saveManager.userSettings.exceliburLastExportFolder = chooser.getSelectedFile().getParent();
+                String outputFolder = dialog.getSelectedFile().toString();
+                saveManager.userSettings.exceliburLastExportFolder = dialog.getSelectedFile().getParent();
                 int i = outputFolder.lastIndexOf(System.getProperty("file.separator"));
                 String fileName = outputFolder.substring(i + 1, outputFolder.length());
                 outputFolder = outputFolder.substring(0, i);
                 FileWriter writer = new FileWriter();
-                boolean success = writer.export(writerOption, translationMgr.writerConfig, translationMgr.csb, outputFolder, fileName);
+                boolean success = writer.export(FileWriterOptions.NEW_EXCEL, translationMgr.writerConfig, translationMgr.csb, outputFolder, fileName);
                 if (success) {
                     owner.setStatus("Sucessfully exported Excel", App.NORMAL_MESSAGE);
                 }
