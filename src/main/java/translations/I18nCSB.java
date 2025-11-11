@@ -34,7 +34,7 @@ public class I18nCSB {
             for (I18nLanguage otherLang : otherbrand.languages) {
                 I18nLanguage lang = new I18nLanguage(otherbrand.name, otherLang.locale);
                 for (I18n otherI18n : otherLang.translations) {
-                    lang.translations.add(new I18n(otherI18n));
+                    lang.add(new I18n(otherI18n), false);
                 }
                 brand.languages.add(lang);
             }
@@ -93,7 +93,6 @@ public class I18nCSB {
     }
 
     public void fillInEmpties(boolean bPerBrand) {
-
         if (bPerBrand) {
             for (I18nBrand brand : brands) {
                 I18nLanguage defaultLanguage = new I18nLanguage("default", "default");

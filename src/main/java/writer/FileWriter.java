@@ -2,6 +2,7 @@ package writer;
 
 import reader.ReaderConfig;
 import translations.I18nCSB;
+
 import java.io.File;
 
 public class FileWriter {

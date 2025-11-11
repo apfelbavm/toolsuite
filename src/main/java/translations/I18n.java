@@ -20,8 +20,7 @@ public class I18n implements Comparable<I18n> {
     private I18n() {
     } // made private so you have to use the other constructor
 
-    public I18n(I18n other)
-    {
+    public I18n(I18n other) {
         as(other);
     }
 
@@ -122,7 +121,6 @@ public class I18n implements Comparable<I18n> {
             I18nResult result = I18nResult.AlreadyExists;
             for (I18nData otherData : other.json) {
                 I18nData cur = find(otherData.key);
-
                 if (cur != null) {
                     if (!StringHelper.isValid(cur.value)) {
                         cur.value = otherData.value;
@@ -164,7 +162,11 @@ public class I18n implements Comparable<I18n> {
 
     public void print() {
         for (I18nData innerData : json) {
-            System.out.println("component: " + component + ", key: " + key + "." + innerData.key + ", value:" + innerData.value);
+            if (StringHelper.isValid(innerData.key)) {
+                System.out.println("component: " + component + ", key: " + key + "." + innerData.key + ", value:" + innerData.value);
+            } else {
+                System.out.println("component: " + component + ", key: " + key + ", value:" + innerData.value);
+            }
         }
     }
 

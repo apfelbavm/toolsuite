@@ -26,6 +26,7 @@ public class JsonWriter {
         // we have only one line off error message, thus we just have to return wether
         // there was an error, the error is already printed and shouldnt be overriden by
         // the success message if succeeding exports were successfull.
+
         for (I18nBrand brand : csb.brands) {
             for (I18nLanguage lang : brand.languages) {
                 if (bMergeComponentAndKey) {
